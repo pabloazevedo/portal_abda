@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% set back_url = ('/acervo/obras/' ~ arranjo.obra_id) if arranjo.obra_id else '/acervo/arranjos' %}
+
+{% block title %}Upload de Parte de Orquestra - {{ arranjo.titulo_arranjo or 'Arranjo' }}{% endblock %}
+{% block page_title %}Upload de Parte de Orquestra{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:800px; margin:0 auto;">
+
+  <div class="mb-3">
+    <a href="{{ back_url }}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+
+  <div class="card shadow-sm" style="border-radius:14px; border:none;">
+    <div class="card-body" style="padding:28px;">
+
+      <h4 style="font-size:16px; font-weight:700; margin-bottom:8px;">
+        {{ arranjo.titulo_arranjo or 'Arranjo (sem título)' }}
+      </h4>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:24px;">
+        {{ (arranjo.instrumentacao or '')[:80] }}
+      </p>
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size:13px;" for="instrumento-select">
+          Nome do Instrumento <span class="text-danger">*</span>
+        </label>
+        <select id="instrumento-select" class="form-select" style="border-radius:8px; font-size:13px;">
+          <option value="">— Selecione da lista —</option>
+          {% for inst in instrumentos_padrao %}
+          <option value="{{ inst }}">{{ inst }}</option>
+          {% endfor %}
+          <option value="__outro__">Outro (digitar abaixo)…</option>
+        </select>
+        <input
+          type="text"
+          id="instrumento-input"
+          class="form-control mt-2"
+          list="instrumento-list"
+          placeholder="Ou digite o nome do instrumento…"
+          style="border-radius:8px; font-size:13px; display:none;"
+          autocomplete="off"
+        />
+        <datalist id="instrumento-list">
+          {% for inst in instrumentos_padrao %}
+          <option value="{{ inst }}"></option>
+          {% endfor %}
+        </datalist>
+        <div class="form-text" style="font-size:11px;">
+          Escolha na lista (recomendado) ou selecione “Outro” para digitar um nome personalizado.
+          Inclui Saxofone Barítono e demais instrumentos cadastrados.
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size:13px;">
+          Arquivo da Partitura <span class="text-danger">*</span>
+        </label>
+
+        <div
+          class="dropzone-container"
+          style="border:2px dashed var(--border-color); border-radius:12px; padding:40px 24px; text-align:center; cursor:pointer; transition:all 0.3s;"
+          onmouseover="this.style.borderColor='var(--primary-color)'; this.style.backgroundColor='rgba(79, 110, 247, 0.05)'"
+          onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent'"
+        >
+          <input type="file" id="file-input" class="file-input" accept=".pdf,.xml,.mxl,.mus,.sib,.musicxml" style="display:none;" />
+
+          <i class="bi bi-file-earmark-music" style="font-size:40px; color:var(--text-secondary); display:block; margin-bottom:12px;"></i>
+          <p style="font-size:14px; font-weight:600; margin-bottom:4px;">Selecione o Arquivo</p>
+          <p style="font-size:12px; color:var(--text-secondary); margin:0;">
+            Clique para selecionar ou arraste o arquivo
+          </p>
+        </div>
+
+        <div class="form-text" style="font-size:11px; margin-top:8px;">
+          Formatos aceitos: PDF, MusicXML, MUS, SIB · Máx. 50MB
+        </div>
+      </div>
+
+      <div id="file-preview" style="display:none; margin-bottom:24px;">
+        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:var(--bg-secondary); border-radius:8px; border-left:4px solid var(--success-color);">
+          <i class="bi bi-check-circle-fill" style="font-size:20px; color:var(--success-color);"></i>
+          <div style="flex:1;">
+            <p style="font-size:13px; font-weight:600; margin:0;" id="file-name-display">arquivo.pdf</p>
+            <p style="font-size:11px; color:var(--text-secondary); margin:0;" id="file-size-display">0 KB</p>
+          </div>
+          <button type="button" onclick="clearFile()" class="btn btn-sm btn-outline-danger" style="border-radius:6px;">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="status-message" style="margin-bottom:24px; display:none;">
+        <div id="status-content"></div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="button" id="btn-confirm" class="btn btn-primary" style="border-radius:8px; font-size:14px; font-weight:600; display:none;">
+          <i class="bi bi-check-lg"></i> Confirmar e Salvar
+        </button>
+        <a href="{{ back_url }}" class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;">
+          Cancelar
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# NÃO misturar display:none e display:flex no mesmo style — o flex vencia e o modal ficava eterno #}
+<div id="loading-overlay" hidden
+  style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:white; border-radius:12px; padding:32px; text-align:center; max-width:90vw;">
+    <div class="spinner-border mb-3" role="status" style="color:var(--primary-color);"></div>
+    <p style="font-size:14px; font-weight:600; margin:0;">Processando upload...</p>
+    <p style="font-size:12px; color:var(--text-secondary); margin:8px 0 0;">Por favor, aguarde</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const arranjoId = {{ arranjo.id }};
+const backUrl = {{ back_url | tojson }};
+let selectedFile = null;
+let uploadFileId = null;
+
+const instrumentoSelect = document.getElementById('instrumento-select');
+const instrumentoInput = document.getElementById('instrumento-input');
+
+function syncInstrumentoField() {
+  const v = instrumentoSelect.value;
+  if (v === '__outro__') {
+    instrumentoInput.style.display = 'block';
+    instrumentoInput.required = true;
+    instrumentoInput.focus();
+  } else if (v) {
+    instrumentoInput.style.display = 'none';
+    instrumentoInput.required = false;
+    instrumentoInput.value = v;
+  } else {
+    instrumentoInput.style.display = 'none';
+    instrumentoInput.required = false;
+    instrumentoInput.value = '';
+  }
+}
+
+instrumentoSelect.addEventListener('change', syncInstrumentoField);
+
+function getInstrumentoNome() {
+  const v = instrumentoSelect.value;
+  if (v === '__outro__') return instrumentoInput.value.trim();
+  if (v) return v.trim();
+  return instrumentoInput.value.trim();
+}
+
+function setLoading(on) {
+  const el = document.getElementById('loading-overlay');
+  if (!el) return;
+  if (on) {
+    el.hidden = false;
+    el.style.display = 'flex';
+  } else {
+    el.hidden = true;
+    el.style.display = 'none';
+  }
+}
+
+const dropzone = document.querySelector('.dropzone-container');
+const fileInput = document.getElementById('file-input');
+
+dropzone.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length > 0) {
+    handleFileSelect(fileInput.files[0]);
+  }
+});
+
+dropzone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropzone.style.borderColor = 'var(--primary-color)';
+  dropzone.style.backgroundColor = 'rgba(79, 110, 247, 0.05)';
+});
+
+dropzone.addEventListener('dragleave', () => {
+  dropzone.style.borderColor = 'var(--border-color)';
+  dropzone.style.backgroundColor = 'transparent';
+});
+
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.style.borderColor = 'var(--border-color)';
+  dropzone.style.backgroundColor = 'transparent';
+  if (e.dataTransfer.files.length > 0) {
+    handleFileSelect(e.dataTransfer.files[0]);
+  }
+});
+
+function handleFileSelect(file) {
+  const maxSizeMB = 50;
+  if (file.size > maxSizeMB * 1024 * 1024) {
+    showStatus('error', `Arquivo muito grande (máx ${maxSizeMB}MB)`);
+    return;
+  }
+
+  const allowedExts = ['.pdf', '.xml', '.mxl', '.mus', '.sib', '.musicxml'];
+  const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+  if (!allowedExts.includes(fileExt)) {
+    showStatus('error', `Formato não suportado: ${fileExt}`);
+    return;
+  }
+
+  selectedFile = file;
+  updateFilePreview();
+  uploadTemporario(file);
+}
+
+function updateFilePreview() {
+  document.getElementById('file-name-display').textContent = selectedFile.name;
+  document.getElementById('file-size-display').textContent = (selectedFile.size / 1024).toFixed(1) + ' KB';
+  document.getElementById('file-preview').style.display = 'block';
+  document.getElementById('btn-confirm').style.display = 'inline-block';
+}
+
+function clearFile() {
+  selectedFile = null;
+  uploadFileId = null;
+  document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('btn-confirm').style.display = 'none';
+  fileInput.value = '';
+  document.getElementById('status-message').style.display = 'none';
+}
+
+async function uploadTemporario(file) {
+  setLoading(true);
+  const formData = new FormData();
+  formData.append('arquivo', file);
+  formData.append('tipo', 'instrumento');
+
+  try {
+    const resp = await fetch(`/acervo/arranjos/${arranjoId}/upload-temp`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+    });
+
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      const detail = data.detail;
+      const msg = typeof detail === 'string' ? detail : (detail && JSON.stringify(detail)) || 'Erro no upload';
+      showStatus('error', msg);
+      clearFile();
+      return;
+    }
+
+    uploadFileId = data.file_id;
+    showStatus('success', 'Arquivo preparado. Clique em "Confirmar e Salvar" para finalizar.');
+  } catch (e) {
+    showStatus('error', `Erro: ${e.message}`);
+    clearFile();
+  } finally {
+    setLoading(false);
+  }
+}
+
+document.getElementById('btn-confirm').addEventListener('click', async () => {
+  const instrumento = getInstrumentoNome();
+
+  if (!instrumento) {
+    showStatus('error', 'Por favor, selecione ou informe o nome do instrumento');
+    return;
+  }
+
+  if (!uploadFileId || !selectedFile) {
+    showStatus('error', 'Por favor, selecione um arquivo');
+    return;
+  }
+
+  setLoading(true);
+
+  const uploads = [{
+    file_id: uploadFileId,
+    tipo: 'instrumento',
+    stab_tipo: null,
+    nome_original: selectedFile.name,
+    instrumento_nome: instrumento
+  }];
+
+  try {
+    const resp = await fetch(`/acervo/arranjos/${arranjoId}/confirmar-uploads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ uploads: JSON.stringify(uploads) }),
+      credentials: 'same-origin',
+    });
+
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      const detail = data.detail;
+      const msg = typeof detail === 'string' ? detail : (detail && JSON.stringify(detail)) || 'Erro ao confirmar upload';
+      showStatus('error', msg);
+      return;
+    }
+
+    if (data.success) {
+      showStatus('success', `Parte de ${instrumento} salva com sucesso!`);
+      clearFile();
+      setTimeout(() => { window.location.href = backUrl; }, 800);
+    } else {
+      const erros = (data.erros || []).join('; ') || 'Falha ao salvar';
+      showStatus('error', `Erro(s): ${erros}`);
+    }
+  } catch (e) {
+    showStatus('error', `Erro: ${e.message}`);
+  } finally {
+    setLoading(false);
+  }
+});
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status-message');
+  const content = document.getElementById('status-content');
+  el.className = `alert alert-${type === 'error' ? 'danger' : 'success'}`;
+  el.style.borderRadius = '10px';
+  el.style.fontSize = '13px';
+  content.innerHTML = `<i class="bi ${type === 'error' ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill'} me-2"></i> ${msg}`;
+  el.style.display = 'block';
+  if (type === 'success') {
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+}
+
+setLoading(false);
+</script>
+{% endblock %}

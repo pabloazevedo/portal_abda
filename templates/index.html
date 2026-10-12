@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.nav_home }}{% endblock %}
+{% block page_title %}{{ t.nav_home }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_members %}
+<a href="/musicians/new" class="btn-primary-custom">
+  <i class="bi bi-person-plus-fill" aria-hidden="true"></i> {{ t.nav_add_musician }}
+</a>
+{% elif can_manage_patrimonio %}
+<a href="/patrimonio/new" class="btn-primary-custom">
+  <i class="bi bi-plus-square-fill" aria-hidden="true"></i> {{ t.get('nav_add_patrimonio', 'Novo Item') }}
+</a>
+{% elif can_manage_acervo %}
+<a href="/acervo/obras/new" class="btn-primary-custom">
+  <i class="bi bi-music-note-beamed" aria-hidden="true"></i> {{ t.get('acervo_obras_add', 'Nova Obra') }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="mb-3 home-hero">
+  <h2 class="page-heading">
+    {{ t.get('home_greeting', 'Olá') }}{% if current_user %}, {{ current_user.username }}{% endif %}
+  </h2>
+  <p class="page-subheading">{{ t.get('home_description', 'Gestão de membros, patrimônio e acervo musical.') }}</p>
+</div>
+
+<!-- KPIs operacionais -->
+<div class="row g-3 home-kpi-grid">
+  <div class="col-6 col-xl-3">
+    <a href="/musicians/?status=active" class="stat-card-link">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="bi bi-people-fill" style="color:var(--accent);" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value">{{ stats.active }}</div>
+          <div class="stat-label">{{ t.home_total_active }}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-xl-3">
+    <a href="/patrimonio/?status=Emprestado" class="stat-card-link">
+      <div class="stat-card">
+        <div class="stat-icon orange"><i class="bi bi-box-arrow-right" style="color:var(--warning);" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value">{{ stats.inv_emprestados }}</div>
+          <div class="stat-label">{{ t.get('home_kpi_loaned', 'Emprestados') }}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-xl-3">
+    <a href="/patrimonio/?status=Manutencao" class="stat-card-link">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(231,76,94,0.1);"><i class="bi bi-tools" style="color:var(--danger);" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value">{{ stats.inv_manutencao }}</div>
+          <div class="stat-label">{{ t.get('home_kpi_maintenance', 'Em manutenção') }}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-xl-3">
+    <a href="/acervo/programacao/calendario" class="stat-card-link">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-calendar-event" style="color:var(--success);" aria-hidden="true"></i></div>
+        <div>
+          <div class="stat-value">{{ stats.eventos_7d }}</div>
+          <div class="stat-label">{{ t.get('home_kpi_events_7d', 'Eventos (7 dias)') }}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3 home-ops-row">
+  <div class="col-lg-7">
+    <div class="home-panel home-panel--fill">
+      <h3 class="home-panel-title">
+        <i class="bi bi-calendar3" aria-hidden="true"></i>
+        {{ t.get('nav_programacao', 'Programação') }}
+      </h3>
+      {% if proximos_eventos %}
+      <ul class="list-unstyled home-events-list mb-0">
+        {% for ev in proximos_eventos %}
+        <li>
+          <a href="/acervo/programacao/{{ ev.id }}" class="home-event-item" style="padding-left:0;padding-right:0;">
+            <span class="home-event-date">{{ ev.data_inicio.strftime('%d/%m/%Y %H:%M') }}</span>
+            <span class="home-event-title">{{ ev.titulo }}</span>
+            {% if ev.local %}<span class="home-event-local">{{ ev.local }}</span>{% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="home-empty">
+        {{ t.get('home_agenda_empty', 'Nenhum evento próximo.') }}
+        <a href="/acervo/programacao/calendario">{{ t.get('home_go_prog', 'Ver calendário') }}</a>
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="home-ops-aside">
+      <div class="home-panel">
+        <h3 class="home-panel-title">
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+          {{ t.get('home_attention', 'Atenção') }}
+        </h3>
+        {% if atencao_itens %}
+          {% for item in atencao_itens %}
+          <a href="/patrimonio/{{ item.id }}" class="home-attention-item">
+            <span>
+              <strong>{{ item.identificador_interno }}</strong>
+              <span class="home-event-local"> · {{ item.fabricante or item.tipo_item.value }}</span>
+            </span>
+            {% if item.status.value == 'Emprestado' %}
+            <span class="badge bg-warning text-dark">{{ t.status_emprestado }}</span>
+            {% else %}
+            <span class="badge bg-danger">{{ t.status_manutencao }}</span>
+            {% endif %}
+          </a>
+          {% endfor %}
+        {% else %}
+        <p class="home-empty">{{ t.get('home_attention_empty', 'Nada pendente no inventário.') }}</p>
+        {% endif %}
+      </div>
+
+      <div class="home-panel">
+        <h3 class="home-panel-title">
+          <i class="bi bi-gift" aria-hidden="true"></i>
+          {{ t.birthday_section }} {{ mes_nome }}
+        </h3>
+        {% if aniversariantes %}
+          {% for m in aniversariantes %}
+          <a href="/musicians/{{ m.id }}" class="home-birthday-item">
+            <span>{{ m.full_name }}</span>
+            <strong style="color:var(--accent);">{{ m.birth_date.day }}</strong>
+          </a>
+          {% endfor %}
+        {% else %}
+        <p class="home-empty">{{ t.birthday_none }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-label">
+  <i class="bi bi-archive" aria-hidden="true"></i>{{ t.inv_section }}
+</div>
+<div class="home-inv-strip" role="list">
+  <a href="/patrimonio/?tipo=Instrumento" class="home-inv-chip" role="listitem">
+    <strong>{{ stats.inv_instrumentos }}</strong>
+    <span>{{ t.inv_instrumentos }}</span>
+  </a>
+  <a href="/patrimonio/?tipo=Movel" class="home-inv-chip" role="listitem">
+    <strong>{{ stats.inv_moveis }}</strong>
+    <span>{{ t.inv_moveis }}</span>
+  </a>
+  <a href="/patrimonio/?tipo=Eletronico" class="home-inv-chip" role="listitem">
+    <strong>{{ stats.inv_eletronicos }}</strong>
+    <span>{{ t.inv_eletronicos }}</span>
+  </a>
+  <a href="/patrimonio/?tipo=Partitura" class="home-inv-chip" role="listitem">
+    <strong>{{ stats.inv_partituras }}</strong>
+    <span>{{ t.inv_partituras }}</span>
+  </a>
+  <a href="/patrimonio/?tipo=Decoracao" class="home-inv-chip" role="listitem">
+    <strong>{{ stats.inv_decoracoes }}</strong>
+    <span>{{ t.inv_decoracoes }}</span>
+  </a>
+</div>
+
+<div class="section-label">
+  <i class="bi bi-lightning-fill" aria-hidden="true"></i>{{ t.get('home_quick_actions', 'Ações rápidas') }}
+</div>
+<div class="row g-3 home-actions-row">
+  <div class="col-md-6 col-xl-3">
+    <a href="/acervo/programacao/calendario" class="quick-action-card">
+      <i class="bi bi-calendar3" aria-hidden="true"></i>
+      <strong>{{ t.get('nav_programacao', 'Programação') }}</strong>
+      <span>{{ t.get('home_go_prog', 'Ver calendário') }}</span>
+    </a>
+  </div>
+  {% if can_manage_members %}
+  <div class="col-md-6 col-xl-3">
+    <a href="/musicians/new" class="quick-action-card">
+      <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+      <strong>{{ t.nav_add_musician }}</strong>
+      <span>{{ t.home_go_add }}</span>
+    </a>
+  </div>
+  {% endif %}
+  {% if can_manage_patrimonio or (current_user and current_user.role == 'admin') %}
+  <div class="col-md-6 col-xl-3">
+    <a href="/patrimonio/" class="quick-action-card">
+      <i class="bi bi-archive-fill" aria-hidden="true"></i>
+      <strong>{{ t.get('nav_patrimonio', 'Inventário') }}</strong>
+      <span>{{ t.get('home_go_inv', 'Ver inventário') }}</span>
+    </a>
+  </div>
+  {% endif %}
+  {% if can_manage_acervo %}
+  <div class="col-md-6 col-xl-3">
+    <a href="/acervo/obras/new" class="quick-action-card">
+      <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+      <strong>{{ t.get('acervo_obras_add', 'Nova Obra') }}</strong>
+      <span>{{ t.get('home_go_new_obra', 'Cadastrar com partituras') }}</span>
+    </a>
+  </div>
+  {% else %}
+  <div class="col-md-6 col-xl-3">
+    <a href="/acervo/obras" class="quick-action-card">
+      <i class="bi bi-music-note-beamed" aria-hidden="true"></i>
+      <strong>{{ t.get('nav_obras_arranjos', 'Obras e Arranjos') }}</strong>
+      <span>{{ t.get('home_go_acervo', 'Abrir acervo') }}</span>
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "pwa/base.html" %}
+{% block title %}{{ brand_name }} — Partituras{% endblock %}
+{% block content %}
+<header class="pwa-top">
+  <div class="pwa-top-inner">
+    <div>
+      <p class="pwa-brand pwa-brand-sm">{{ brand_name }}</p>
+      <h1 class="pwa-h1 pwa-h1-sm">{{ t.get('pwa_scores_title', 'Minhas partituras') }}</h1>
+    </div>
+    <div class="pwa-top-actions">
+      <button type="button" class="pwa-btn-ghost" id="pwa-install" hidden aria-label="{{ t.get('pwa_install', 'Instalar') }}">{{ t.get('pwa_install', 'Instalar') }}</button>
+      <button type="button" class="pwa-btn-ghost" id="pwa-logout" aria-label="{{ t.get('pwa_logout', 'Sair') }}">{{ t.get('pwa_logout', 'Sair') }}</button>
+    </div>
+  </div>
+</header>
+
+<main class="pwa-main" role="main">
+  <p id="pwa-user" class="pwa-muted"></p>
+  <div id="pwa-offline" class="pwa-offline" hidden role="status">
+    {{ t.get('pwa_offline', 'Sem conexão. Verifique a internet e tente de novo.') }}
+  </div>
+
+  <section id="pwa-notices" class="pwa-notices" aria-label="{{ t.get('pwa_notices_aria', 'Notificações') }}" hidden>
+    <div class="pwa-notices-head">
+      <h2 class="pwa-notices-title">{{ t.get('pwa_notices_title', 'Novidades') }}</h2>
+      <button type="button" class="pwa-btn-text" id="pwa-notices-clear">{{ t.get('pwa_notices_clear', 'Marcar como lidas') }}</button>
+    </div>
+    <ul id="pwa-notices-list" class="pwa-notices-list"></ul>
+  </section>
+
+  <div id="pwa-status" class="pwa-status" aria-live="polite"></div>
+  <div id="pwa-list" class="pwa-list"></div>
+</main>
+
+<div id="pwa-i18n" hidden
+  data-no-link="{{ t.get('pwa_no_link', 'Sua conta não está vinculada a um membro. Peça ao administrador.') }}"
+  data-empty="{{ t.get('pwa_empty', 'Nenhuma partitura distribuída no momento.') }}"
+  data-empty-help="{{ t.get('pwa_empty_help', 'O app só mostra partituras depois que o administrador: (1) envia o PDF do seu instrumento no acervo, (2) inclui a obra no evento e (3) confirma Distribuir partituras na Programação.') }}"
+  data-expired="{{ t.get('pwa_expired', 'Expirado') }}"
+  data-soon="{{ t.get('pwa_soon', 'Disponível no dia do evento') }}"
+  data-available="{{ t.get('pwa_available', 'Disponível') }}"
+  data-open="{{ t.get('pwa_open_pdf', 'Abrir partitura') }}"
+  data-load-error="{{ t.get('pwa_load_error', 'Não foi possível carregar.') }}"
+  data-notice-new="{{ t.get('pwa_notice_new', 'Nova partitura atribuída') }}"
+  data-notice-released="{{ t.get('pwa_notice_released', 'Download liberado') }}"
+  data-notice-soon="{{ t.get('pwa_notice_soon', 'Aguardando o dia do evento') }}"
+  data-notice-docs="{{ t.get('pwa_notice_docs', 'documento(s)') }}"
+  data-pdf-loading="{{ t.get('pwa_pdf_loading', 'Carregando partitura…') }}"
+  data-pdf-fallback="{{ t.get('pwa_pdf_fallback', 'Se a partitura não aparecer, <a class=\"pwa-pdf-openlink\" href=\"{url}\" target=\"_blank\" rel=\"noopener\">toque aqui para abrir</a>.') }}"
+  data-offline="{{ t.get('pwa_offline', 'Sem conexão. Verifique a internet e tente de novo.') }}"
+></div>
+
+<div id="pwa-pdf-sheet" class="pwa-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="pwa-pdf-title">
+  <div class="pwa-sheet-bar">
+    <button type="button" class="pwa-btn-ghost" id="pwa-pdf-close" aria-label="{{ t.get('pwa_close', 'Fechar') }}">{{ t.get('pwa_close', 'Fechar') }}</button>
+    <span id="pwa-pdf-title" class="pwa-sheet-title"></span>
+  </div>
+  <p id="pwa-pdf-hint" class="pwa-pdf-hint"></p>
+  <object id="pwa-pdf-frame" class="pwa-pdf-frame" type="application/pdf" data="">
+    <p class="pwa-pdf-object-fallback">{{ t.get('pwa_pdf_loading', 'Carregando partitura…') }}</p>
+  </object>
+</div>
+
+<div id="pwa-install-tip" class="pwa-install-tip" hidden role="dialog" aria-modal="true" aria-label="{{ t.get('pwa_install_ios_title', 'Adicionar à tela de início') }}">
+  <strong>{{ t.get('pwa_install_ios_title', 'Adicionar à tela de início') }}</strong>
+  <ol>
+    <li>{{ t.get('pwa_install_ios_1', 'Toque em Compartilhar no Safari') }}</li>
+    <li>{{ t.get('pwa_install_ios_2', 'Escolha “Adicionar à Tela de Início”') }}</li>
+    <li>{{ t.get('pwa_install_ios_3', 'Confirme em Adicionar') }}</li>
+  </ol>
+  <button type="button" class="pwa-btn" id="pwa-install-tip-close" aria-label="{{ t.get('pwa_close', 'Fechar') }}">{{ t.get('pwa_close', 'Fechar') }}</button>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/pwa/app.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const el = document.getElementById("pwa-i18n");
+    const d = el ? el.dataset : {};
+    window.PortalPwa && PortalPwa.initApp({
+      msgNoLink: d.noLink || "",
+      msgEmpty: d.empty || "",
+      msgEmptyHelp: d.emptyHelp || "",
+      msgExpired: d.expired || "",
+      msgSoon: d.soon || "",
+      msgAvailable: d.available || "",
+      msgOpen: d.open || "",
+      msgLoadError: d.loadError || "",
+      msgNoticeNew: d.noticeNew || "",
+      msgNoticeReleased: d.noticeReleased || "",
+      msgNoticeSoon: d.noticeSoon || "",
+      msgNoticeDocs: d.noticeDocs || "",
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp — {{ evento.titulo }}{% endblock %}
+{% block page_title %}Enviar no WhatsApp{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:860px; margin:0 auto;">
+
+  <div class="mb-3">
+    <a href="/acervo/programacao/{{ evento.id }}"
+       style="color:var(--text-secondary); font-size:13px; text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> {{ evento.titulo }}
+    </a>
+  </div>
+
+  <div class="card shadow-sm mb-4" style="border-radius:14px; border:none;">
+    <div class="card-body" style="padding:24px 28px;">
+      <h2 style="font-size:18px; font-weight:800; margin-bottom:6px;">
+        <i class="bi bi-whatsapp me-2" style="color:#25D366;"></i>
+        Enviar link mobile aos naipes
+      </h2>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">
+        Evento: <strong>{{ evento.titulo }}</strong> ·
+        {{ evento.data_inicio.strftime('%d/%m/%Y %H:%M') }}
+        {% if evento.local %} · {{ evento.local }}{% endif %}
+      </p>
+      <p style="font-size:12px; color:var(--text-secondary); margin:0;">
+        Link do site mobile:
+        <code>{{ pwa_url }}</code>
+      </p>
+    </div>
+  </div>
+
+  {% if not envios %}
+  <div class="alert alert-warning" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    Nenhum telefone cadastrado nos grupos WhatsApp.
+    Cadastre o celular do chefe de naipe em
+    <a href="/settings/whatsapp-pwa" class="alert-link">Configurações → WhatsApp / PWA</a>.
+  </div>
+  {% else %}
+
+  <div class="alert alert-success mb-4" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    {{ envios|length }} contato(s) com telefone. O WhatsApp abrirá automaticamente (um por vez).
+    Confirme o envio em cada conversa.
+  </div>
+
+  <div class="d-flex gap-2 mb-4 flex-wrap">
+    <button type="button" id="btn-abrir-todos" class="btn btn-success" style="border-radius:8px; font-weight:600;">
+      <i class="bi bi-whatsapp"></i> Abrir todos no WhatsApp
+    </button>
+    <a href="/settings/whatsapp-pwa" class="btn btn-outline-secondary" style="border-radius:8px;">
+      Editar telefones
+    </a>
+    <a href="/acervo/programacao/{{ evento.id }}" class="btn btn-outline-secondary" style="border-radius:8px;">
+      Voltar ao evento
+    </a>
+  </div>
+
+  {% for e in envios %}
+  <div class="card shadow-sm mb-3 wa-envio-card" style="border-radius:12px; border:none;"
+       data-wa-url="{{ e.wa_send_url }}">
+    <div class="card-body" style="padding:16px 20px;">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+          <strong style="font-size:14px;">{{ e.nome }}</strong>
+          <div style="font-size:12px; color:var(--text-secondary);">
+            <i class="bi bi-telephone"></i> {{ e.telefone }}
+            <span class="badge ms-1" style="font-size:10px; background:rgba(37,211,102,.15); color:#128C7E;">{{ e.tipo }}</span>
+          </div>
+        </div>
+        <a href="{{ e.wa_send_url }}" target="_blank" rel="noopener"
+           class="btn btn-sm btn-success wa-open-one" style="border-radius:8px;">
+          <i class="bi bi-whatsapp"></i> Enviar
+        </a>
+      </div>
+      <textarea class="form-control" rows="4" readonly
+                style="border-radius:8px; font-size:12px; background:rgba(0,0,0,.03);">{{ e.mensagem }}</textarea>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if envios %}
+<script>
+(function () {
+  const urls = Array.from(document.querySelectorAll('.wa-envio-card'))
+    .map(el => el.getAttribute('data-wa-url'))
+    .filter(Boolean);
+
+  function openSequential(list, delayMs) {
+    let i = 0;
+    function next() {
+      if (i >= list.length) return;
+      window.open(list[i], '_blank', 'noopener');
+      i += 1;
+      if (i < list.length) setTimeout(next, delayMs);
+    }
+    next();
+  }
+
+  const btn = document.getElementById('btn-abrir-todos');
+  if (btn) {
+    btn.addEventListener('click', function () {
+      openSequential(urls, 900);
+    });
+  }
+
+  // Dispara automaticamente ao carregar (após Distribuir partituras)
+  {% if auto_open %}
+  setTimeout(function () { openSequential(urls, 900); }, 400);
+  {% endif %}
+})();
+</script>
+{% endif %}
+{% endblock %}

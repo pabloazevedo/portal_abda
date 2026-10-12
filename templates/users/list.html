@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.users_list }}{% endblock %}
+{% block page_title %}{{ t.users_list }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/users/new" class="btn-primary-custom">
+  <i class="bi bi-person-plus-fill" aria-hidden="true"></i> {{ t.nav_add_user }}
+</a>
+{% endblock %}
+
+{% block content %}
+<p style="font-size:13px; color:var(--text-secondary); margin:0 0 16px;">
+  {{ t.get('users_system_help', 'Cadastro exclusivo da equipe operacional: administradores, maestros, arquivistas, secretaria e demais papéis de sistema. Acesso ao App para músicos/coralistas é concedido no cadastro de Membros.') }}
+</p>
+
+<!-- Cards (mobile) -->
+<div class="d-md-none">
+  {% for u in users %}
+  <div class="list-mobile-card">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:{% if u.role.value == 'admin' %}rgba(79,110,247,0.15){% else %}rgba(39,196,163,0.15){% endif %}; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:{% if u.role.value == 'admin' %}var(--accent){% else %}#059669{% endif %}; flex-shrink:0;">
+        {{ u.username[0].upper() }}
+      </div>
+      <div style="min-width:0; flex:1;">
+        <div class="list-mobile-card-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          {{ u.username }}
+          {% if current_user and current_user.id == u.id %}
+          <span style="font-size:10px; background:rgba(79,110,247,0.1); color:var(--accent); padding:2px 7px; border-radius:10px; font-weight:600;">{{ t.label_you }}</span>
+          {% endif %}
+        </div>
+        <div class="list-mobile-card-meta">{{ u.email }}</div>
+      </div>
+    </div>
+    <div class="list-mobile-card-meta" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:8px;">
+      {% if u.role.value == 'admin' %}
+      <span class="badge-type badge-orchestra"><i class="bi bi-shield-fill-check" aria-hidden="true"></i> {{ t.role_admin }}</span>
+      {% elif u.role.value == 'maestro' %}
+      <span class="badge-type" style="background:rgba(168,85,247,0.12);color:#7c3aed;"><i class="bi bi-music-note-beamed" aria-hidden="true"></i> {{ t.role_maestro_sistema }}</span>
+      {% elif u.role.value == 'arquivista' %}
+      <span class="badge-type" style="background:rgba(245,158,11,0.12);color:#b45309;"><i class="bi bi-archive-fill" aria-hidden="true"></i> {{ t.role_arquivista_sistema }}</span>
+      {% elif u.role.value == 'secretaria' %}
+      <span class="badge-type" style="background:rgba(16,185,129,0.12);color:#065f46;"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> {{ t.role_secretaria }}</span>
+      {% else %}
+      <span class="badge-type badge-both"><i class="bi bi-person-fill" aria-hidden="true"></i> {{ t.role_user }}</span>
+      {% endif %}
+      {% if u.is_active %}
+      <span class="badge-type badge-active"><i class="bi bi-circle-fill" style="font-size:7px;" aria-hidden="true"></i> {{ t.status_active }}</span>
+      {% else %}
+      <span class="badge-type badge-inactive"><i class="bi bi-circle-fill" style="font-size:7px;" aria-hidden="true"></i> {{ t.status_inactive }}</span>
+      {% endif %}
+    </div>
+    <div class="list-mobile-card-actions">
+      <a href="/users/{{ u.id }}/edit" class="btn-icon edit" title="{{ t.btn_edit }}" aria-label="{{ t.btn_edit }}">
+        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+      </a>
+      {% if not (current_user and current_user.id == u.id) %}
+      <form id="utoggle-m-{{ u.id }}" method="post" action="/users/{{ u.id }}/toggle-status" style="display:inline;">
+        <button type="button"
+          class="btn-icon {% if u.is_active %}toggle-off{% else %}toggle-on{% endif %}"
+          title="{% if u.is_active %}{{ t.btn_inactivate }}{% else %}{{ t.btn_activate }}{% endif %}"
+          onclick="confirmAction('{% if u.is_active %}{{ t.confirm_inactivate }}{% else %}{{ t.confirm_activate }}{% endif %}', 'utoggle-m-{{ u.id }}')" aria-label="{% if u.is_active %}{{ t.btn_inactivate }}{% else %}{{ t.btn_activate }}{% endif %}">
+          {% if u.is_active %}<i class="bi bi-pause-circle-fill" aria-hidden="true"></i>{% else %}<i class="bi bi-play-circle-fill" aria-hidden="true"></i>{% endif %}
+        </button>
+      </form>
+      <form id="udelete-m-{{ u.id }}" method="post" action="/users/{{ u.id }}/delete" style="display:inline;">
+        <button type="button" class="btn-icon delete" title="{{ t.btn_delete }}"
+          onclick="confirmAction('{{ t.confirm_delete }}', 'udelete-m-{{ u.id }}', 'danger')" aria-label="{{ t.btn_delete }}">
+          <i class="bi bi-trash-fill" aria-hidden="true"></i>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true"><i class="bi bi-people" aria-hidden="true"></i></div>
+    <div style="font-size:16px; font-weight:600;">{{ t.get('users_empty', 'Nenhum usuário de sistema cadastrado.') }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Tabela (desktop) -->
+<div class="d-none d-md-block table-card">
+  <table class="table table-hover mb-0" style="font-size:14px;">
+    <thead>
+      <tr>
+        <th style="padding:14px 20px; font-weight:600; color:var(--text-secondary); font-size:12px; text-transform:uppercase; letter-spacing:.05em; border:none;">{{ t.label_username }}</th>
+        <th style="padding:14px 20px; font-weight:600; color:var(--text-secondary); font-size:12px; text-transform:uppercase; letter-spacing:.05em; border:none;">{{ t.label_email }}</th>
+        <th style="padding:14px 20px; font-weight:600; color:var(--text-secondary); font-size:12px; text-transform:uppercase; letter-spacing:.05em; border:none;">{{ t.label_role }}</th>
+        <th style="padding:14px 20px; font-weight:600; color:var(--text-secondary); font-size:12px; text-transform:uppercase; letter-spacing:.05em; border:none;">{{ t.label_status }}</th>
+        <th style="padding:14px 20px; font-weight:600; color:var(--text-secondary); font-size:12px; text-transform:uppercase; letter-spacing:.05em; border:none;">{{ t.label_actions }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr style="border-color:var(--border-color);">
+        <td style="padding:14px 20px; vertical-align:middle;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:{% if u.role.value == 'admin' %}rgba(79,110,247,0.15){% else %}rgba(39,196,163,0.15){% endif %}; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:{% if u.role.value == 'admin' %}var(--accent){% else %}#059669{% endif %}; flex-shrink:0;">
+              {{ u.username[0].upper() }}
+            </div>
+            <span style="font-weight:600;">{{ u.username }}</span>
+            {% if current_user and current_user.id == u.id %}
+            <span style="font-size:10px; background:rgba(79,110,247,0.1); color:var(--accent); padding:2px 7px; border-radius:10px; font-weight:600;">{{ t.label_you }}</span>
+            {% endif %}
+          </div>
+        </td>
+        <td style="padding:14px 20px; vertical-align:middle; color:var(--text-secondary);">{{ u.email }}</td>
+        <td style="padding:14px 20px; vertical-align:middle;">
+          {% if u.role.value == 'admin' %}
+          <span class="badge-type badge-orchestra"><i class="bi bi-shield-fill-check" aria-hidden="true"></i> {{ t.role_admin }}</span>
+          {% elif u.role.value == 'maestro' %}
+          <span class="badge-type" style="background:rgba(168,85,247,0.12);color:#7c3aed;"><i class="bi bi-music-note-beamed" aria-hidden="true"></i> {{ t.role_maestro_sistema }}</span>
+          {% elif u.role.value == 'arquivista' %}
+          <span class="badge-type" style="background:rgba(245,158,11,0.12);color:#b45309;"><i class="bi bi-archive-fill" aria-hidden="true"></i> {{ t.role_arquivista_sistema }}</span>
+          {% elif u.role.value == 'secretaria' %}
+          <span class="badge-type" style="background:rgba(16,185,129,0.12);color:#065f46;"><i class="bi bi-clipboard-fill" aria-hidden="true"></i> {{ t.role_secretaria }}</span>
+          {% else %}
+          <span class="badge-type badge-both"><i class="bi bi-person-fill" aria-hidden="true"></i> {{ t.role_user }}</span>
+          {% endif %}
+        </td>
+        <td style="padding:14px 20px; vertical-align:middle;">
+          {% if u.is_active %}
+          <span class="badge-type badge-active"><i class="bi bi-circle-fill" style="font-size:7px;" aria-hidden="true"></i> {{ t.status_active }}</span>
+          {% else %}
+          <span class="badge-type badge-inactive"><i class="bi bi-circle-fill" style="font-size:7px;" aria-hidden="true"></i> {{ t.status_inactive }}</span>
+          {% endif %}
+        </td>
+        <td style="padding:14px 20px; vertical-align:middle;">
+          <div style="display:flex; gap:6px;">
+            <a href="/users/{{ u.id }}/edit" class="btn-icon edit" title="{{ t.btn_edit }}" aria-label="{{ t.btn_edit }}">
+              <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+            </a>
+
+            {% if not (current_user and current_user.id == u.id) %}
+            <form id="utoggle-{{ u.id }}" method="post" action="/users/{{ u.id }}/toggle-status" style="display:inline;">
+              <button type="button"
+                class="btn-icon {% if u.is_active %}toggle-off{% else %}toggle-on{% endif %}"
+                title="{% if u.is_active %}{{ t.btn_inactivate }}{% else %}{{ t.btn_activate }}{% endif %}"
+                onclick="confirmAction('{% if u.is_active %}{{ t.confirm_inactivate }}{% else %}{{ t.confirm_activate }}{% endif %}', 'utoggle-{{ u.id }}')" aria-label="{% if u.is_active %}{{ t.btn_inactivate }}{% else %}{{ t.btn_activate }}{% endif %}">
+                {% if u.is_active %}<i class="bi bi-pause-circle-fill" aria-hidden="true"></i>{% else %}<i class="bi bi-play-circle-fill" aria-hidden="true"></i>{% endif %}
+              </button>
+            </form>
+
+            <form id="udelete-{{ u.id }}" method="post" action="/users/{{ u.id }}/delete" style="display:inline;">
+              <button type="button" class="btn-icon delete" title="{{ t.btn_delete }}"
+                onclick="confirmAction('{{ t.confirm_delete }}', 'udelete-{{ u.id }}', 'danger')" aria-label="{{ t.btn_delete }}">
+                <i class="bi bi-trash-fill" aria-hidden="true"></i>
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" style="padding:40px; text-align:center; color:var(--text-secondary);">
+          {{ t.get('users_empty', 'Nenhum usuário de sistema cadastrado.') }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

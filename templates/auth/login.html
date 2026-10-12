@@ -1,0 +1,64 @@
+{% extends "auth/base_auth.html" %}
+
+{% block title %}{{ t.login_title }}{% endblock %}
+
+{% block content %}
+<h1 class="auth-form-title">{{ t.login_title }}</h1>
+<p class="auth-form-lead">{{ t.app_subtitle }}</p>
+
+{% if error %}
+<div class="auth-error" role="alert" id="login-error">
+  <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+  <span>{{ error }}</span>
+</div>
+{% endif %}
+
+<form method="post" action="/login" data-auth-form>
+  <div class="auth-field">
+    <label class="form-label" for="username">{{ t.label_username }}</label>
+    <div class="auth-input-wrap">
+      <span class="auth-input-icon" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+      <input type="text" id="username" name="username" class="form-control{% if error %} is-invalid{% endif %}"
+             value="{{ username or '' }}"
+             placeholder="{{ t.label_username }}"
+             required autofocus
+             autocomplete="username"
+             autocapitalize="none"
+             spellcheck="false"
+             {% if error %}aria-invalid="true" aria-describedby="login-error"{% endif %} />
+    </div>
+  </div>
+
+  <div class="auth-field">
+    <label class="form-label" for="password">{{ t.label_password }}</label>
+    <div class="auth-input-wrap auth-input-wrap--password">
+      <span class="auth-input-icon" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
+      <input type="password" id="password" name="password" class="form-control{% if error %} is-invalid{% endif %}"
+             placeholder="••••••••"
+             required
+             autocomplete="current-password"
+             {% if error %}aria-invalid="true" aria-describedby="login-error"{% endif %} />
+      <button type="button" class="auth-password-toggle"
+              data-auth-toggle-password="password"
+              data-label-show="{{ t.get('login_show_password', t.settings_toggle_password) }}"
+              data-label-hide="{{ t.get('login_hide_password', 'Ocultar senha') }}"
+              aria-label="{{ t.get('login_show_password', t.settings_toggle_password) }}"
+              aria-pressed="false"
+              title="{{ t.get('login_show_password', t.settings_toggle_password) }}">
+        <i class="bi bi-eye-fill" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <button type="submit" class="auth-btn"
+          data-busy-label="{{ t.get('login_submitting', '…') }}">
+    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+    <span data-auth-submit-label>{{ t.btn_login }}</span>
+  </button>
+</form>
+
+<a href="/forgot-password" class="auth-footer-link">
+  <i class="bi bi-key-fill" aria-hidden="true"></i>
+  {{ t.get('login_forgot_password', 'Esqueci minha senha') }}
+</a>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.get('nav_acervo', 'Acervo Musical') }}{% endblock %}
+{% block page_title %}{{ t.get('nav_acervo', 'Acervo Musical') }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_acervo %}
+<a href="/acervo/obras/new" class="btn-primary-custom" style="padding:8px 16px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+  <i class="bi bi-plus-lg"></i> {{ t.get('acervo_obras_add', 'Nova Obra') }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+  <!-- Filtros -->
+  <div class="filter-bar mb-3">
+    <form method="get" action="/acervo/obras">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <input type="text" name="q" value="{{ q }}" class="form-control"
+                 placeholder="{{ t.get('acervo_busca_placeholder', 'Buscar por título...') }}"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+        <div class="col-md-3">
+          <input type="text" name="compositor" value="{{ filtro_compositor }}"
+                 class="form-control" placeholder="{{ t.get('acervo_compositor', 'Compositor') }}"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+        <div class="col-md-3">
+          <select name="genero" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">{{ t.get('filter_all_types', 'Todos os gêneros') }}</option>
+            {% for g in generos %}
+            <option value="{{ g.value }}" {% if filtro_genero == g.value %}selected{% endif %}>
+              {{ genero_labels.get(g, g.value) }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button type="submit" class="btn-primary-custom w-100" style="justify-content:center;">
+            <i class="bi bi-search"></i>
+          </button>
+          <a href="/acervo/obras" class="btn btn-outline-secondary w-100" style="border-radius:8px; font-size:13px;">
+            <i class="bi bi-x-lg"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- View Toggle + Atalhos -->
+  <div class="d-flex gap-2 flex-wrap mb-4 align-items-center">
+    <div class="btn-group btn-group-sm" role="group" style="border-radius:8px;">
+      <button type="button" id="view-cards-btn" class="btn btn-outline-secondary" style="border-radius:8px 0 0 8px; font-size:12px;" title="Visualização em cards">
+        <i class="bi bi-grid-3x2-gap"></i>
+      </button>
+      <button type="button" id="view-table-btn" class="btn btn-outline-secondary" style="border-radius:0 8px 8px 0; font-size:12px;" title="Visualização em tabela">
+        <i class="bi bi-table"></i>
+      </button>
+    </div>
+
+    <a href="/acervo/programacao/calendario" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-calendar3"></i> {{ t.get('acervo_concertos', 'Concertos') }}
+    </a>
+    <a href="/acervo/historico" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-bar-chart-fill"></i> {{ t.get('acervo_historico', 'Histórico') }}
+    </a>
+    <a href="/acervo/busca" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-search"></i> {{ t.get('acervo_busca', 'Busca Avançada') }}
+    </a>
+    <a href="/acervo/calendario.ics" class="btn btn-outline-success btn-sm" style="border-radius:8px; font-size:12px;" target="_blank">
+      <i class="bi bi-calendar-check"></i> {{ t.get('acervo_calendario_ics', 'Exportar .ics') }}
+    </a>
+  </div>
+
+  <!-- Lista de obras -->
+  {% if obras %}
+
+  <!-- CARD VIEW (padrão) -->
+  <div id="card-view" class="row g-3">
+    {% for obra in obras %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm" style="border-radius:12px; border:none; transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <div class="card-body" style="padding:18px;">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="badge" style="background:rgba(107,132,255,0.15); color:#6b84ff; border-radius:6px; font-size:11px; font-weight:600; padding:4px 8px;">
+              {{ genero_labels.get(obra.genero, obra.genero.value) }}
+            </span>
+            <span style="font-size:11px; color:var(--text-secondary);">
+              {% if obra.ano_composicao %}{{ obra.ano_composicao }}{% endif %}
+            </span>
+          </div>
+          <h6 style="font-weight:700; font-size:14px; margin-bottom:4px; line-height:1.3;">
+            <a href="/acervo/obras/{{ obra.id }}" style="color:var(--text-primary); text-decoration:none;">{{ obra.titulo }}</a>
+          </h6>
+          {% if obra.titulo_original and obra.titulo_original != obra.titulo %}
+          <p style="font-size:11px; color:var(--text-secondary); margin-bottom:6px; font-style:italic;">{{ obra.titulo_original }}</p>
+          {% endif %}
+          <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">
+            <i class="bi bi-person" style="margin-right:4px;"></i>{{ obra.compositor_label }}
+          </p>
+          {% if obra.tonalidade %}
+          <p style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
+            <i class="bi bi-music-note" style="margin-right:4px;"></i>{{ obra.tonalidade }}
+          </p>
+          {% endif %}
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span style="font-size:11px; color:var(--text-secondary);">
+              <i class="bi bi-layers" style="margin-right:3px;"></i>
+              {{ obra.arranjos | length }} {{ t.get('acervo_arranjos', 'arranjo(s)') }}
+            </span>
+            <a href="/acervo/obras/{{ obra.id }}" class="btn btn-sm btn-outline-primary" style="border-radius:7px; font-size:12px; padding:3px 10px;">
+              {{ t.get('btn_view', 'Abrir') }} <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- TABLE VIEW (alternativa) -->
+  <div id="table-view" style="display:none;">
+    <div class="card shadow-sm" style="border-radius:12px; border:none;">
+      <div class="table-responsive">
+        <table class="table" style="margin:0; font-size:13px;">
+          <thead style="background:rgba(107,132,255,0.06);">
+            <tr>
+              <th style="padding:12px 16px; font-weight:600;">Título</th>
+              <th style="padding:12px 16px; font-weight:600;">Compositor</th>
+              <th style="padding:12px 16px; font-weight:600;">Gênero</th>
+              <th style="padding:12px 16px; font-weight:600;">Tonalidade</th>
+              <th style="padding:12px 16px; font-weight:600;">Arranjos</th>
+              <th style="padding:12px 16px; font-weight:600; width:80px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for obra in obras %}
+            <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
+              <td style="padding:12px 16px;">
+                <a href="/acervo/obras/{{ obra.id }}" style="color:var(--text-primary); text-decoration:none; font-weight:600;">
+                  {{ obra.titulo }}
+                </a>
+                {% if obra.titulo_original and obra.titulo_original != obra.titulo %}
+                <div style="font-size:11px; color:var(--text-secondary); font-style:italic;">{{ obra.titulo_original }}</div>
+                {% endif %}
+              </td>
+              <td style="padding:12px 16px; color:var(--text-secondary); font-size:12px;">
+                {{ obra.compositor_label }}
+              </td>
+              <td style="padding:12px 16px;">
+                <span class="badge" style="background:rgba(107,132,255,0.15); color:#6b84ff; border-radius:6px; font-size:10px;">
+                  {{ genero_labels.get(obra.genero, obra.genero.value) }}
+                </span>
+              </td>
+              <td style="padding:12px 16px; color:var(--text-secondary); font-size:12px;">
+                {% if obra.tonalidade %}{{ obra.tonalidade }}{% else %}—{% endif %}
+              </td>
+              <td style="padding:12px 16px; color:var(--text-secondary); font-size:12px;">
+                <i class="bi bi-layers me-1"></i>{{ obra.arranjos | length }}
+              </td>
+              <td style="padding:12px 16px;">
+                <a href="/acervo/obras/{{ obra.id }}" class="btn btn-sm btn-outline-primary" style="border-radius:6px; font-size:11px; padding:4px 8px;">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-music-note-beamed" style="font-size:48px; color:var(--text-secondary); opacity:0.4;"></i>
+    <p style="color:var(--text-secondary); margin-top:12px;">{{ t.get('acervo_no_obras', 'Nenhuma obra encontrada.') }}</p>
+    {% if can_manage_acervo %}
+    <a href="/acervo/obras/new" class="btn-primary-custom mt-2" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+      <i class="bi bi-plus-lg"></i> {{ t.get('acervo_obras_add', 'Nova Obra') }}
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// View toggle for obras list (Card vs Table)
+const STORAGE_KEY = 'obras_view_preference';
+const tableView = document.getElementById('table-view');
+const cardView = document.getElementById('card-view');
+const tableBtn = document.getElementById('view-table-btn');
+const cardsBtn = document.getElementById('view-cards-btn');
+
+function setView(view) {
+  if (!tableView || !cardView) return;
+  localStorage.setItem(STORAGE_KEY, view);
+  if (view === 'table') {
+    tableView.style.display = 'block';
+    cardView.style.display = 'none';
+    tableBtn.classList.add('active');
+    tableBtn.style.backgroundColor = 'var(--primary-color)';
+    tableBtn.style.color = 'white';
+    tableBtn.style.borderColor = 'var(--primary-color)';
+    cardsBtn.classList.remove('active');
+    cardsBtn.style.backgroundColor = 'transparent';
+    cardsBtn.style.color = 'var(--text-secondary)';
+    cardsBtn.style.borderColor = 'var(--border-color)';
+  } else {
+    tableView.style.display = 'none';
+    cardView.style.display = '';
+    cardsBtn.classList.add('active');
+    cardsBtn.style.backgroundColor = 'var(--primary-color)';
+    cardsBtn.style.color = 'white';
+    cardsBtn.style.borderColor = 'var(--primary-color)';
+    tableBtn.classList.remove('active');
+    tableBtn.style.backgroundColor = 'transparent';
+    tableBtn.style.color = 'var(--text-secondary)';
+    tableBtn.style.borderColor = 'var(--border-color)';
+  }
+}
+
+// Load preference from localStorage (default: cards)
+const savedView = localStorage.getItem(STORAGE_KEY) || 'cards';
+setView(savedView);
+
+// Event listeners
+if (tableBtn && cardsBtn) {
+  tableBtn.addEventListener('click', () => setView('table'));
+  cardsBtn.addEventListener('click', () => setView('cards'));
+}
+</script>
+{% endblock %}

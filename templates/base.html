@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ t.app_title }}{% endblock %} — {{ t.app_subtitle }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="/static/css/style.css?v=12" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
+  <style>
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr !important; padding: 20px 16px !important; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Ir para conteúdo principal</a>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    {% if brand_logo %}
+    <div class="brand-logo" style="background:transparent; padding:2px;">
+      <img src="/uploads/{{ brand_logo }}" alt="{{ t.app_title }}" style="width:40px; height:40px; object-fit:contain; border-radius:8px;" />
+    </div>
+    {% else %}
+    <div class="brand-logo" aria-hidden="true"><i class="bi bi-music-note-beamed"></i></div>
+    {% endif %}
+    <p class="brand-title">{{ t.app_title }}</p>
+    <p class="brand-sub">{{ t.app_subtitle }}</p>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Menu principal">
+    <div class="nav-section-title">{{ t.get('nav_section_menu', 'Menu') }}</div>
+    <div class="nav-item">
+      <a href="/" class="{% if request.url.path == '/' %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-house-fill" aria-hidden="true"></i></span>
+        {{ t.nav_home }}
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/musicians/" class="{% if '/musicians' in request.url.path and 'organogram' not in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+        {{ t.nav_musicians }}
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/patrimonio/" class="{% if '/patrimonio' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-archive-fill" aria-hidden="true"></i></span>
+        {{ t.get('nav_patrimonio', 'Inventário') }}
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/musicians/organogram" class="{% if 'organogram' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-diagram-3-fill" aria-hidden="true"></i></span>
+        {{ t.get('nav_organogram', 'Organograma') }}
+      </a>
+    </div>
+
+    <div class="nav-section-title">{{ t.get('nav_acervo', 'Acervo Musical') }}</div>
+    <div class="nav-item">
+      <a href="/acervo/obras" class="{% if '/acervo/obras' in request.url.path or '/acervo/arranjos' in request.url.path or '/acervo/busca' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-music-note-beamed" aria-hidden="true"></i></span>
+        {{ t.get('nav_obras_arranjos', 'Obras e Arranjos') }}
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/acervo/historico" class="{% if '/acervo/historico' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-bar-chart-fill" aria-hidden="true"></i></span>
+        {{ t.get('acervo_historico', 'Histórico') }}
+      </a>
+    </div>
+
+    <div class="nav-section-title">{{ t.get('nav_programacao', 'Programação') }}</div>
+    <div class="nav-item">
+      <a href="/acervo/programacao/calendario" class="{% if '/acervo/programacao' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-calendar3" aria-hidden="true"></i></span>
+        {{ t.get('nav_programacao', 'Programação') }}
+      </a>
+    </div>
+
+    {% if current_user and current_user.role == 'admin' %}
+    <div class="nav-section-title">{{ t.nav_admin }}</div>
+    <div class="nav-item">
+      <a href="/users/" class="{% if '/users' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i></span>
+        {{ t.nav_users }}
+      </a>
+    </div>
+    <div class="nav-item">
+      <a href="/settings/" class="{% if '/settings' in request.url.path %}active{% endif %}">
+        <span class="nav-icon"><i class="bi bi-gear-fill" aria-hidden="true"></i></span>
+        {{ t.get('nav_settings', 'Configurações') }}
+      </a>
+    </div>
+    {% endif %}
+  </nav>
+
+  <!-- User info + logout -->
+  {% if current_user %}
+  <div class="sidebar-user">
+    <div class="sidebar-user-row">
+      <div class="sidebar-user-avatar role-{{ current_user.role }}" aria-hidden="true">
+        {{ current_user.username[0].upper() }}
+      </div>
+      <div class="sidebar-user-meta">
+        <div class="sidebar-user-name">{{ current_user.username }}</div>
+        <div class="sidebar-user-role">
+          {% if current_user.role == 'admin' %}{{ t.role_admin }}
+          {% elif current_user.role == 'maestro' %}{{ t.role_maestro_sistema }}
+          {% elif current_user.role == 'arquivista' %}{{ t.role_arquivista_sistema }}
+          {% elif current_user.role == 'secretaria' %}{{ t.role_secretaria }}
+          {% else %}{{ t.role_user }}{% endif %}
+        </div>
+      </div>
+    </div>
+    <form method="post" action="/logout">
+      <button type="submit" class="sidebar-logout-btn">
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i> {{ t.btn_logout }}
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</aside>
+
+<!-- Main content -->
+<div class="main-content">
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menu">
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <h1 class="topbar-title">{% block page_title %}{{ t.app_title }}{% endblock %}</h1>
+
+    <div class="topbar-search" id="topbar-search-container" role="search" aria-label="Busca global">
+      <div class="topbar-search-wrap">
+        <i class="bi bi-search topbar-search-icon" aria-hidden="true"></i>
+        <input id="global-search" type="search" class="topbar-search-input"
+               placeholder="{{ t.get('search_placeholder', 'Buscar membros, patrimônio ou acervo…') }} (Ctrl+K)"
+               autocomplete="off" aria-autocomplete="list"
+               aria-expanded="false" aria-haspopup="listbox" />
+        <i class="bi bi-arrow-clockwise topbar-search-spinner" id="global-search-spinner" aria-hidden="true"></i>
+      </div>
+      <div id="global-search-dropdown" class="topbar-search-dropdown" hidden
+           role="listbox" aria-label="Resultados da busca"></div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <button class="topbar-icon-btn" id="dark-mode-toggle"
+              title="Modo: {{ t.get('theme_system', 'Padrão do Sistema') }}"
+              aria-label="{{ t.get('theme_toggle', 'Alternar tema') }}"
+              data-label-light="{{ t.get('theme_light', 'Claro') }}"
+              data-label-dark="{{ t.get('theme_dark', 'Escuro') }}"
+              data-label-system="{{ t.get('theme_system', 'Padrão do Sistema') }}"
+              data-label-prefix="{{ t.get('theme_prefix', 'Tema') }}">
+        <i class="bi bi-circle-half" id="dark-mode-icon" aria-hidden="true"></i>
+      </button>
+      {% block topbar_actions %}{% endblock %}
+    </div>
+  </header>
+
+  <main class="page-content" id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="app-footer" aria-label="Rodapé do portal">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <p class="footer-heading">
+          <i class="bi bi-building" aria-hidden="true"></i>
+          {{ footer_config.get('nome_institucional') or t.app_title }}
+        </p>
+        {% if footer_config.get('endereco') %}
+        <p class="footer-text">{{ footer_config.endereco }}</p>
+        {% endif %}
+        {% if footer_config.get('link_estatuto') %}
+        <a class="footer-link" href="{{ footer_config.link_estatuto }}" target="_blank" rel="noopener">
+          <i class="bi bi-file-earmark-text" aria-hidden="true"></i> Estatuto
+        </a>
+        {% endif %}
+      </div>
+      <div class="footer-col">
+        <p class="footer-heading">
+          <i class="bi bi-laptop" aria-hidden="true"></i> TI
+        </p>
+        {% if footer_config.get('link_repositorio') %}
+        <a class="footer-link" href="{{ footer_config.link_repositorio }}" target="_blank" rel="noopener">
+          Repositório / Contato
+        </a>
+        {% endif %}
+      </div>
+      <div class="footer-col">
+        <p class="footer-heading">{{ t.app_subtitle }}</p>
+        <p class="footer-version">
+          <a href="/versoes" class="footer-version-link" title="{{ t.get('release_notes_title', 'Histórico de versões') }}">
+            <i class="bi bi-tag" aria-hidden="true"></i> v{{ app_version }}
+          </a>
+        </p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<div id="toast-root" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+<div id="theme-live" class="visually-hidden" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/app.js?v=9"></script>
+{% block scripts %}{% endblock %}
+
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog"
+     aria-labelledby="confirmModalLabel" aria-modal="true"
+     data-i18n-title-danger="{{ t.get('confirm_title_danger', 'Confirmar exclusão') }}"
+     data-i18n-title-warning="{{ t.get('confirm_title_warning', 'Confirmar inativação') }}"
+     data-i18n-title-success="{{ t.get('confirm_title_success', 'Confirmar reativação') }}"
+     data-i18n-btn-danger="{{ t.get('btn_delete', 'Excluir') }}"
+     data-i18n-btn-warning="{{ t.get('btn_inactivate', 'Inativar') }}"
+     data-i18n-btn-success="{{ t.get('btn_activate', 'Ativar') }}"
+     data-i18n-unsaved="{{ t.get('confirm_unsaved', 'Você tem alterações não salvas. Deseja sair mesmo assim?') }}">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content confirm-modal-content">
+      <div class="modal-header confirm-modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <span id="confirmModalIcon" class="confirm-modal-icon" aria-hidden="true"></span>
+          <h5 class="modal-title" id="confirmModalLabel"></h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ t.btn_cancel }}"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmModalMessage" class="confirm-modal-message"></p>
+      </div>
+      <div class="modal-footer confirm-modal-footer">
+        <button type="button" id="confirmModalCancel" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          {{ t.btn_cancel }}
+        </button>
+        <button type="button" id="confirmModalOk" class="btn btn-danger"></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const erro = params.get('erro');
+  const ok = params.get('ok') || params.get('distribuido') || params.get('salvo');
+  if (typeof showToast === 'function') {
+    if (erro) showToast(erro, 'warning');
+    else if (ok) showToast(params.get('msg') || 'Operação concluída com sucesso.', 'success');
+  }
+})();
+</script>
+</body>
+</html>

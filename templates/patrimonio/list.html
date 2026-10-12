@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.patrimonio_list }}{% endblock %}
+{% block page_title %}{{ t.patrimonio_list }}{% endblock %}
+
+{% block topbar_actions %}
+{% if current_user and current_user.role == 'admin' %}
+<a href="/patrimonio/new" class="btn-primary-custom" style="padding:8px 18px; font-size:14px; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+  <i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.patrimonio_add }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Estatísticas ─────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.total }}</div>
+      <div class="stat-label">Total</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-card-success">
+      <div class="stat-value">{{ stats.disponivel }}</div>
+      <div class="stat-label">{{ t.status_disponivel }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-card-warning">
+      <div class="stat-value">{{ stats.emprestado }}</div>
+      <div class="stat-label">{{ t.status_emprestado }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card stat-card-danger">
+      <div class="stat-value">{{ stats.manutencao }}</div>
+      <div class="stat-label">{{ t.status_manutencao }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Filtros ─────────────────────────────────────────────── -->
+<div class="filter-bar mb-4">
+  <form method="get" action="/patrimonio/" class="d-flex flex-wrap gap-2 align-items-end">
+    <div style="flex:1; min-width:200px;">
+      <label class="form-label" style="font-size:12px; margin-bottom:4px;">Buscar</label>
+      <div style="position:relative;">
+        <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-secondary);"><i class="bi bi-search" aria-hidden="true"></i></span>
+        <input type="text" name="q" value="{{ q }}" class="form-control" style="padding-left:32px;"
+               placeholder="ID, fabricante, modelo..." />
+      </div>
+    </div>
+    <div style="min-width:160px;">
+      <label class="form-label" style="font-size:12px; margin-bottom:4px;">{{ t.patrimonio_tipo }}</label>
+      <select name="tipo" class="form-select">
+        <option value="">Todos os tipos</option>
+        {% for tipo in tipos %}
+        <option value="{{ tipo.value }}" {% if tipo_filter == tipo.value %}selected{% endif %}>
+          {{ tipo_label.get(tipo, tipo.value) }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width:150px;">
+      <label class="form-label" style="font-size:12px; margin-bottom:4px;">{{ t.patrimonio_status }}</label>
+      <select name="status" class="form-select">
+        <option value="">Todos os status</option>
+        {% for s in statuses %}
+        <option value="{{ s.value }}" {% if status_filter == s.value %}selected{% endif %}>
+          {{ status_label.get(s, s.value) }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn-primary-custom" style="padding:9px 18px; font-size:14px;">
+        <i class="bi bi-search" aria-hidden="true"></i> Buscar
+      </button>
+      {% if q or tipo_filter or status_filter %}
+      <a href="/patrimonio/" class="btn btn-outline-secondary" style="border-radius:8px; padding:9px 14px; font-size:14px;">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- ── Lista ───────────────────────────────────────────────── -->
+{% if items %}
+
+<!-- Cards (mobile) -->
+<div class="d-md-none">
+  {% for item in items %}
+  {% set ea = item.emprestimo_ativo %}
+  <div class="list-mobile-card">
+    <a href="/patrimonio/{{ item.id }}" class="list-mobile-card-title" style="font-family:monospace; font-size:13px;">
+      {{ item.identificador_interno }}
+    </a>
+    <div class="list-mobile-card-meta">
+      <span class="badge-tipo badge-tipo-{{ item.tipo_item.value | lower }}">
+        {% if item.tipo_item.value == 'Instrumento' %}<i class="bi bi-guitar" aria-hidden="true"></i>
+        {% elif item.tipo_item.value == 'Movel' %}<i class="bi bi-box-seam" aria-hidden="true"></i>
+        {% elif item.tipo_item.value == 'Eletronico' %}<i class="bi bi-plug-fill" aria-hidden="true"></i>
+        {% elif item.tipo_item.value == 'Partitura' %}<i class="bi bi-file-music" aria-hidden="true"></i>
+        {% elif item.tipo_item.value == 'Decoracao' %}<i class="bi bi-image" aria-hidden="true"></i>
+        {% else %}📦{% endif %}
+        {{ tipo_label.get(item.tipo_item, item.tipo_item.value) }}
+      </span>
+    </div>
+    <div class="list-mobile-card-meta">
+      <span style="font-weight:500; color:var(--text-primary);">{{ item.fabricante or '—' }}</span>
+      {% if item.modelo %} · {{ item.modelo }}{% endif %}
+    </div>
+    <div class="list-mobile-card-meta" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+      {% if item.status.value == 'Disponivel' %}
+        <span class="badge bg-success">{{ t.status_disponivel }}</span>
+      {% elif item.status.value == 'Emprestado' %}
+        <span class="badge bg-warning text-dark">{{ t.status_emprestado }}</span>
+      {% elif item.status.value == 'Manutencao' %}
+        <span class="badge bg-danger">{{ t.status_manutencao }}</span>
+      {% else %}
+        <span class="badge bg-secondary">{{ t.status_baixa }}</span>
+      {% endif %}
+      {% if ea %}
+      <span><i class="bi bi-person-fill" aria-hidden="true" style="color:var(--accent);"></i> {{ ea.musician.full_name }}</span>
+      {% endif %}
+    </div>
+    <div class="list-mobile-card-actions">
+      <a href="/patrimonio/{{ item.id }}" class="btn btn-sm btn-outline-secondary" title="Detalhes / QR" style="border-radius:6px;" aria-label="Detalhes / QR">
+        <i class="bi bi-qr-code" aria-hidden="true"></i>
+      </a>
+      {% if current_user and current_user.role == 'admin' %}
+      <a href="/patrimonio/{{ item.id }}/edit" class="btn btn-sm btn-outline-primary" title="{{ t.btn_edit }}" style="border-radius:6px;" aria-label="{{ t.btn_edit }}">
+        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Tabela (desktop) -->
+<div class="d-none d-md-block table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th style="width:140px;">{{ t.patrimonio_id_interno }}</th>
+          <th>{{ t.patrimonio_tipo }}</th>
+          <th>{{ t.patrimonio_fabricante }} / {{ t.patrimonio_modelo }}</th>
+          <th style="width:120px;">{{ t.patrimonio_status }}</th>
+          <th style="width:180px;">Responsável</th>
+          <th style="width:110px; text-align:center;">{{ t.label_actions }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        {% set ea = item.emprestimo_ativo %}
+        <tr>
+          <td>
+            <a href="/patrimonio/{{ item.id }}"
+               style="font-family:monospace; font-size:12px; font-weight:600; color:var(--accent); text-decoration:none;"
+               title="Ver detalhes" aria-label="Ver detalhes">
+              {{ item.identificador_interno }}
+            </a>
+            {% set ns = namespace(tipos=[]) %}
+            {% for e in item.etiquetas %}{% if e.ativo %}{% set ns.tipos = ns.tipos + [e.tipo.value] %}{% endif %}{% endfor %}
+            {% if ns.tipos %}
+            <div style="display:flex; gap:3px; margin-top:4px; flex-wrap:wrap;">
+              {% if 'qr' in ns.tipos %}<span title="QR Code" style="font-size:9px; padding:1px 5px; border-radius:4px; background:rgba(79,110,247,0.15); color:var(--accent); font-weight:600;">QR</span>{% endif %}
+              {% if 'barcode_1d' in ns.tipos %}<span title="Barcode 1D" style="font-size:9px; padding:1px 5px; border-radius:4px; background:rgba(39,196,163,0.15); color:#27c4a3; font-weight:600;">1D</span>{% endif %}
+              {% if 'data_matrix' in ns.tipos %}<span title="Data Matrix" style="font-size:9px; padding:1px 5px; border-radius:4px; background:rgba(13,202,240,0.15); color:#0dcaf0; font-weight:600;">2D</span>{% endif %}
+            </div>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge-tipo badge-tipo-{{ item.tipo_item.value | lower }}">
+              {% if item.tipo_item.value == 'Instrumento' %}<i class="bi bi-guitar" aria-hidden="true"></i>
+              {% elif item.tipo_item.value == 'Movel' %}<i class="bi bi-box-seam" aria-hidden="true"></i>
+              {% elif item.tipo_item.value == 'Eletronico' %}<i class="bi bi-plug-fill" aria-hidden="true"></i>
+              {% elif item.tipo_item.value == 'Partitura' %}<i class="bi bi-file-music" aria-hidden="true"></i>
+              {% elif item.tipo_item.value == 'Decoracao' %}<i class="bi bi-image" aria-hidden="true"></i>
+              {% else %}📦{% endif %}
+              {{ tipo_label.get(item.tipo_item, item.tipo_item.value) }}
+            </span>
+          </td>
+          <td>
+            <span style="font-weight:500;">{{ item.fabricante or '—' }}</span>
+            {% if item.modelo %}<span style="color:var(--text-secondary); font-size:13px;"> · {{ item.modelo }}</span>{% endif %}
+          </td>
+          <td>
+            {% if item.status.value == 'Disponivel' %}
+              <span class="badge bg-success">{{ t.status_disponivel }}</span>
+            {% elif item.status.value == 'Emprestado' %}
+              <span class="badge bg-warning text-dark">{{ t.status_emprestado }}</span>
+            {% elif item.status.value == 'Manutencao' %}
+              <span class="badge bg-danger">{{ t.status_manutencao }}</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ t.status_baixa }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if ea %}
+              <span style="font-size:13px;">
+                <i class="bi bi-person-fill" aria-hidden="true" style="color:var(--accent);"></i>
+                {{ ea.musician.full_name }}
+              </span>
+            {% else %}
+              <span style="color:var(--text-secondary); font-size:12px;">—</span>
+            {% endif %}
+          </td>
+          <td style="text-align:center;">
+            <div class="d-flex gap-1 justify-content-center">
+              <a href="/patrimonio/{{ item.id }}" class="btn btn-sm btn-outline-secondary" title="Detalhes / QR" style="border-radius:6px;" aria-label="Detalhes / QR">
+                <i class="bi bi-qr-code" aria-hidden="true"></i>
+              </a>
+              {% if current_user and current_user.role == 'admin' %}
+              <a href="/patrimonio/{{ item.id }}/edit" class="btn btn-sm btn-outline-primary" title="{{ t.btn_edit }}" style="border-radius:6px;" aria-label="{{ t.btn_edit }}">
+                <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Paginação ───────────────────────────────────────────── -->
+{% set base_query = 'q=' ~ (q or '') ~ '&tipo=' ~ (tipo_filter or '') ~ '&status=' ~ (status_filter or '') %}
+{% include "partials/_pagination.html" %}
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon" aria-hidden="true"><i class="bi bi-archive" aria-hidden="true"></i></div>
+  <div style="font-size:16px; font-weight:600; margin-bottom:6px;">{{ t.patrimonio_no_results }}</div>
+  {% if current_user and current_user.role == 'admin' %}
+  <a href="/patrimonio/new" class="btn-primary-custom" style="margin-top:12px; display:inline-flex; align-items:center; gap:6px; text-decoration:none; padding:10px 20px;">
+    <i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.patrimonio_add }}
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .badge-tipo {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(79,110,247,0.1);
+    color: var(--accent);
+  }
+  .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>
+{% endblock %}

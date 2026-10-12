@@ -1,0 +1,39 @@
+{% set section = settings_section or 'geral' %}
+{% set smtp_ok = smtp.smtp_host %}
+{% set logo_ok = branding.get('logo') %}
+{% set lang_label = t.lang_pt if lang == 'pt' else (t.lang_en if lang == 'en' else t.lang_es) %}
+
+<section class="settings-overview" aria-label="{{ t.get('settings_overview', 'Resumo') }}">
+  <a href="/settings/?section=email" class="settings-overview-card {% if smtp_ok %}is-ok{% endif %}">
+    <div class="settings-overview-icon"><i class="bi bi-envelope-at" aria-hidden="true"></i></div>
+    <div>
+      <strong>{{ t.get('settings_nav_email', 'E-mail') }}</strong>
+      <span class="settings-status-pill {% if smtp_ok %}ok{% else %}neutral{% endif %}">
+        {% if smtp_ok %}{{ t.get('settings_status_configured', 'Configurado') }}{% else %}{{ t.get('settings_status_pending', 'Pendente') }}{% endif %}
+      </span>
+    </div>
+  </a>
+  <a href="/settings/?section=aparencia" class="settings-overview-card {% if logo_ok %}is-ok{% endif %}">
+    <div class="settings-overview-icon"><i class="bi bi-palette" aria-hidden="true"></i></div>
+    <div>
+      <strong>{{ t.get('settings_nav_aparencia', 'Aparência') }}</strong>
+      <span class="settings-status-pill {% if logo_ok %}ok{% else %}neutral{% endif %}">
+        {% if logo_ok %}{{ t.get('settings_status_logo', 'Logo personalizado') }}{% else %}{{ t.get('settings_status_default_logo', 'Logo padrão') }}{% endif %}
+      </span>
+    </div>
+  </a>
+  <a href="/settings/?section=geral" class="settings-overview-card is-ok">
+    <div class="settings-overview-icon"><i class="bi bi-translate" aria-hidden="true"></i></div>
+    <div>
+      <strong>{{ t.get('settings_nav_geral', 'Geral') }}</strong>
+      <span class="settings-status-pill ok">{{ lang_label }}</span>
+    </div>
+  </a>
+  <a href="/settings/?section=sistema" class="settings-overview-card">
+    <div class="settings-overview-icon"><i class="bi bi-heart-pulse" aria-hidden="true"></i></div>
+    <div>
+      <strong>{{ t.get('settings_nav_sistema', 'Sistema') }}</strong>
+      <span id="overview-health" class="settings-status-pill neutral">{{ t.get('settings_status_check', 'Verificar') }}</span>
+    </div>
+  </a>
+</section>

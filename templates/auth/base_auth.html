@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ t.login_title }}{% endblock %} — {{ t.app_title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="/static/css/style.css?v=12" rel="stylesheet" />
+</head>
+<body class="auth-body">
+  <div class="auth-shell">
+    <aside class="auth-brand" aria-label="{{ t.app_title }}">
+      <div class="auth-brand-inner">
+        {% if brand_logo %}
+        <div class="auth-brand-logo">
+          <img src="/uploads/{{ brand_logo }}" alt="{{ t.app_title }}" />
+        </div>
+        {% else %}
+        <div class="auth-brand-logo auth-brand-logo--fallback" aria-hidden="true">
+          <i class="bi bi-music-note-beamed"></i>
+        </div>
+        {% endif %}
+        <p class="auth-brand-title">{{ t.app_title }}</p>
+        <p class="auth-brand-sub">{{ t.app_subtitle }}</p>
+        <p class="auth-brand-lead">{{ t.get('login_brand_lead', t.app_subtitle) }}</p>
+      </div>
+    </aside>
+
+    <main class="auth-panel">
+      <div class="auth-panel-inner">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+  <script src="/static/js/auth.js?v=1" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

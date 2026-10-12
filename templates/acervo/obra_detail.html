@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}{{ obra.titulo }}{% endblock %}
+{% block page_title %}{{ obra.titulo }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_acervo %}
+<a href="/acervo/obras/{{ obra.id }}/edit" class="btn btn-sm btn-outline-primary" style="border-radius:8px; font-size:13px;">
+  <i class="bi bi-pencil"></i> {{ t.btn_edit }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:1400px; margin:0 auto;">
+
+  <div class="mb-3">
+    <a href="/acervo/obras" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> {{ t.get('nav_acervo', 'Acervo Musical') }}
+    </a>
+  </div>
+
+  {% if erro %}
+  <div class="alert alert-warning mb-4" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ erro }}
+  </div>
+  {% endif %}
+
+  <div class="row g-4 align-items-start">
+
+    <!-- Coluna esquerda: obra + arranjos -->
+    <div class="col-lg-7">
+
+      <!-- Cabeçalho da obra -->
+      <div class="card shadow-sm mb-4" style="border-radius:14px; border:none;">
+        <div class="card-body" style="padding:28px;">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+              <span class="badge mb-2" style="background:rgba(107,132,255,0.15); color:#6b84ff; border-radius:6px; font-size:12px; font-weight:600;">
+                {{ genero_labels.get(obra.genero, obra.genero.value) }}
+              </span>
+              {% if obra.titulo_original and obra.titulo_original != obra.titulo %}
+              <p class="detail-subtitle" style="font-style:italic;">{{ obra.titulo_original }}</p>
+              {% endif %}
+              <div class="event-meta-row mt-2">
+                <span><i class="bi bi-person" aria-hidden="true"></i> <strong>{{ t.get('acervo_compositor', 'Compositor') }}:</strong> {{ obra.compositor_label }}</span>
+                {% if obra.tonalidade %}
+                <span><i class="bi bi-music-note" aria-hidden="true"></i> <strong>{{ t.get('acervo_tonalidade', 'Tonalidade') }}:</strong> {{ obra.tonalidade }}</span>
+                {% endif %}
+                {% if obra.ano_composicao %}
+                <span><i class="bi bi-calendar" aria-hidden="true"></i> <strong>{{ t.get('acervo_ano_composicao', 'Ano') }}:</strong> {{ obra.ano_composicao }}</span>
+                {% endif %}
+              </div>
+            </div>
+            {% if can_manage_acervo %}
+            <div class="d-flex gap-2">
+              <a href="/acervo/obras/{{ obra.id }}/arranjos/new" class="btn btn-primary btn-sm" style="border-radius:8px; font-size:12px;">
+                <i class="bi bi-plus-lg"></i> {{ t.get('acervo_arranjos_add', 'Novo Arranjo') }}
+              </a>
+              <form id="delete-obra-{{ obra.id }}" method="post" action="/acervo/obras/{{ obra.id }}/delete" style="display:inline;">
+                <button type="button" class="btn btn-outline-danger btn-sm btn-action"
+                        onclick="confirmAction('{{ t.confirm_delete }}', 'delete-obra-{{ obra.id }}', 'danger')">
+                  <i class="bi bi-trash" aria-hidden="true"></i> {{ t.btn_delete }}
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% if obra.observacoes %}
+          <div class="mt-3 p-3" style="background:rgba(107,132,255,0.06); border-radius:8px; font-size:13px; color:var(--text-secondary);">
+            {{ obra.observacoes }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Arranjos -->
+      <h5 style="font-weight:700; font-size:15px; margin-bottom:16px;">
+        <i class="bi bi-layers me-2" style="color:#6b84ff;"></i>{{ t.get('acervo_arranjos', 'Arranjos') }}
+        <span class="badge" style="background:rgba(107,132,255,0.15); color:#6b84ff; border-radius:20px; font-size:12px; margin-left:6px;">{{ obra.arranjos | length }}</span>
+      </h5>
+
+      {% if obra.arranjos %}
+      <div class="row g-3">
+        {% for arranjo in obra.arranjos %}
+        <div class="col-12">
+          <div class="card shadow-sm" style="border-radius:12px; border:none;">
+            <div class="card-body" style="padding:20px;">
+              <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div style="flex:1; min-width:0;">
+                  <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                    <span style="font-weight:700; font-size:14px;">
+                      {{ arranjo.titulo_arranjo or 'Arranjo principal' }}
+                    </span>
+                    {% if arranjo.copyright_status.value == 'dominio_publico' %}
+                    <span class="badge" style="background:rgba(16,185,129,0.15); color:#059669; border-radius:6px; font-size:11px;">
+                      <i class="bi bi-unlock"></i> {{ copyright_labels.get(arranjo.copyright_status) }}
+                    </span>
+                    {% elif arranjo.copyright_status.value == 'licenciado' %}
+                    <span class="badge" style="background:rgba(245,158,11,0.15); color:#b45309; border-radius:6px; font-size:11px;">
+                      <i class="bi bi-shield-check"></i> {{ copyright_labels.get(arranjo.copyright_status) }}
+                    </span>
+                    {% else %}
+                    <span class="badge" style="background:rgba(231,76,94,0.12); color:#e74c5e; border-radius:6px; font-size:11px;">
+                      <i class="bi bi-question-circle"></i> {{ copyright_labels.get(arranjo.copyright_status) }}
+                    </span>
+                    {% endif %}
+                    {% if not arranjo.ativo %}
+                    <span class="badge bg-secondary" style="border-radius:6px; font-size:11px;">Inativo</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="row g-2" style="font-size:12px; color:var(--text-secondary);">
+                    {% if arranjo.arranjador_label != '—' %}
+                    <div class="col-auto">
+                      <i class="bi bi-person-gear me-1"></i>{{ t.get('acervo_arranjador', 'Arr.') }}: {{ arranjo.arranjador_label }}
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                      <i class="bi bi-music-note-list me-1"></i>
+                      <strong>{{ t.get('acervo_instrumentacao', 'Instrumentação') }}:</strong> {{ arranjo.instrumentacao }}
+                    </div>
+                    {% if arranjo.duracao_label != '—' %}
+                    <div class="col-auto">
+                      <i class="bi bi-stopwatch me-1"></i>{{ arranjo.duracao_label }}
+                    </div>
+                    {% endif %}
+                    {% if arranjo.editora %}
+                    <div class="col-auto">
+                      <i class="bi bi-building me-1"></i>{{ arranjo.editora }}
+                    </div>
+                    {% endif %}
+                    {% if arranjo.numero_licenca %}
+                    <div class="col-auto">
+                      <i class="bi bi-hash me-1"></i>Lic: {{ arranjo.numero_licenca }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 align-items-start flex-wrap">
+                  {% if can_manage_acervo %}
+                  <a href="/acervo/arranjos/{{ arranjo.id }}/upload-coral"
+                     class="btn btn-sm btn-outline-info btn-action" title="Upload de Coral (STAB)">
+                    <i class="bi bi-people-fill" aria-hidden="true"></i> Coral
+                  </a>
+                  <a href="/acervo/arranjos/{{ arranjo.id }}/upload-instrumento"
+                     class="btn btn-sm btn-outline-info btn-action" title="Upload de Instrumento">
+                    <i class="bi bi-music-note-beamed" aria-hidden="true"></i> Instrumento
+                  </a>
+                  <a href="/acervo/arranjos/{{ arranjo.id }}/edit"
+                     class="btn btn-sm btn-outline-primary btn-action" title="{{ t.btn_edit }}">
+                    <i class="bi bi-pencil" aria-hidden="true"></i> {{ t.btn_edit }}
+                  </a>
+                  <form id="delete-arranjo-{{ arranjo.id }}" method="post" action="/acervo/arranjos/{{ arranjo.id }}/delete" style="display:inline;">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-action" title="{{ t.btn_delete }}"
+                            onclick="confirmAction('{{ t.confirm_delete }}', 'delete-arranjo-{{ arranjo.id }}', 'danger')">
+                      <i class="bi bi-trash" aria-hidden="true"></i> {{ t.btn_delete }}
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% if arranjo.documentos %}
+              <div class="mt-3 pt-3" style="border-top:1px solid rgba(0,0,0,0.06);">
+                <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">
+                  <i class="bi bi-folder2-open me-1"></i> Partituras ({{ arranjo.documentos|length }})
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0" style="font-size:12px;">
+                    <thead>
+                      <tr style="color:var(--text-secondary);">
+                        <th style="font-weight:600; border:none; padding:4px 8px;">Tipo</th>
+                        <th style="font-weight:600; border:none; padding:4px 8px;">Instrumento / Voz</th>
+                        <th style="font-weight:600; border:none; padding:4px 8px; width:90px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for doc in arranjo.documentos %}
+                      <tr>
+                        <td style="padding:6px 8px; border-color:rgba(0,0,0,0.04);">
+                          <span class="badge" style="background:rgba(107,132,255,0.12); color:#6b84ff; border-radius:6px; font-size:11px; font-weight:600;">
+                            {{ doc.tipo_label }}
+                          </span>
+                        </td>
+                        <td style="padding:6px 8px; border-color:rgba(0,0,0,0.04); color:var(--text-secondary);">
+                          {% if doc.instrumento_nome %}{{ doc.instrumento_nome }}
+                          {% elif doc.stab_tipo %}{{ doc.stab_tipo|capitalize }}
+                          {% else %}—{% endif %}
+                        </td>
+                        <td style="padding:6px 8px; border-color:rgba(0,0,0,0.04);">
+                          <a href="/acervo/documentos/{{ doc.id }}/download"
+                             class="btn btn-sm btn-outline-success" style="border-radius:6px; font-size:11px; padding:2px 8px;">
+                            <i class="bi bi-download"></i> Baixar
+                          </a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              {% elif arranjo.arquivo_partitura %}
+              <div class="mt-3 pt-3" style="border-top:1px solid rgba(0,0,0,0.06);">
+                <a href="/uploads/{{ arranjo.arquivo_partitura }}" target="_blank"
+                   class="btn btn-sm btn-outline-success" style="border-radius:7px; font-size:12px;">
+                  <i class="bi bi-file-earmark-music"></i> Partitura (legado)
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4" style="background:rgba(107,132,255,0.05); border-radius:12px;">
+        <i class="bi bi-layers" style="font-size:32px; color:var(--text-secondary); opacity:0.4;"></i>
+        <p style="color:var(--text-secondary); margin-top:10px; font-size:13px;">{{ t.get('acervo_no_arranjos', 'Nenhum arranjo cadastrado.') }}</p>
+        {% if can_manage_acervo %}
+        <a href="/acervo/obras/{{ obra.id }}/arranjos/new" class="btn btn-sm btn-primary" style="border-radius:8px;">
+          <i class="bi bi-plus-lg"></i> {{ t.get('acervo_arranjos_add', 'Novo Arranjo') }}
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Coluna direita: sample PDF da GRADE -->
+    <div class="col-lg-5">
+      <div class="card shadow-sm obra-grade-preview" style="border-radius:14px; border:none; position:sticky; top:88px;">
+        <div class="card-body" style="padding:16px 16px 12px;">
+          <div class="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
+            <div>
+              <h6 style="font-weight:700; margin:0; font-size:14px;">
+                <i class="bi bi-file-earmark-pdf me-1" style="color:#e74c5e;"></i>
+                {{ t.get('acervo_grade_preview', 'Grade (amostra)') }}
+              </h6>
+              <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 0;">
+                Somente a partitura da grade · visualização
+              </p>
+            </div>
+            {% if grade_doc %}
+            <a href="/acervo/documentos/{{ grade_doc.id }}/download"
+               class="btn btn-sm btn-outline-success" style="border-radius:7px; font-size:11px;">
+              <i class="bi bi-download"></i> Baixar
+            </a>
+            {% endif %}
+          </div>
+
+          {% if grade_doc and grade_is_pdf %}
+          <div class="obra-grade-frame">
+            <iframe
+              title="Pré-visualização da grade"
+              src="/acervo/documentos/{{ grade_doc.id }}/view#toolbar=0&navpanes=0"
+              loading="lazy"></iframe>
+          </div>
+          {% elif grade_doc %}
+          <div class="obra-grade-empty">
+            <i class="bi bi-file-earmark-music" style="font-size:28px; opacity:0.45;"></i>
+            <p style="margin:10px 0 0; font-size:13px; color:var(--text-secondary);">
+              A grade está em formato não-PDF. Use o download para abrir o arquivo.
+            </p>
+            <a href="/acervo/documentos/{{ grade_doc.id }}/download"
+               class="btn btn-sm btn-primary mt-3" style="border-radius:8px;">
+              <i class="bi bi-download"></i> Baixar grade
+            </a>
+          </div>
+          {% else %}
+          <div class="obra-grade-empty">
+            <i class="bi bi-file-earmark-pdf" style="font-size:28px; opacity:0.35;"></i>
+            <p style="margin:10px 0 0; font-size:13px; color:var(--text-secondary);">
+              Nenhuma grade PDF cadastrada para esta obra.
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .obra-grade-frame {
+    width: 100%;
+    height: min(72vh, 820px);
+    min-height: 420px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+    background: #f1f5f9;
+  }
+  .obra-grade-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #fff;
+  }
+  .obra-grade-empty {
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 28px 16px;
+    border-radius: 10px;
+    border: 1px dashed var(--border-color, rgba(0,0,0,0.12));
+    background: rgba(107,132,255,0.04);
+  }
+  @media (max-width: 991.98px) {
+    .obra-grade-preview { position: static !important; }
+    .obra-grade-frame { height: 520px; min-height: 360px; }
+  }
+</style>
+{% endblock %}

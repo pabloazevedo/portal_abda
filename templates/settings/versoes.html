@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ t.get('settings_versoes_title', 'Versões') }}{% endblock %}
+{% block page_title %}{{ t.get('settings_versoes_title', 'Versões') }}{% endblock %}
+
+{% block content %}
+{% set settings_section = 'versoes' %}
+<div class="settings-page">
+  <header class="settings-header">
+    <p class="page-subheading">
+      {{ t.get('settings_versoes_help_code', 'A versão atual vem do arquivo VERSION no código (SemVer). Aqui você documenta o histórico exibido em /versoes.') }}
+      <a href="/versoes" class="ms-1">{{ t.get('settings_versoes_preview', 'Ver página pública') }}</a>
+    </p>
+  </header>
+
+  <div class="settings-layout">
+    {% include "settings/_nav.html" %}
+    <div class="settings-content">
+
+      <div class="alert alert-info mb-3 settings-alert" role="status">
+        <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i>
+        {{ t.get('settings_versoes_code_source', 'Versão do código') }}:
+        <strong>v{{ code_version }}</strong>
+        <span class="settings-muted ms-1">(arquivo <code>VERSION</code>)</span>
+      </div>
+
+      {% if form_error %}
+      <div class="alert alert-danger mb-3 settings-alert" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>{{ form_error }}
+      </div>
+      {% endif %}
+
+      <section class="settings-panel mb-4" aria-labelledby="versoes-form-title">
+        <h3 id="versoes-form-title" class="settings-panel-title">
+          <i class="bi bi-{% if edit_note and edit_note.id %}pencil{% else %}plus-lg{% endif %}" aria-hidden="true"></i>
+          {% if edit_note and edit_note.id %}
+            {{ t.get('settings_versoes_edit', 'Editar versão') }}
+          {% else %}
+            {{ t.get('settings_versoes_new', 'Documentar versão') }}
+          {% endif %}
+        </h3>
+        <p class="settings-muted mb-3">
+          {{ t.get('settings_versoes_semver_hint', 'Use seções Keep a Changelog: Adicionado, Alterado, Corrigido. Para publicar uma versão nova, altere o arquivo VERSION no repositório (MAJOR.MINOR.PATCH) e documente as notas aqui.') }}
+        </p>
+
+        <form method="post" action="/settings/versoes/salvar" class="settings-form">
+          {% if edit_note and edit_note.id %}
+          <input type="hidden" name="note_id" value="{{ edit_note.id }}" />
+          {% endif %}
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label" for="rn-version">{{ t.get('settings_versoes_version', 'Versão') }}</label>
+              <input type="text" class="form-control" id="rn-version" name="version" required
+                     maxlength="32" placeholder="1.1.0"
+                     {% if edit_note and edit_note.version == code_version %}readonly{% endif %}
+                     value="{{ edit_note.version if edit_note else code_version }}" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" for="rn-date">{{ t.get('settings_versoes_date', 'Data de lançamento') }}</label>
+              <input type="date" class="form-control" id="rn-date" name="released_at" required
+                     value="{{ edit_note.released_at.isoformat() if edit_note and edit_note.released_at else '' }}" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="rn-title">{{ t.get('settings_versoes_title_field', 'Título') }}</label>
+              <input type="text" class="form-control" id="rn-title" name="title" maxlength="200"
+                     placeholder="{{ t.get('settings_versoes_title_ph', 'Ex.: Melhorias no acervo') }}"
+                     value="{{ edit_note.title if edit_note else '' }}" />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="rn-notes">{{ t.get('settings_versoes_notes', 'Notas da versão') }}</label>
+              <textarea class="form-control" id="rn-notes" name="notes" rows="8"
+                        placeholder="### Adicionado&#10;- …&#10;&#10;### Alterado&#10;- …&#10;&#10;### Corrigido&#10;- …">{{ edit_note.notes if edit_note else '' }}</textarea>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-3 flex-wrap">
+            <button type="submit" class="btn-primary-custom">
+              <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+            </button>
+            {% if edit_note and edit_note.id %}
+            <a href="/settings/versoes" class="btn btn-outline-secondary btn-sm">{{ t.btn_cancel }}</a>
+            {% endif %}
+          </div>
+        </form>
+      </section>
+
+      <section class="settings-panel" aria-labelledby="versoes-list-title">
+        <h3 id="versoes-list-title" class="settings-panel-title">
+          <i class="bi bi-clock-history" aria-hidden="true"></i>
+          {{ t.get('settings_versoes_list', 'Histórico cadastrado') }}
+        </h3>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0" style="font-size:13px;">
+            <thead>
+              <tr>
+                <th>{{ t.get('settings_versoes_version', 'Versão') }}</th>
+                <th>{{ t.get('settings_versoes_title_field', 'Título') }}</th>
+                <th>{{ t.get('settings_versoes_date', 'Data') }}</th>
+                <th>{{ t.get('label_status', 'Status') }}</th>
+                <th class="text-end">{{ t.get('settings_versoes_actions', 'Ações') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for note in release_notes %}
+              <tr>
+                <td><code>v{{ note.version }}</code></td>
+                <td>{{ note.title or '—' }}</td>
+                <td style="white-space:nowrap;">{{ note.released_at.strftime('%d/%m/%Y') }}</td>
+                <td>
+                  {% if note.version == code_version %}
+                  <span class="badge text-bg-primary">{{ t.get('release_notes_current_short', 'Atual') }}</span>
+                  {% else %}
+                  <span class="settings-muted">—</span>
+                  {% endif %}
+                </td>
+                <td class="text-end text-nowrap">
+                  <a href="/settings/versoes/{{ note.id }}/editar" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  {% if note.version != code_version %}
+                  <form method="post" action="/settings/versoes/{{ note.id }}/excluir" class="d-inline"
+                        onsubmit="return confirm('{{ t.get('settings_versoes_delete_confirm', 'Excluir esta versão?') }}');">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center settings-muted py-4">
+                  {{ t.get('release_notes_empty', 'Nenhuma versão registrada ainda.') }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

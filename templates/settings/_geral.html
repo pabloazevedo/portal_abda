@@ -1,0 +1,32 @@
+<section class="settings-panel" aria-labelledby="settings-geral-title">
+  <h3 id="settings-geral-title" class="settings-panel-title">
+    <i class="bi bi-sliders" aria-hidden="true"></i>
+    {{ t.get('settings_nav_geral', 'Geral') }}
+  </h3>
+  <p class="settings-panel-desc">{{ t.get('settings_geral_help', 'Idioma da interface e URL pública usada em links e QR codes.') }}</p>
+
+  <form method="post" action="/settings/geral" class="settings-form">
+    <div class="row g-3">
+      <div class="col-md-5">
+        <label class="form-label" for="idioma">{{ t.get('settings_idioma', 'Idioma da aplicação') }}</label>
+        <select id="idioma" name="idioma" class="form-select" required>
+          <option value="pt" {% if lang == 'pt' %}selected{% endif %}>{{ t.lang_pt }}</option>
+          <option value="en" {% if lang == 'en' %}selected{% endif %}>{{ t.lang_en }}</option>
+          <option value="es" {% if lang == 'es' %}selected{% endif %}>{{ t.lang_es }}</option>
+        </select>
+        <div class="form-text">{{ t.get('settings_idioma_help', 'Define o idioma de toda a interface para todos os usuários.') }}</div>
+      </div>
+      <div class="col-md-7">
+        <label class="form-label" for="app_base_url">{{ t.get('settings_app_base_url', 'URL base da aplicação') }}</label>
+        <input type="url" id="app_base_url" name="app_base_url" class="form-control"
+               value="{{ smtp.app_base_url }}" placeholder="https://portal.exemplo.org.br" maxlength="300" />
+        <div class="form-text">{{ t.get('settings_app_base_url_help', 'Usada nos links de redefinição de senha e nas URLs de QR do inventário.') }}</div>
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button type="submit" class="btn-primary-custom">
+        <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+      </button>
+    </div>
+  </form>
+</section>

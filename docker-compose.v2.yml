@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: orchestra_db_v2
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: orchestra_db
+      POSTGRES_USER: orchestra_user
+      POSTGRES_PASSWORD: orchestra_pass
+    volumes:
+      - postgres_data_v2:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orchestra_user -d orchestra_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: orchestra_app_v2
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://orchestra_user:orchestra_pass@db:5432/orchestra_db
+    volumes:
+      - uploads_data_v2:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data_v2:
+  uploads_data_v2:

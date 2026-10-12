@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% set is_edit = arranjo is not none %}
+{% set back_url = '/acervo/obras/' ~ obra_presel.id if obra_presel else '/acervo/arranjos' %}
+
+{% block title %}{% if is_edit %}{{ t.get('acervo_arranjos_edit', 'Editar Arranjo') }}{% else %}{{ t.get('acervo_arranjos_add', 'Novo Arranjo') }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_edit %}{{ t.get('acervo_arranjos_edit', 'Editar Arranjo') }}{% else %}{{ t.get('acervo_arranjos_add', 'Novo Arranjo') }}{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/acervo/arranjos" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% endblock %}
+
+{% block content %}
+
+  {% if error %}
+  <div class="alert alert-danger" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+  </div>
+  {% endif %}
+
+  <div class="form-card">
+      <form method="post" enctype="multipart/form-data" data-guard
+            action="{% if is_edit %}/acervo/arranjos/{{ arranjo.id }}/edit{% else %}/acervo/arranjos/new{% endif %}">
+
+        <!-- Obra vinculada (opcional) -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            Obra Vinculada <span style="color:var(--text-secondary); font-weight:400;">(opcional)</span>
+          </label>
+          <select name="obra_id_sel" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Sem obra vinculada —</option>
+            {% for o in obras %}
+            <option value="{{ o.id }}"
+              {% if obra_presel and obra_presel.id == o.id %}selected
+              {% elif is_edit and arranjo.obra_id == o.id %}selected{% endif %}>
+              {{ o.titulo }}
+            </option>
+            {% endfor %}
+          </select>
+          <div class="form-text" style="font-size:11px;">Um arranjo pode existir sem estar vinculado a uma obra.</div>
+        </div>
+
+        <!-- Título do arranjo -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_titulo_arranjo', 'Título do Arranjo') }}
+          </label>
+          <input type="text" name="titulo_arranjo" class="form-control"
+                 value="{{ arranjo.titulo_arranjo if is_edit and arranjo.titulo_arranjo else '' }}"
+                 placeholder="Ex: Versão para quarteto de cordas"
+                 style="border-radius:8px; font-size:13px;" />
+          <div class="form-text" style="font-size:11px;">Deixe em branco para "Arranjo principal".</div>
+        </div>
+
+        <!-- Arranjador membro -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_arranjador_membro', 'Arranjador (Membro)') }}
+          </label>
+          <select name="arranjador_id" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Externo ou sem arranjador —</option>
+            {% for m in membros %}
+            <option value="{{ m.id }}"
+              {% if is_edit and arranjo.arranjador_id == m.id %}selected{% endif %}>
+              {{ m.full_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Arranjador externo -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_arranjador_nome', 'Nome do Arranjador') }}
+          </label>
+          <input type="text" name="arranjador_nome" class="form-control"
+                 value="{{ arranjo.arranjador_nome if is_edit and arranjo.arranjador_nome else '' }}"
+                 placeholder="Ex: John Williams"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <!-- Instrumentação -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_instrumentacao', 'Instrumentação') }} <span class="text-danger">*</span>
+          </label>
+          <textarea name="instrumentacao" class="form-control" rows="2" required
+                    placeholder="Ex: 2Vl, Va, Vc, Cb, Fl, Ob, Cl, Fg, 2Cor"
+                    style="border-radius:8px; font-size:13px; resize:vertical;">{{ arranjo.instrumentacao if is_edit else '' }}</textarea>
+        </div>
+
+        <!-- Duração -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_duracao', 'Duração') }}
+          </label>
+          <div class="d-flex gap-2 align-items-center">
+            <input type="number" name="duracao_min" min="0" max="999" class="form-control"
+                   value="{% if is_edit and arranjo.duracao_segundos %}{{ arranjo.duracao_segundos // 60 }}{% endif %}"
+                   placeholder="min" style="border-radius:8px; font-size:13px; max-width:100px;" />
+            <span style="font-size:13px; color:var(--text-secondary);">min</span>
+            <input type="number" name="duracao_seg" min="0" max="59" class="form-control"
+                   value="{% if is_edit and arranjo.duracao_segundos %}{{ arranjo.duracao_segundos % 60 }}{% endif %}"
+                   placeholder="seg" style="border-radius:8px; font-size:13px; max-width:100px;" />
+            <span style="font-size:13px; color:var(--text-secondary);">s</span>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <!-- Editora -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              {{ t.get('acervo_editora', 'Editora') }}
+            </label>
+            <input type="text" name="editora" class="form-control"
+                   value="{{ arranjo.editora if is_edit and arranjo.editora else '' }}"
+                   placeholder="Ex: Breitkopf &amp; Härtel"
+                   style="border-radius:8px; font-size:13px;" />
+          </div>
+
+          <!-- Copyright -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              {{ t.get('acervo_copyright', 'Direitos Autorais') }} <span class="text-danger">*</span>
+            </label>
+            <select name="copyright_status" id="copyright_status" class="form-select"
+                    style="border-radius:8px; font-size:13px;" onchange="toggleLicenca()">
+              {% for c in copyright_list %}
+              <option value="{{ c.value }}"
+                {% if is_edit and arranjo.copyright_status == c %}selected{% elif not is_edit and c.value == 'pendente' %}selected{% endif %}>
+                {{ copyright_labels.get(c, c.value) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Número de licença (aparece quando licenciado) -->
+        <div class="mb-3" id="licenca_row" style="display:{% if is_edit and arranjo.copyright_status.value == 'licenciado' %}block{% else %}none{% endif %};">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_numero_licenca', 'Nº da Licença') }}
+          </label>
+          <input type="text" name="numero_licenca" class="form-control"
+                 value="{{ arranjo.numero_licenca if is_edit and arranjo.numero_licenca else '' }}"
+                 placeholder="Ex: Portal-LIC-2024-001"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <!-- Arquivo de partitura -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_partitura', 'Arquivo de Partitura') }}
+          </label>
+          {% if is_edit and arranjo.arquivo_partitura %}
+          <div class="mb-2 d-flex align-items-center gap-2" style="font-size:12px; color:var(--text-secondary);">
+            <i class="bi bi-file-earmark-music text-success"></i>
+            <a href="/uploads/{{ arranjo.arquivo_partitura }}" target="_blank">Partitura atual</a>
+            <span>(trocar abaixo)</span>
+          </div>
+          {% endif %}
+          <input type="file" name="partitura" class="form-control"
+                 accept=".pdf,.xml,.mxl,.mus,.sib,.musicxml"
+                 style="border-radius:8px; font-size:13px;" />
+          <div class="form-text" style="font-size:11px;">Formatos aceitos: PDF, MusicXML, MUS, SIB · Máx. 20MB</div>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="submit" class="btn-primary-custom" style="padding:11px 28px; font-size:15px;">
+            <i class="bi bi-check-lg"></i> {{ t.btn_save }}
+          </button>
+          <a href="{{ back_url }}" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; padding:10px 20px; font-size:14px;">
+            {{ t.btn_cancel }}
+          </a>
+        </div>
+      </form>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleLicenca() {
+  const sel = document.getElementById('copyright_status');
+  const row = document.getElementById('licenca_row');
+  row.style.display = sel.value === 'licenciado' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+<section class="settings-panel" aria-labelledby="settings-email-title">
+  <h3 id="settings-email-title" class="settings-panel-title">
+    <i class="bi bi-envelope-at" aria-hidden="true"></i>
+    {{ t.get('settings_nav_email', 'E-mail') }}
+    {% if smtp.smtp_host %}
+    <span class="settings-status-pill ok">{{ t.get('settings_status_configured', 'Configurado') }}</span>
+    {% endif %}
+  </h3>
+  <p class="settings-panel-desc">{{ t.get('settings_email_help', 'Servidor SMTP para recuperação de senha. Sem configuração, os links aparecem apenas no log do servidor.') }}</p>
+
+  <form method="post" action="/settings/smtp" id="smtp-form" class="settings-form">
+    <div class="row g-3 mb-3">
+      <div class="col-md-7">
+        <label class="form-label" for="smtp_host">{{ t.get('settings_smtp_host', 'Servidor SMTP') }} <span class="required">*</span></label>
+        <input type="text" id="smtp_host" name="smtp_host" class="form-control"
+               value="{{ smtp.smtp_host }}" placeholder="smtp.gmail.com" maxlength="200" />
+        <div class="form-text">Ex.: smtp.gmail.com, smtp.office365.com</div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="smtp_port">{{ t.get('settings_smtp_port', 'Porta') }}</label>
+        <input type="number" id="smtp_port" name="smtp_port" class="form-control"
+               value="{{ smtp.smtp_port or 587 }}" min="1" max="65535" />
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <fieldset class="settings-tls-fieldset">
+          <legend class="form-label">STARTTLS</legend>
+          <div class="settings-radio-row">
+            <label><input type="radio" name="smtp_tls" value="1" {% if smtp.smtp_tls != false %}checked{% endif %} /> {{ t.get('settings_on', 'Ativado') }}</label>
+            <label><input type="radio" name="smtp_tls" value="0" {% if smtp.smtp_tls == false %}checked{% endif %} /> {{ t.get('settings_off', 'Desativado') }}</label>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label" for="smtp_user">{{ t.get('settings_smtp_user', 'Usuário / e-mail de autenticação') }}</label>
+        <input type="email" id="smtp_user" name="smtp_user" class="form-control"
+               value="{{ smtp.smtp_user }}" maxlength="200" autocomplete="off" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="smtp_password">
+          {{ t.get('settings_smtp_password', 'Senha') }}
+          {% if smtp.password_set %}
+          <span class="settings-status-pill ok">{{ t.get('settings_smtp_password_set', 'já configurada') }}</span>
+          {% endif %}
+        </label>
+        <div class="settings-password-wrap">
+          <input type="password" id="smtp_password" name="smtp_password" class="form-control"
+                 placeholder="{% if smtp.password_set %}{{ t.get('settings_smtp_password_keep', 'Deixe vazio para manter') }}{% else %}{{ t.get('settings_smtp_password', 'Senha') }}{% endif %}"
+                 maxlength="300" autocomplete="new-password" />
+          <button type="button" id="toggle-smtp-pwd" class="settings-password-toggle"
+                  aria-label="{{ t.get('settings_toggle_password', 'Mostrar senha') }}" aria-pressed="false">
+            <i class="bi bi-eye-fill" id="eye-icon" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="form-text">Gmail: use uma <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">Senha de App</a></div>
+      </div>
+    </div>
+
+    <div class="mb-3" style="max-width:420px;">
+      <label class="form-label" for="smtp_from">{{ t.get('settings_smtp_from', 'E-mail remetente (From)') }}</label>
+      <input type="email" id="smtp_from" name="smtp_from" class="form-control"
+             value="{{ smtp.smtp_from }}" placeholder="noreply@suaorganizacao.org.br" maxlength="200" />
+    </div>
+
+    <div class="settings-actions">
+      <button type="submit" class="btn-primary-custom">
+        <i class="bi bi-floppy" aria-hidden="true"></i> {{ t.get('settings_smtp_save', 'Salvar e-mail') }}
+      </button>
+    </div>
+  </form>
+
+  {% if smtp.smtp_host %}
+  <div class="settings-actions settings-actions-secondary">
+    <form method="post" action="/settings/smtp/test">
+      <button type="submit" class="btn btn-outline-primary">
+        <i class="bi bi-send-check" aria-hidden="true"></i> {{ t.get('settings_smtp_test', 'Enviar e-mail de teste') }}
+      </button>
+    </form>
+    <span class="settings-muted">{{ t.get('settings_smtp_test_hint', 'Enviado para o e-mail do administrador logado.') }}</span>
+  </div>
+  {% endif %}
+</section>

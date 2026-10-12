@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Distribuir Partituras — {{ evento.titulo }}{% endblock %}
+{% block page_title %}Distribuir Partituras{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:960px; margin:0 auto;">
+
+  <div class="mb-3">
+    <a href="/acervo/programacao/{{ evento.id }}"
+       style="color:var(--text-secondary); font-size:13px; text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> {{ evento.titulo }}
+    </a>
+  </div>
+
+  <div class="card shadow-sm mb-4" style="border-radius:14px; border:none;">
+    <div class="card-body" style="padding:24px 28px;">
+      <h2 style="font-size:18px; font-weight:800; margin-bottom:6px;">
+        <i class="bi bi-send me-2" style="color:#6b84ff;"></i>Distribuir partituras
+      </h2>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:0;">
+        Evento: <strong>{{ evento.titulo }}</strong> ·
+        {{ evento.data_inicio.strftime('%d/%m/%Y %H:%M') }}
+        {% if evento.local %} · {{ evento.local }}{% endif %}
+      </p>
+      <p style="font-size:12px; color:var(--text-secondary); margin:10px 0 0;">
+        Os links podem ser enviados agora; o download fica liberado a partir do dia do evento.
+      </p>
+    </div>
+  </div>
+
+  {% if not sugestoes %}
+  <div class="text-center py-5" style="background:rgba(107,132,255,0.05); border-radius:12px;">
+    <i class="bi bi-people" style="font-size:36px; color:var(--text-secondary); opacity:0.4;"></i>
+    <p style="color:var(--text-secondary); margin-top:12px; font-size:13px;">
+      Nenhuma sugestão automática. Cadastre partes de instrumento no acervo e associe instrumentos aos músicos.
+    </p>
+    <a href="/acervo/programacao/{{ evento.id }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+      Voltar ao evento
+    </a>
+  </div>
+  {% else %}
+
+  <form method="post" action="/acervo/programacao/{{ evento.id }}/distribuir">
+    {% for item in sugestoes %}
+    {% set mid = item.musician.id %}
+    {% set acesso_prev = acessos_existentes.get(mid) %}
+    <div class="card shadow-sm mb-3" style="border-radius:12px; border:none;">
+      <div class="card-body" style="padding:18px 22px;">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <div style="font-weight:700; font-size:14px;">{{ item.musician.full_name }}</div>
+            <div style="font-size:12px; color:var(--text-secondary);">
+              {% if item.musician.email %}{{ item.musician.email }}{% else %}
+              <span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Sem e-mail</span>
+              {% endif %}
+              {% if item.obras %} · {{ item.obras|join(', ') }}{% endif %}
+            </div>
+          </div>
+          {% if acesso_prev and acesso_prev.enviado_em %}
+          <span class="badge" style="background:rgba(16,185,129,0.15); color:#059669; border-radius:6px; font-size:11px;">
+            <i class="bi bi-envelope-check"></i> Enviado {{ acesso_prev.enviado_em.strftime('%d/%m/%Y %H:%M') }}
+          </span>
+          {% elif acesso_prev %}
+          <span class="badge" style="background:rgba(107,132,255,0.15); color:#6b84ff; border-radius:6px; font-size:11px;">
+            Link gerado
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+          {% for doc in item.documentos %}
+          <label class="d-flex align-items-center gap-2" style="font-size:13px; cursor:pointer;">
+            <input type="checkbox" name="doc_{{ mid }}_{{ doc.id }}"
+                   {% if not acesso_prev or not acesso_prev.documento_ids or doc.id in acesso_prev.documento_ids %}checked{% endif %}
+                   style="width:16px; height:16px;" />
+            <span class="badge" style="background:rgba(107,132,255,0.12); color:#6b84ff; border-radius:6px; font-size:11px;">
+              {{ doc.tipo_label }}
+            </span>
+            <span>
+              {% if doc.instrumento_nome %}{{ doc.instrumento_nome }}
+              {% elif doc.stab_tipo %}{{ doc.stab_tipo|capitalize }}
+              {% else %}Documento #{{ doc.id }}{% endif %}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="card shadow-sm mb-4" style="border-radius:12px; border:none;">
+      <div class="card-body" style="padding:18px 22px;">
+        <label class="d-flex align-items-center gap-2" style="font-size:13px; cursor:pointer; margin:0 0 12px;">
+          <input type="checkbox" name="enviar_email" checked style="width:16px; height:16px;" />
+          Enviar e-mail com o link pessoal para cada músico (requer SMTP; sem SMTP o link vai para o log)
+        </label>
+        <label class="d-flex align-items-start gap-2" style="font-size:13px; cursor:pointer; margin:0;">
+          <input type="checkbox" name="enviar_whatsapp" checked style="width:16px; height:16px; margin-top:2px;" />
+          <span>
+            <strong><i class="bi bi-whatsapp text-success"></i> Enviar link no WhatsApp</strong>
+            para os telefones cadastrados em
+            <a href="/settings/whatsapp-pwa" target="_blank" rel="noopener">WhatsApp / PWA</a>
+            {% if wa_telefones_count %}
+            <span class="badge ms-1" style="background:rgba(37,211,102,.15); color:#128C7E;">
+              {{ wa_telefones_count }} telefone(s)
+            </span>
+            {% else %}
+            <span class="text-warning d-block mt-1" style="font-size:12px;">
+              <i class="bi bi-exclamation-triangle"></i>
+              Nenhum telefone cadastrado ainda — cadastre os chefes de naipe antes de confirmar.
+            </span>
+            {% endif %}
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary" style="border-radius:8px; font-weight:600; font-size:14px;">
+        <i class="bi bi-send"></i> Distribuir partituras
+      </button>
+      {% if wa_telefones_count %}
+      <a href="/acervo/programacao/{{ evento.id }}/whatsapp" class="btn btn-success" style="border-radius:8px; font-weight:600; font-size:14px;">
+        <i class="bi bi-whatsapp"></i> Só WhatsApp
+      </a>
+      {% endif %}
+      <a href="/acervo/programacao/{{ evento.id }}" class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;">
+        Cancelar
+      </a>
+    </div>
+  </form>
+  {% endif %}
+
+</div>
+{% endblock %}
