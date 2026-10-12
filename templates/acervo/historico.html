@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.get('acervo_historico', 'Histórico de Execuções') }}{% endblock %}
+{% block page_title %}{{ t.get('acervo_historico', 'Histórico de Execuções') }}{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:1100px; margin:0 auto;">
+
+  <div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="/acervo/obras" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-music-note-beamed"></i> {{ t.get('acervo_obras_list', 'Obras') }}
+    </a>
+    <a href="/acervo/programacao/calendario" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-calendar3"></i> {{ t.get('acervo_concertos', 'Concertos') }}
+    </a>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Top 10 Mais Tocadas -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100" style="border-radius:14px; border:none;">
+        <div class="card-body" style="padding:22px;">
+          <h6 style="font-weight:700; font-size:14px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <span style="width:28px; height:28px; background:rgba(16,185,129,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-trophy-fill" style="color:#059669; font-size:13px;"></i>
+            </span>
+            {{ t.get('acervo_top10_mais', 'Top 10 Mais Tocadas') }}
+          </h6>
+          {% if top_mais %}
+          <ol style="padding-left:18px; margin:0;">
+            {% for row in top_mais %}
+            <li style="padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:13px;">
+              <div style="font-weight:600; line-height:1.3;">{{ row.titulo }}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+                <i class="bi bi-play-circle me-1"></i>{{ row.total }} execução{% if row.total != 1 %}ões{% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p style="font-size:13px; color:var(--text-secondary); text-align:center; padding:20px 0;">
+            Nenhuma execução registrada ainda.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 10 Menos Tocadas -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100" style="border-radius:14px; border:none;">
+        <div class="card-body" style="padding:22px;">
+          <h6 style="font-weight:700; font-size:14px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <span style="width:28px; height:28px; background:rgba(245,158,11,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-arrow-down-circle-fill" style="color:#b45309; font-size:13px;"></i>
+            </span>
+            {{ t.get('acervo_top10_menos', 'Top 10 Menos Tocadas') }}
+          </h6>
+          {% if top_menos %}
+          <ol style="padding-left:18px; margin:0;">
+            {% for row in top_menos %}
+            <li style="padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:13px;">
+              <div style="font-weight:600; line-height:1.3;">{{ row.titulo }}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+                <i class="bi bi-play-circle me-1"></i>{{ row.total }} execução{% if row.total != 1 %}ões{% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p style="font-size:13px; color:var(--text-secondary); text-align:center; padding:20px 0;">
+            Nenhuma obra no acervo ainda.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 10 Mais Repetidas (arranjo) -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100" style="border-radius:14px; border:none;">
+        <div class="card-body" style="padding:22px;">
+          <h6 style="font-weight:700; font-size:14px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <span style="width:28px; height:28px; background:rgba(107,132,255,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-repeat" style="color:#6b84ff; font-size:13px;"></i>
+            </span>
+            {{ t.get('acervo_top10_repetidas', 'Top 10 Mais Repetidas') }}
+          </h6>
+          {% if top_repetidas %}
+          <ol style="padding-left:18px; margin:0;">
+            {% for row in top_repetidas %}
+            <li style="padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.05); font-size:13px;">
+              <div style="font-weight:600; line-height:1.3;">{{ row.titulo }}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+                {{ row.arranjo }}
+                · <i class="bi bi-play-circle me-1"></i>{{ row.total }}×
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p style="font-size:13px; color:var(--text-secondary); text-align:center; padding:20px 0;">
+            Nenhuma execução registrada ainda.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

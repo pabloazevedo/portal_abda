@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}{% if patrimonio %}{{ t.patrimonio_edit }}{% else %}{{ t.patrimonio_add }}{% endif %}{% endblock %}
+{% block page_title %}{% if patrimonio %}{{ t.patrimonio_edit }}{% else %}{{ t.patrimonio_add }}{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% if patrimonio %}/patrimonio/{{ patrimonio.id }}{% else %}/patrimonio/{% endif %}" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+
+  <form method="post" data-guard
+        action="{% if patrimonio %}/patrimonio/{{ patrimonio.id }}/edit{% else %}/patrimonio/new{% endif %}">
+
+    <!-- ══════════════════════════════════════════════════════
+         1. INFORMAÇÕES BÁSICAS
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-section-title"><i class="bi bi-box-seam-fill"></i> &nbsp;Informações Básicas</div>
+
+    <div class="row g-3">
+
+      <!-- Tipo de item -->
+      <div class="col-md-4">
+        <label class="form-label" for="tipo_item">{{ t.patrimonio_tipo }} <span class="required">*</span></label>
+        <select id="tipo_item" name="tipo_item"
+                class="form-select {% if errors.tipo_item %}is-invalid{% endif %}"
+                onchange="onTipoChange(this.value)"
+                {% if patrimonio %}disabled{% endif %}>
+          <option value="">Selecione o tipo...</option>
+          {% for tipo in tipos %}
+          <option value="{{ tipo.value }}"
+                  {% if form_data.get('tipo_item') == tipo.value %}selected{% endif %}>
+            {{ tipo_label.get(tipo, tipo.value) }}
+          </option>
+          {% endfor %}
+        </select>
+        {% if patrimonio %}
+          <input type="hidden" name="tipo_item" value="{{ patrimonio.tipo_item.value }}" />
+          <div class="form-text"><i class="bi bi-lock-fill"></i> Tipo não pode ser alterado após criação</div>
+        {% endif %}
+        {% if errors.tipo_item %}<div class="invalid-feedback">{{ errors.tipo_item }}</div>{% endif %}
+      </div>
+
+      <!-- Status (somente em edição) -->
+      {% if patrimonio %}
+      <div class="col-md-4">
+        <label class="form-label" for="status">{{ t.patrimonio_status }} <span class="required">*</span></label>
+        <select id="status" name="status"
+                class="form-select {% if errors.status %}is-invalid{% endif %}">
+          {% for s in statuses %}
+          <option value="{{ s.value }}"
+                  {% if form_data.get('status', patrimonio.status.value) == s.value %}selected{% endif %}>
+            {{ status_label.get(s, s.value) }}
+          </option>
+          {% endfor %}
+        </select>
+        {% if errors.status %}<div class="invalid-feedback">{{ errors.status }}</div>{% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Identificador Interno (somente leitura em edição) -->
+      {% if patrimonio %}
+      <div class="col-md-4">
+        <label class="form-label">{{ t.patrimonio_id_interno }}</label>
+        <input type="text" class="form-control" value="{{ patrimonio.identificador_interno }}" disabled />
+        <div class="form-text"><i class="bi bi-qr-code"></i> Gerado automaticamente</div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- ── Fabricante / Modelo / Ano / Valor ──────────────── -->
+    <div class="row g-3 mt-1">
+      <div class="col-md-4">
+        <label class="form-label" for="fabricante">{{ t.patrimonio_fabricante }}</label>
+        <input type="text" id="fabricante" name="fabricante" class="form-control"
+               value="{{ form_data.get('fabricante', '') }}" maxlength="200" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="modelo">{{ t.patrimonio_modelo }}</label>
+        <input type="text" id="modelo" name="modelo" class="form-control"
+               value="{{ form_data.get('modelo', '') }}" maxlength="200" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="ano_compra">{{ t.patrimonio_ano_compra }}</label>
+        <input type="number" id="ano_compra" name="ano_compra" class="form-control"
+               value="{{ form_data.get('ano_compra', '') }}" min="1900" max="2100" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="valor_mercado">Valor (R$)</label>
+        <input type="text" id="valor_mercado" name="valor_mercado" class="form-control"
+               value="{{ form_data.get('valor_mercado', '') }}" placeholder="0,00" />
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-12">
+        <label class="form-label" for="observacoes">{{ t.patrimonio_observacoes }}</label>
+        <textarea id="observacoes" name="observacoes" class="form-control" rows="2">{{ form_data.get('observacoes', '') }}</textarea>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         2. CAMPOS ESPECÍFICOS POR TIPO
+    ══════════════════════════════════════════════════════ -->
+
+    <!-- ── Instrumento ─────────────────────────────────────── -->
+    <div id="section-instrumento" class="tipo-section" style="display:none;">
+      <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-music-note-beamed"></i> &nbsp;Dados do Instrumento</div>
+      <div class="row g-3">
+        <div class="col-md-5">
+          <label class="form-label">Instrumento <span class="required">*</span></label>
+          <select name="instrumento_base_id" class="form-select {% if errors.instrumento_base_id %}is-invalid{% endif %}">
+            <option value="">Selecione o instrumento...</option>
+            {% for cat, insts in inst_por_categoria.items() %}
+            <optgroup label="{{ cat }}">
+              {% for inst in insts %}
+              <option value="{{ inst.id }}"
+                      {% if form_data.get('instrumento_base_id')|int == inst.id %}selected{% endif %}>
+                {{ inst.nome }}
+              </option>
+              {% endfor %}
+            </optgroup>
+            {% endfor %}
+          </select>
+          {% if errors.instrumento_base_id %}<div class="invalid-feedback">{{ errors.instrumento_base_id }}</div>{% endif %}
+          <div class="form-text"><i class="bi bi-link"></i> Mesma lista usada no cadastro de membros</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ t.inst_ano_fabricacao }}</label>
+          <input type="number" name="ano_fabricacao" class="form-control"
+                 value="{{ form_data.get('ano_fabricacao', '') }}" min="1700" max="2100" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">{{ t.inst_avaliacao_condicao }}</label>
+          <select name="avaliacao_condicao" class="form-select">
+            <option value="">Selecione...</option>
+            <option value="Otimo"   {% if form_data.get('avaliacao_condicao') == 'Otimo'   %}selected{% endif %}>{{ t.inst_cond_otimo }}</option>
+            <option value="Bom"     {% if form_data.get('avaliacao_condicao') == 'Bom'     %}selected{% endif %}>{{ t.inst_cond_bom }}</option>
+            <option value="Regular" {% if form_data.get('avaliacao_condicao') == 'Regular' %}selected{% endif %}>{{ t.inst_cond_regular }}</option>
+            <option value="Ruim"    {% if form_data.get('avaliacao_condicao') == 'Ruim'    %}selected{% endif %}>{{ t.inst_cond_ruim }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Partitura ────────────────────────────────────────── -->
+    <div id="section-partitura" class="tipo-section" style="display:none;">
+      <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-file-music-fill"></i> &nbsp;Dados da Partitura</div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="nome_obra">{{ t.part_nome_obra }} <span class="required">*</span></label>
+          <input type="text" id="nome_obra" name="nome_obra" class="form-control {% if errors.nome_obra %}is-invalid{% endif %}"
+                 value="{{ form_data.get('nome_obra', '') }}" maxlength="300" />
+          {% if errors.nome_obra %}<div class="invalid-feedback">{{ errors.nome_obra }}</div>{% endif %}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ t.part_compositor }}</label>
+          <input type="text" name="compositor" class="form-control"
+                 value="{{ form_data.get('compositor', '') }}" maxlength="200" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ t.part_arranjador }}</label>
+          <input type="text" name="arranjador" class="form-control"
+                 value="{{ form_data.get('arranjador', '') }}" maxlength="200" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Decoração / Outros ───────────────────────────────── -->
+    <div id="section-decoracao" class="tipo-section" style="display:none;">
+      <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-image-fill"></i> &nbsp;Descrição / Local</div>
+      <div class="row g-3">
+        <div class="col-md-7">
+          <label class="form-label">{{ t.dec_descricao }}</label>
+          <textarea name="descricao_livre" class="form-control" rows="2">{{ form_data.get('descricao_livre', '') }}</textarea>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">{{ t.dec_local }}</label>
+          <input type="text" name="local_armazenamento" class="form-control"
+                 value="{{ form_data.get('local_armazenamento', '') }}" maxlength="200" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         3. SUBMIT
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-actions-bar">
+      <button type="submit" class="btn-primary-custom" style="padding:11px 28px; font-size:15px;">
+        <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+      </button>
+      <a href="{% if patrimonio %}/patrimonio/{{ patrimonio.id }}{% else %}/patrimonio/{% endif %}"
+         data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; padding:10px 20px; font-size:14px;">
+        {{ t.btn_cancel }}
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const TIPO_SECTIONS = {
+    'Instrumento': 'section-instrumento',
+    'Partitura':   'section-partitura',
+    'Decoracao':   'section-decoracao',
+    'Outros':      'section-decoracao',
+  };
+
+  function onTipoChange(val) {
+    Object.values(TIPO_SECTIONS).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    if (TIPO_SECTIONS[val]) {
+      const el = document.getElementById(TIPO_SECTIONS[val]);
+      if (el) el.style.display = 'block';
+    }
+  }
+
+  // Inicializa a seção correta ao carregar (edição ou após erro de validação)
+  (function () {
+    const sel = document.getElementById('tipo_item');
+    if (sel) onTipoChange(sel.value);
+
+    // Se tipo está desabilitado (edição), lemos o hidden input
+    const hidden = document.querySelector('input[name="tipo_item"][type="hidden"]');
+    if (hidden) onTipoChange(hidden.value);
+  })();
+</script>
+{% endblock %}

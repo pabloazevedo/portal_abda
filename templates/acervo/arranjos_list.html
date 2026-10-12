@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.get('nav_arranjos', 'Arranjos') }}{% endblock %}
+{% block page_title %}{{ t.get('nav_arranjos', 'Arranjos') }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_acervo %}
+<a href="/acervo/arranjos/new" class="btn-primary-custom" style="padding:8px 16px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+  <i class="bi bi-plus-lg"></i> {{ t.get('acervo_arranjos_add', 'Novo Arranjo') }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+  {% if erro %}
+  <div class="alert alert-warning mb-4" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ erro }}
+  </div>
+  {% endif %}
+
+  <!-- Filtros -->
+  <div class="filter-bar mb-3">
+    <form method="get" action="/acervo/arranjos">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <input type="text" name="q" value="{{ q }}" class="form-control"
+                 placeholder="Buscar por instrumentação..."
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+        <div class="col-md-3">
+          <select name="obra_id" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Todas as obras —</option>
+            {% for o in obras %}
+            <option value="{{ o.id }}" {% if filtro_obra_id == o.id|string %}selected{% endif %}>
+              {{ o.titulo }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select name="copyright_filter" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Todos os direitos —</option>
+            {% for c in copyright_list %}
+            <option value="{{ c.value }}" {% if filtro_copyright == c.value %}selected{% endif %}>
+              {{ copyright_labels.get(c, c.value) }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+          <button type="submit" class="btn btn-primary w-100" style="border-radius:8px; font-size:13px;">
+            <i class="bi bi-search"></i> Filtrar
+          </button>
+          <a href="/acervo/arranjos" class="btn btn-outline-secondary" style="border-radius:8px; font-size:13px;">
+            <i class="bi bi-x-lg"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- View Toggle + Atalhos -->
+  <div class="d-flex gap-2 flex-wrap mb-4 align-items-center">
+    <div class="btn-group btn-group-sm" role="group" style="border-radius:8px;">
+      <button type="button" id="view-table-btn" class="btn btn-outline-secondary" style="border-radius:8px 0 0 8px; font-size:12px;" title="Visualização em tabela">
+        <i class="bi bi-table"></i>
+      </button>
+      <button type="button" id="view-cards-btn" class="btn btn-outline-secondary" style="border-radius:0 8px 8px 0; font-size:12px;" title="Visualização em cards">
+        <i class="bi bi-grid-3x2-gap"></i>
+      </button>
+    </div>
+
+    <a href="/acervo/obras" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-music-note-beamed"></i> Obras
+    </a>
+    <a href="/acervo/busca" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-search"></i> Busca Avançada
+    </a>
+  </div>
+
+  {% if arranjos %}
+
+  <!-- TABLE VIEW -->
+  <div id="table-view" class="card shadow-sm" style="border-radius:12px; border:none;">
+    <div class="table-responsive">
+      <table class="table" style="margin:0; font-size:13px;">
+        <thead style="background:rgba(107,132,255,0.06);">
+          <tr>
+            <th style="padding:12px 16px; font-weight:600;">Título / Arranjador</th>
+            <th style="padding:12px 16px; font-weight:600;">Obra Vinculada</th>
+            <th style="padding:12px 16px; font-weight:600;">Instrumentação</th>
+            <th style="padding:12px 16px; font-weight:600;">Duração</th>
+            <th style="padding:12px 16px; font-weight:600;">Direitos</th>
+            <th style="padding:12px 16px; font-weight:600; width:110px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in arranjos %}
+          <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
+            <td style="padding:12px 16px;">
+              <div style="font-weight:600;">{{ a.titulo_arranjo or 'Arranjo principal' }}</div>
+              {% if a.arranjador_label != '—' %}
+              <div style="font-size:11px; color:var(--text-secondary);">
+                <i class="bi bi-person-gear me-1"></i>{{ a.arranjador_label }}
+              </div>
+              {% endif %}
+            </td>
+            <td style="padding:12px 16px;">
+              {% if a.obra %}
+              <a href="/acervo/obras/{{ a.obra.id }}" style="color:#6b84ff; text-decoration:none; font-size:12px;">
+                {{ a.obra.titulo }}
+              </a>
+              {% else %}
+              <span style="font-size:12px; color:var(--text-secondary); font-style:italic;">Sem obra vinculada</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 16px; color:var(--text-secondary); font-size:12px; max-width:200px;">
+              {{ a.instrumentacao[:60] }}{% if a.instrumentacao|length > 60 %}…{% endif %}
+            </td>
+            <td style="padding:12px 16px; color:var(--text-secondary); font-size:12px; white-space:nowrap;">
+              {{ a.duracao_label }}
+            </td>
+            <td style="padding:12px 16px;">
+              {% if a.copyright_status.value == 'dominio_publico' %}
+              <span class="badge" style="background:rgba(16,185,129,0.15); color:#059669; border-radius:6px; font-size:10px;">
+                <i class="bi bi-unlock"></i> {{ copyright_labels.get(a.copyright_status) }}
+              </span>
+              {% elif a.copyright_status.value == 'licenciado' %}
+              <span class="badge" style="background:rgba(245,158,11,0.15); color:#b45309; border-radius:6px; font-size:10px;">
+                <i class="bi bi-shield-check"></i> {{ copyright_labels.get(a.copyright_status) }}
+              </span>
+              {% else %}
+              <span class="badge" style="background:rgba(231,76,94,0.12); color:#e74c5e; border-radius:6px; font-size:10px;">
+                <i class="bi bi-question-circle"></i> {{ copyright_labels.get(a.copyright_status) }}
+              </span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 16px;">
+              <div class="d-flex gap-1">
+                {% if a.arquivo_partitura %}
+                <a href="/uploads/{{ a.arquivo_partitura }}" target="_blank"
+                   class="btn btn-sm btn-outline-success" style="border-radius:6px; font-size:11px; padding:2px 7px;">
+                  <i class="bi bi-file-earmark-music"></i>
+                </a>
+                {% endif %}
+                {% if can_manage_acervo %}
+                <a href="/acervo/arranjos/{{ a.id }}/edit"
+                   class="btn btn-sm btn-outline-primary" style="border-radius:6px; font-size:11px; padding:2px 7px;">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form id="delete-arranjo-list-{{ a.id }}" method="post" action="/acervo/arranjos/{{ a.id }}/delete" style="display:inline;">
+                  <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius:6px; font-size:11px; padding:2px 7px;"
+                          title="{{ t.btn_delete }}"
+                          onclick="confirmAction('{{ t.confirm_delete }}', 'delete-arranjo-list-{{ a.id }}', 'danger')">
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CARD VIEW -->
+  <div id="card-view" style="display:none;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+      {% for a in arranjos %}
+      <div class="card shadow-sm" style="border-radius:12px; border:none; display:flex; flex-direction:column;">
+        <div class="card-body" style="padding:16px; flex:1;">
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">
+            <div style="flex:1;">
+              <h5 style="font-size:14px; font-weight:700; margin:0; margin-bottom:4px;">
+                {{ a.titulo_arranjo or 'Arranjo principal' }}
+              </h5>
+              {% if a.arranjador_label != '—' %}
+              <p style="font-size:11px; color:var(--text-secondary); margin:0; margin-bottom:8px;">
+                <i class="bi bi-person-gear me-1"></i>{{ a.arranjador_label }}
+              </p>
+              {% endif %}
+            </div>
+            <!-- Copyright Badge -->
+            {% if a.copyright_status.value == 'dominio_publico' %}
+            <span class="badge" style="background:rgba(16,185,129,0.15); color:#059669; border-radius:6px; font-size:9px; white-space:nowrap;">
+              <i class="bi bi-unlock"></i>
+            </span>
+            {% elif a.copyright_status.value == 'licenciado' %}
+            <span class="badge" style="background:rgba(245,158,11,0.15); color:#b45309; border-radius:6px; font-size:9px; white-space:nowrap;">
+              <i class="bi bi-shield-check"></i>
+            </span>
+            {% else %}
+            <span class="badge" style="background:rgba(231,76,94,0.12); color:#e74c5e; border-radius:6px; font-size:9px; white-space:nowrap;">
+              <i class="bi bi-question-circle"></i>
+            </span>
+            {% endif %}
+          </div>
+
+          <!-- Obra -->
+          <p style="font-size:12px; margin:0; margin-bottom:8px;">
+            {% if a.obra %}
+            <span style="color:var(--text-secondary);">Obra:</span>
+            <a href="/acervo/obras/{{ a.obra.id }}" style="color:#6b84ff; text-decoration:none;">
+              {{ a.obra.titulo }}
+            </a>
+            {% else %}
+            <span style="color:var(--text-secondary); font-style:italic;">Sem obra vinculada</span>
+            {% endif %}
+          </p>
+
+          <!-- Instrumentação -->
+          <p style="font-size:11px; color:var(--text-secondary); margin:0; margin-bottom:8px; line-height:1.4;">
+            {{ a.instrumentacao[:100] }}{% if a.instrumentacao|length > 100 %}…{% endif %}
+          </p>
+
+          <!-- Duração -->
+          <p style="font-size:11px; color:var(--text-secondary); margin:0;">
+            <i class="bi bi-clock me-1"></i>{{ a.duracao_label }}
+          </p>
+        </div>
+
+        <!-- Footer com Ações -->
+        <div style="padding:12px 16px; border-top:1px solid rgba(0,0,0,0.05); display:flex; gap:6px;">
+          {% if a.arquivo_partitura %}
+          <a href="/uploads/{{ a.arquivo_partitura }}" target="_blank"
+             class="btn btn-sm btn-outline-success" style="border-radius:6px; font-size:11px; padding:4px 8px; flex:1; text-align:center;">
+            <i class="bi bi-file-earmark-music"></i>
+          </a>
+          {% endif %}
+          {% if can_manage_acervo %}
+          <a href="/acervo/arranjos/{{ a.id }}/edit"
+             class="btn btn-sm btn-outline-primary" style="border-radius:6px; font-size:11px; padding:4px 8px; flex:1; text-align:center;">
+            <i class="bi bi-pencil"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="font-size:12px; color:var(--text-secondary); margin-top:10px; padding-left:4px;">
+    {{ arranjos | length }} arranjo(s) encontrado(s)
+  </div>
+
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-layers" style="font-size:48px; color:var(--text-secondary); opacity:0.4;"></i>
+    <p style="color:var(--text-secondary); margin-top:12px;">Nenhum arranjo encontrado.</p>
+    {% if can_manage_acervo %}
+    <a href="/acervo/arranjos/new" class="btn-primary-custom mt-2" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+      <i class="bi bi-plus-lg"></i> {{ t.get('acervo_arranjos_add', 'Novo Arranjo') }}
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// View toggle for arranjos list (Card vs Table)
+const STORAGE_KEY = 'arranjos_view_preference';
+const tableView = document.getElementById('table-view');
+const cardView = document.getElementById('card-view');
+const tableBtn = document.getElementById('view-table-btn');
+const cardsBtn = document.getElementById('view-cards-btn');
+
+function setView(view) {
+  localStorage.setItem(STORAGE_KEY, view);
+  if (view === 'table') {
+    tableView.style.display = 'block';
+    cardView.style.display = 'none';
+    tableBtn.classList.add('active');
+    tableBtn.style.backgroundColor = 'var(--primary-color)';
+    tableBtn.style.color = 'white';
+    tableBtn.style.borderColor = 'var(--primary-color)';
+    cardsBtn.classList.remove('active');
+    cardsBtn.style.backgroundColor = 'transparent';
+    cardsBtn.style.color = 'var(--text-secondary)';
+    cardsBtn.style.borderColor = 'var(--border-color)';
+  } else {
+    tableView.style.display = 'none';
+    cardView.style.display = 'block';
+    cardsBtn.classList.add('active');
+    cardsBtn.style.backgroundColor = 'var(--primary-color)';
+    cardsBtn.style.color = 'white';
+    cardsBtn.style.borderColor = 'var(--primary-color)';
+    tableBtn.classList.remove('active');
+    tableBtn.style.backgroundColor = 'transparent';
+    tableBtn.style.color = 'var(--text-secondary)';
+    tableBtn.style.borderColor = 'var(--border-color)';
+  }
+}
+
+// Load preference from localStorage
+const savedView = localStorage.getItem(STORAGE_KEY) || 'table';
+setView(savedView);
+
+// Event listeners
+tableBtn.addEventListener('click', () => setView('table'));
+cardsBtn.addEventListener('click', () => setView('cards'));
+</script>
+{% endblock %}

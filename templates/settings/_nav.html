@@ -1,0 +1,49 @@
+{% set section = settings_section or 'geral' %}
+<nav class="settings-nav" aria-label="{{ t.get('nav_settings', 'Configurações') }}">
+  <a href="/settings/?section=geral" class="settings-nav-item {% if section == 'geral' %}active{% endif %}">
+    <i class="bi bi-sliders" aria-hidden="true"></i>
+    <span>{{ t.get('settings_nav_geral', 'Geral') }}</span>
+  </a>
+  <a href="/settings/?section=aparencia" class="settings-nav-item {% if section == 'aparencia' %}active{% endif %}">
+    <i class="bi bi-palette" aria-hidden="true"></i>
+    <span>{{ t.get('settings_nav_aparencia', 'Aparência') }}</span>
+  </a>
+  <a href="/settings/?section=email" class="settings-nav-item {% if section == 'email' %}active{% endif %}">
+    <i class="bi bi-envelope-at" aria-hidden="true"></i>
+    <span>{{ t.get('settings_nav_email', 'E-mail') }}</span>
+  </a>
+  <a href="/settings/?section=dados" class="settings-nav-item {% if section == 'dados' %}active{% endif %}">
+    <i class="bi bi-download" aria-hidden="true"></i>
+    <span>{{ t.get('settings_nav_dados', 'Dados') }}</span>
+  </a>
+  <a href="/settings/?section=sistema" class="settings-nav-item {% if section == 'sistema' and not request.url.path.startswith('/settings/whatsapp') %}active{% endif %}">
+    <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+    <span>{{ t.get('settings_nav_sistema', 'Sistema') }}</span>
+  </a>
+  <a href="/settings/whatsapp-pwa" class="settings-nav-item {% if request.url.path.startswith('/settings/whatsapp') %}active{% endif %}">
+    <i class="bi bi-whatsapp" aria-hidden="true"></i>
+    <span>{{ t.get('wa_pwa_nav', 'WhatsApp / PWA') }}</span>
+  </a>
+  <a href="/settings/versoes" class="settings-nav-item {% if request.url.path.startswith('/settings/versoes') %}active{% endif %}">
+    <i class="bi bi-tags" aria-hidden="true"></i>
+    <span>{{ t.get('settings_nav_versoes', 'Versões') }}</span>
+  </a>
+  <a href="/settings/auditoria" class="settings-nav-item {% if request.url.path.startswith('/settings/auditoria') %}active{% endif %}">
+    <i class="bi bi-journal-text" aria-hidden="true"></i>
+    <span>{{ t.get('settings_audit_view', 'Ver auditoria') }}</span>
+  </a>
+</nav>
+
+<label class="settings-nav-mobile" for="settings-section-select">
+  <span class="visually-hidden">{{ t.get('settings_section_label', 'Seção') }}</span>
+  <select id="settings-section-select" class="form-select" onchange="location.href=this.value.startsWith('/') ? this.value : '/settings/?section='+this.value">
+    <option value="geral" {% if section == 'geral' and not request.url.path.startswith('/settings/versoes') and not request.url.path.startswith('/settings/auditoria') %}selected{% endif %}>{{ t.get('settings_nav_geral', 'Geral') }}</option>
+    <option value="aparencia" {% if section == 'aparencia' %}selected{% endif %}>{{ t.get('settings_nav_aparencia', 'Aparência') }}</option>
+    <option value="email" {% if section == 'email' %}selected{% endif %}>{{ t.get('settings_nav_email', 'E-mail') }}</option>
+    <option value="dados" {% if section == 'dados' %}selected{% endif %}>{{ t.get('settings_nav_dados', 'Dados') }}</option>
+    <option value="sistema" {% if section == 'sistema' and not request.url.path.startswith('/settings/whatsapp') and not request.url.path.startswith('/settings/versoes') and not request.url.path.startswith('/settings/auditoria') %}selected{% endif %}>{{ t.get('settings_nav_sistema', 'Sistema') }}</option>
+    <option value="/settings/whatsapp-pwa" {% if request.url.path.startswith('/settings/whatsapp') %}selected{% endif %}>{{ t.get('wa_pwa_nav', 'WhatsApp / PWA') }}</option>
+    <option value="/settings/versoes" {% if request.url.path.startswith('/settings/versoes') %}selected{% endif %}>{{ t.get('settings_nav_versoes', 'Versões') }}</option>
+    <option value="/settings/auditoria" {% if request.url.path.startswith('/settings/auditoria') %}selected{% endif %}>{{ t.get('settings_audit_view', 'Ver auditoria') }}</option>
+  </select>
+</label>

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% set is_edit = evento is not none %}
+{% block title %}{% if is_edit %}Editar Evento{% else %}Novo Evento{% endif %}{% endblock %}
+{% block page_title %}{{ t.get('nav_programacao', 'Programação') }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/acervo/programacao" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% endblock %}
+
+{% block content %}
+
+  {% if error %}
+  <div class="alert alert-danger" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+  </div>
+  {% endif %}
+
+  <div class="form-card">
+      <form method="post" data-guard
+            action="{% if is_edit %}/acervo/programacao/{{ evento.id }}/edit{% else %}/acervo/programacao/new{% endif %}">
+
+        <!-- Título -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            Título do Evento <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="titulo" class="form-control" required
+                 value="{{ evento.titulo if is_edit else '' }}"
+                 placeholder="Ex: Concerto de Natal 2026"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              Data / Hora de Início <span class="text-danger">*</span>
+            </label>
+            <input type="datetime-local" name="data_inicio" class="form-control" required
+                   value="{% if is_edit and evento.data_inicio %}{{ evento.data_inicio.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                   style="border-radius:8px; font-size:13px;" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              Data / Hora de Término
+            </label>
+            <input type="datetime-local" name="data_fim" class="form-control"
+                   value="{% if is_edit and evento.data_fim %}{{ evento.data_fim.strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                   style="border-radius:8px; font-size:13px;" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">Local</label>
+          <input type="text" name="local" class="form-control"
+                 value="{{ evento.local if is_edit and evento.local else '' }}"
+                 placeholder="Ex: Teatro Municipal de São Paulo"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">Maestro(a)</label>
+          <select name="maestro_id" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Selecione —</option>
+            {% for m in maestros %}
+            <option value="{{ m.id }}" {% if is_edit and evento.maestro_id == m.id %}selected{% endif %}>
+              {{ m.full_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">Descrição</label>
+          <textarea name="descricao" class="form-control" rows="3"
+                    style="border-radius:8px; font-size:13px; resize:vertical;">{{ evento.descricao if is_edit and evento.descricao else '' }}</textarea>
+        </div>
+
+        <div class="mb-4">
+          <div class="form-check" style="font-size:13px;">
+            <input class="form-check-input" type="checkbox" name="publico" id="chk_publico"
+                   {% if not is_edit or evento.publico %}checked{% endif %} />
+            <label class="form-check-label" for="chk_publico">
+              Visível no calendário público (.ics / Google / Apple / Outlook)
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="submit" class="btn-primary-custom" style="padding:11px 28px; font-size:15px;">
+            <i class="bi bi-check-lg"></i> {{ t.btn_save }}
+          </button>
+          <a href="{% if is_edit %}/acervo/programacao/{{ evento.id }}{% else %}/acervo/programacao/calendario{% endif %}"
+             data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; padding:10px 20px; font-size:14px;">
+            {{ t.btn_cancel }}
+          </a>
+          {% if is_edit %}
+          <form method="post" action="/acervo/programacao/{{ evento.id }}/delete"
+                onsubmit="return confirm('{{ t.confirm_delete }}')" style="margin-left:auto;">
+            <button type="submit" class="btn btn-outline-danger" style="border-radius:8px; font-size:14px;">
+              <i class="bi bi-trash"></i> {{ t.btn_delete }}
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </form>
+  </div>
+{% endblock %}

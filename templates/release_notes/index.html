@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ t.get('release_notes_title', 'Histórico de versões') }}{% endblock %}
+{% block page_title %}{{ t.get('release_notes_title', 'Histórico de versões') }}{% endblock %}
+
+{% block content %}
+<div class="release-page">
+  <header class="release-header">
+    <p class="release-kicker">{{ t.app_subtitle }}</p>
+    <h2 class="release-title">{{ t.get('release_notes_title', 'Histórico de versões') }}</h2>
+    <p class="release-lead">
+      {{ t.get('release_notes_lead', 'Evolução do portal — o que mudou em cada versão.') }}
+    </p>
+    {% if current_release or code_version %}
+    <p class="release-current-badge">
+      <i class="bi bi-tag-fill" aria-hidden="true"></i>
+      {{ t.get('release_notes_current', 'Versão atual') }}:
+      <strong>v{{ code_version or current_release.version }}</strong>
+    </p>
+    {% endif %}
+  </header>
+
+  {% if release_notes %}
+  <ol class="release-timeline" aria-label="{{ t.get('release_notes_title', 'Histórico de versões') }}">
+    {% for note in release_notes %}
+    <li class="release-item {% if note.version == code_version or note.is_current %}is-current{% endif %}" id="v{{ note.version }}">
+      <div class="release-item__meta">
+        <span class="release-item__version">v{{ note.version }}</span>
+        {% if note.version == code_version %}
+        <span class="release-item__pill">{{ t.get('release_notes_current_short', 'Atual') }}</span>
+        {% endif %}
+        <time class="release-item__date" datetime="{{ note.released_at.isoformat() }}">
+          {{ note.released_at.strftime('%d/%m/%Y') }}
+        </time>
+      </div>
+      {% if note.title %}
+      <h3 class="release-item__title">{{ note.title }}</h3>
+      {% endif %}
+      {% if note.notes %}
+      <div class="release-item__notes">{{ note.notes }}</div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="release-empty">{{ t.get('release_notes_empty', 'Nenhuma versão registrada ainda.') }}</p>
+  {% endif %}
+</div>
+{% endblock %}

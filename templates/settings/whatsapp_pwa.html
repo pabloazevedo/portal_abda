@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}{{ t.get('wa_pwa_title', 'WhatsApp — Site mobile') }}{% endblock %}
+{% block page_title %}{{ t.get('wa_pwa_title', 'WhatsApp — Site mobile') }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/settings/?section=sistema" class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;">
+  <i class="bi bi-arrow-left"></i> {{ t.get('nav_settings', 'Configurações') }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:960px; margin:0 auto;">
+
+  <p class="page-subheading mb-3">
+    {{ t.get('wa_pwa_help', 'Envie o link do site mobile (/m) para os grupos de naipes da orquestra e do coral pelo WhatsApp.') }}
+  </p>
+
+  {% if not pwa_enabled %}
+  <div class="alert alert-warning" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ t.get('wa_pwa_disabled_warn', 'O site mobile está desligado. Ligue em Configurações → Sistema antes de enviar o link aos músicos.') }}
+    <a href="/settings/?section=sistema" class="alert-link ms-1">{{ t.get('settings_nav_sistema', 'Sistema') }}</a>
+  </div>
+  {% endif %}
+
+  <div class="form-card mb-4" style="padding:18px 20px;">
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+      <div>
+        <div style="font-size:12px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">
+          {{ t.get('wa_pwa_link_label', 'Link do site mobile') }}
+        </div>
+        <code id="pwa-url-text" style="font-size:14px; word-break:break-all;">{{ pwa_url }}</code>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-outline-primary" style="border-radius:8px;" onclick="copyText('{{ pwa_url }}', this)">
+          <i class="bi bi-clipboard"></i> {{ t.get('wa_pwa_copy_link', 'Copiar link') }}
+        </button>
+        <a href="{{ pwa_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">
+          <i class="bi bi-box-arrow-up-right"></i> {{ t.get('settings_pwa_open', 'Abrir site mobile') }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" action="/settings/whatsapp-pwa/save">
+
+    {% macro grupo_card(g) %}
+    <div class="form-card mb-3" style="padding:16px 18px;">
+      <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+        <div>
+          <strong style="font-size:14px;">{{ g.nome }}</strong>
+          <span class="badge ms-2" style="font-size:10px; background:{% if g.tipo == 'coral' %}rgba(16,185,129,.15); color:#059669{% else %}rgba(107,132,255,.15); color:#4f6bef{% endif %};">
+            {{ g.tipo }}
+          </span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ g.wa_send_url }}" target="_blank" rel="noopener"
+             class="btn btn-sm btn-success" style="border-radius:8px; font-size:12px;"
+             title="{{ t.get('wa_pwa_send_hint', 'Abre o WhatsApp com a mensagem pronta — escolha o grupo') }}">
+            <i class="bi bi-whatsapp"></i> {{ t.get('wa_pwa_send', 'Enviar no WhatsApp') }}
+          </a>
+          {% if g.tem_grupo %}
+          <a href="{{ g.whatsapp_url }}" target="_blank" rel="noopener"
+             class="btn btn-sm btn-outline-success" style="border-radius:8px; font-size:12px;">
+            <i class="bi bi-people"></i> {{ t.get('wa_pwa_open_group', 'Abrir grupo') }}
+          </a>
+          {% endif %}
+          <button type="button" class="btn btn-sm btn-outline-secondary" style="border-radius:8px; font-size:12px;"
+                  onclick="copyText(document.getElementById('msg-{{ g.id }}').value, this)">
+            <i class="bi bi-clipboard"></i> {{ t.get('wa_pwa_copy_msg', 'Copiar msg') }}
+          </button>
+        </div>
+      </div>
+
+      <textarea id="msg-{{ g.id }}" class="form-control mb-3" rows="5" readonly
+                style="border-radius:8px; font-size:12px; background:rgba(0,0,0,.03); resize:vertical;">{{ g.mensagem }}</textarea>
+
+      <div class="row g-2">
+        <div class="col-md-8">
+          <label class="form-label" style="font-size:12px;">
+            {{ t.get('wa_pwa_group_url', 'Link do grupo WhatsApp (opcional)') }}
+          </label>
+          <input type="url" name="whatsapp_url_{{ g.id }}" value="{{ g.whatsapp_url }}"
+                 class="form-control" style="border-radius:8px; font-size:13px;"
+                 placeholder="https://chat.whatsapp.com/..." />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" style="font-size:12px;">
+            {{ t.get('wa_pwa_phone', 'Telefone do chefe (opcional)') }}
+          </label>
+          <input type="text" name="telefone_{{ g.id }}" value="{{ g.telefone }}"
+                 class="form-control" style="border-radius:8px; font-size:13px;"
+                 placeholder="11998887766" inputmode="tel" />
+        </div>
+      </div>
+    </div>
+    {% endmacro %}
+
+    <h6 style="font-weight:700; font-size:14px; color:var(--text-secondary); margin:8px 0 14px;">
+      <i class="bi bi-music-note-list me-1"></i>
+      {{ t.get('wa_pwa_orch', 'Naipes da orquestra') }}
+    </h6>
+    {% for g in grupos_orquestra %}
+      {{ grupo_card(g) }}
+    {% else %}
+      <p class="text-secondary" style="font-size:13px;">—</p>
+    {% endfor %}
+
+    <h6 style="font-weight:700; font-size:14px; color:var(--text-secondary); margin:24px 0 14px;">
+      <i class="bi bi-mic me-1"></i>
+      {{ t.get('wa_pwa_coral', 'Naipes do coral STAB') }}
+    </h6>
+    {% for g in grupos_coral %}
+      {{ grupo_card(g) }}
+    {% else %}
+      <p class="text-secondary" style="font-size:13px;">—</p>
+    {% endfor %}
+
+    {% if grupos_outros %}
+    <h6 style="font-weight:700; font-size:14px; color:var(--text-secondary); margin:24px 0 14px;">
+      {{ t.get('wa_pwa_other', 'Outros') }}
+    </h6>
+    {% for g in grupos_outros %}
+      {{ grupo_card(g) }}
+    {% endfor %}
+    {% endif %}
+
+    <div class="form-actions-bar mt-2">
+      <button type="submit" class="btn-primary-custom">
+        <i class="bi bi-check-lg" aria-hidden="true"></i>
+        {{ t.get('wa_pwa_save', 'Salvar links dos grupos') }}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const flash = {{ settings_flash_json | safe }};
+  if (flash && typeof showToast === 'function') {
+    showToast(flash.message, flash.variant === 'danger' ? 'danger' : (flash.variant || 'success'));
+  }
+})();
+
+async function copyText(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (btn) {
+      const prev = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check2"></i> OK';
+      setTimeout(() => { btn.innerHTML = prev; }, 1200);
+    }
+    if (typeof showToast === 'function') showToast('Copiado.', 'success');
+  } catch (e) {
+    if (typeof showToast === 'function') showToast('Não foi possível copiar.', 'danger');
+  }
+}
+</script>
+{% endblock %}

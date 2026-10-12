@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.get('nav_programacao', 'Programação') }} — Calendário{% endblock %}
+{% block page_title %}{{ t.get('nav_programacao', 'Programação') }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/acervo/programacao/lista" class="btn btn-sm btn-outline-secondary" style="border-radius:8px; font-size:13px;">
+  <i class="bi bi-list-ul"></i> Lista
+</a>
+{% if can_manage_acervo %}
+<a href="/acervo/programacao/new" class="btn btn-sm btn-primary" style="border-radius:8px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+  <i class="bi bi-plus-lg"></i> Novo Evento
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:1200px; margin:0 auto;">
+
+  <!-- Atalhos de integração externa -->
+  <div class="d-flex gap-2 flex-wrap mb-3">
+    <a href="/acervo/programacao/ical/feed.ics" class="btn btn-outline-success btn-sm" style="border-radius:8px; font-size:12px;" target="_blank"
+       title="Assine no Google Calendar, Apple Calendar ou Outlook">
+      <i class="bi bi-calendar-check"></i> Exportar .ics
+    </a>
+    <a href="/acervo/historico" class="btn btn-outline-secondary btn-sm" style="border-radius:8px; font-size:12px;">
+      <i class="bi bi-bar-chart-fill"></i> {{ t.get('acervo_historico', 'Histórico') }}
+    </a>
+  </div>
+
+  <div class="ics-help">
+    <strong style="color:var(--text-primary);">Como assinar o calendário:</strong>
+    copie o link do arquivo <code>.ics</code> (Exportar .ics) e cole-o nas configurações de assinatura do
+    Google Calendar, Apple Calendar ou Outlook. Assim os eventos da programação sincronizam automaticamente.
+  </div>
+
+  <!-- Legenda -->
+  <div class="d-flex gap-3 mb-3" style="font-size:12px; color:var(--text-secondary);">
+    <span style="display:flex; align-items:center; gap:6px;">
+      <span style="width:12px; height:12px; background:#4f6ef7; border-radius:3px; display:inline-block;"></span> Evento público
+    </span>
+    <span style="display:flex; align-items:center; gap:6px;">
+      <span style="width:12px; height:12px; background:#94a3b8; border-radius:3px; display:inline-block;"></span> Evento privado
+    </span>
+  </div>
+
+  <!-- Calendário FullCalendar -->
+  <div class="card shadow-sm" style="border-radius:14px; border:none; overflow:hidden;">
+    <div class="card-body" style="padding:20px;">
+      <div id="calendar"></div>
+    </div>
+  </div>
+
+  <!-- Tooltip flutuante de evento -->
+  <div id="event-tooltip" style="display:none; position:fixed; z-index:9999; background:#1e293b; color:#f1f5f9;
+       border-radius:10px; padding:12px 16px; font-size:12px; max-width:260px;
+       box-shadow:0 8px 24px rgba(0,0,0,0.25); pointer-events:none; line-height:1.6;">
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- FullCalendar v6 -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/pt-br.global.min.js"></script>
+
+<style>
+  #calendar { min-height: 420px; }
+  @media (max-width: 768px) {
+    #calendar { min-height: 360px; }
+  }
+  .fc .fc-toolbar-title { font-size: 16px; font-weight: 700; }
+  .fc .fc-button { border-radius: 7px !important; font-size: 12px !important; font-weight: 600 !important; }
+  .fc .fc-button-primary { background: #4f6ef7 !important; border-color: #3b5bdb !important; }
+  .fc .fc-button-primary:hover { background: #3b5bdb !important; }
+  .fc .fc-button-primary:not(.fc-button-active) { background: transparent !important; border-color: #e2e8f0 !important; color: var(--text-primary) !important; }
+  .fc .fc-button-primary:not(.fc-button-active):hover { background: rgba(107,132,255,0.1) !important; }
+  .fc .fc-button-active { background: #4f6ef7 !important; border-color: #3b5bdb !important; color: #fff !important; }
+  .fc .fc-daygrid-event { border-radius: 5px; font-size: 12px; padding: 1px 5px; cursor: pointer; }
+  .fc .fc-list-event-title a { color: var(--text-primary) !important; text-decoration: none; }
+  .fc .fc-list-event:hover td { background: rgba(107,132,255,0.06) !important; }
+  .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(0,0,0,0.07) !important; }
+  .fc .fc-col-header-cell { background: rgba(107,132,255,0.05); }
+  .fc .fc-today-button { background: #10b981 !important; border-color: #059669 !important; color: #fff !important; }
+  .fc .fc-daygrid-day.fc-day-today { background: rgba(107,132,255,0.06) !important; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const tooltip = document.getElementById('event-tooltip');
+  const calEl   = document.getElementById('calendar');
+
+  const calendar = new FullCalendar.Calendar(calEl, {
+    locale: 'pt-br',
+    initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+    height: 'auto',
+    headerToolbar: {
+      left:   'prev,next today',
+      center: 'title',
+      right:  'dayGridMonth,timeGridWeek,listMonth'
+    },
+    buttonText: {
+      today:     'Hoje',
+      month:     'Mês',
+      week:      'Semana',
+      list:      'Lista'
+    },
+    events: '/acervo/programacao/eventos.json',
+    eventClick: function (info) {
+      info.jsEvent.preventDefault();
+      window.location.href = info.event.url;
+    },
+    eventMouseEnter: function (info) {
+      const ep = info.event.extendedProps;
+      let html = `<strong style="font-size:13px;">${info.event.title}</strong>`;
+      if (ep.local)   html += `<br><i class="bi bi-geo-alt"></i> ${ep.local}`;
+      if (ep.maestro) html += `<br><i class="bi bi-person-badge"></i> ${ep.maestro}`;
+      if (ep.num_obras > 0) html += `<br><i class="bi bi-music-note-list"></i> ${ep.num_obras} obra(s) no programa`;
+      html += `<br><span style="opacity:0.6;font-size:10px;">Clique para ver detalhes</span>`;
+      tooltip.innerHTML = html;
+      tooltip.style.display = 'block';
+    },
+    eventMouseLeave: function () {
+      tooltip.style.display = 'none';
+    },
+    eventDidMount: function (info) {
+      info.el.style.cursor = 'pointer';
+    },
+  });
+
+  calendar.render();
+
+  // Segue o mouse para o tooltip
+  document.addEventListener('mousemove', function (e) {
+    if (tooltip.style.display === 'block') {
+      let x = e.clientX + 14;
+      let y = e.clientY + 14;
+      if (x + 270 > window.innerWidth)  x = e.clientX - 280;
+      if (y + 160 > window.innerHeight) y = e.clientY - 140;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top  = y + 'px';
+    }
+  });
+});
+</script>
+{% endblock %}

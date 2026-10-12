@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}{{ t.get('nav_settings', 'Configurações') }}{% endblock %}
+{% block page_title %}{{ t.get('nav_settings', 'Configurações') }}{% endblock %}
+
+{% block content %}
+{% set section = settings_section or 'geral' %}
+
+<div class="settings-page">
+  <header class="settings-header">
+    <p class="page-subheading">{{ t.get('settings_subtitle', 'Gerencie aparência, e-mail, dados e saúde do portal.') }}</p>
+  </header>
+
+  {% if error %}
+  <div class="alert alert-danger mb-3 settings-alert" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>{{ error }}
+  </div>
+  {% endif %}
+
+  {% include "settings/_overview.html" %}
+
+  <div class="settings-layout">
+    {% include "settings/_nav.html" %}
+
+    <div class="settings-content" id="settings-content">
+      {% if section == 'geral' %}
+        {% include "settings/_geral.html" %}
+      {% elif section == 'aparencia' %}
+        {% include "settings/_aparencia.html" %}
+      {% elif section == 'email' %}
+        {% include "settings/_email.html" %}
+      {% elif section == 'dados' %}
+        {% include "settings/_dados.html" %}
+      {% else %}
+        {% include "settings/_sistema.html" %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const flash = {{ settings_flash_json | safe }};
+  if (flash && typeof showToast === 'function') {
+    showToast(flash.message, flash.variant === 'danger' ? 'danger' : (flash.variant || 'success'));
+  }
+  // Atualiza pill de saúde no overview em qualquer seção
+  const overview = document.getElementById('overview-health');
+  if (overview && typeof fetch === 'function') {
+    fetch('/settings/health').then(r => r.json()).then(data => {
+      const map = { ok: ['OK', 'ok'], degraded: ['Degradado', 'warn'], error: ['Erro', 'err'] };
+      const info = map[data.status] || ['—', 'neutral'];
+      overview.textContent = info[0];
+      overview.className = 'settings-status-pill ' + info[1];
+    }).catch(() => {});
+  }
+})();
+</script>
+{% if section == 'aparencia' %}
+<script>
+(function () {
+  const input = document.getElementById('logo-input');
+  const preview = document.getElementById('logo-preview');
+  const placeholder = document.getElementById('logo-placeholder');
+  if (input) {
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        preview.src = ev.target.result;
+        preview.hidden = false;
+        if (placeholder) placeholder.hidden = true;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const nome = document.getElementById('nome_institucional');
+  const end = document.getElementById('endereco');
+  const prevNome = document.getElementById('preview-nome');
+  const prevEnd = document.getElementById('preview-endereco');
+  function syncFooterPreview() {
+    if (prevNome && nome) prevNome.textContent = nome.value.trim() || '{{ t.app_title }}';
+    if (prevEnd && end) prevEnd.textContent = end.value.trim() || '—';
+  }
+  if (nome) nome.addEventListener('input', syncFooterPreview);
+  if (end) end.addEventListener('input', syncFooterPreview);
+  syncFooterPreview();
+})();
+</script>
+{% endif %}
+{% if section == 'email' %}
+<script>
+(function () {
+  const btn = document.getElementById('toggle-smtp-pwd');
+  const pwd = document.getElementById('smtp_password');
+  const icon = document.getElementById('eye-icon');
+  if (btn && pwd) {
+    btn.addEventListener('click', () => {
+      const show = pwd.type === 'password';
+      pwd.type = show ? 'text' : 'password';
+      if (icon) icon.className = show ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill';
+      btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+    });
+  }
+  const hostInput = document.getElementById('smtp_host');
+  const portInput = document.getElementById('smtp_port');
+  if (hostInput && portInput) {
+    const presets = {
+      'gmail.com': 587, 'outlook.com': 587, 'office365.com': 587,
+      'yahoo.com': 465, 'hotmail.com': 587, 'zoho.com': 587,
+    };
+    hostInput.addEventListener('blur', () => {
+      const h = hostInput.value.toLowerCase();
+      for (const [key, port] of Object.entries(presets)) {
+        if (h.includes(key)) { portInput.value = port; break; }
+      }
+    });
+  }
+})();
+</script>
+{% endif %}
+{% if section == 'sistema' %}
+<script>
+(function () {
+  const input = document.getElementById('scanner-test-input');
+  if (input) {
+    let debounceTimer = null;
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); clearTimeout(debounceTimer); testarScanner(); }
+    });
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      if (input.value.trim().length >= 6) debounceTimer = setTimeout(testarScanner, 500);
+      else {
+        const r = document.getElementById('scanner-test-result');
+        if (r) r.innerHTML = '';
+      }
+    });
+  }
+  carregarHealth();
+})();
+
+function testarScanner() {
+  const input = document.getElementById('scanner-test-input');
+  const result = document.getElementById('scanner-test-result');
+  if (!input || !result) return;
+  const valor = input.value.trim();
+  if (!valor) return;
+  result.innerHTML = '<span class="settings-muted"><i class="bi bi-hourglass-split"></i> Consultando…</span>';
+  fetch('/patrimonio/scan-json/' + encodeURIComponent(valor))
+    .then(r => r.json())
+    .then(data => {
+      if (data.found) {
+        result.innerHTML = '<div class="settings-scan-ok"><div><strong></strong><div class="settings-muted"></div></div><a class="btn btn-sm btn-outline-primary" href="#"></a></div>';
+        result.querySelector('strong').textContent = data.identificador_interno || data.patrimonio_id;
+        result.querySelector('.settings-muted').textContent = [data.fabricante, data.modelo, data.status].filter(Boolean).join(' · ');
+        const a = result.querySelector('a');
+        a.href = data.url;
+        a.innerHTML = '<i class="bi bi-box-arrow-up-right"></i> Abrir';
+      } else {
+        result.innerHTML = '<div class="settings-scan-fail"><i class="bi bi-x-circle-fill"></i> Nenhuma etiqueta ativa para <code></code>.</div>';
+        result.querySelector('code').textContent = valor;
+      }
+    })
+    .catch(() => {
+      result.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Erro ao consultar o servidor.</span>';
+    });
+}
+
+function carregarHealth() {
+  const btn = document.getElementById('health-btn');
+  const result = document.getElementById('health-result');
+  const ts = document.getElementById('health-timestamp');
+  const overview = document.getElementById('overview-health');
+  if (!btn || !result) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Verificando…';
+  result.innerHTML = '<span class="settings-muted"><i class="bi bi-hourglass-split"></i> Consultando serviços…</span>';
+  fetch('/settings/health')
+    .then(r => r.json())
+    .then(data => {
+      const statusColor = { ok: 'var(--success)', degraded: 'var(--warning)', error: 'var(--danger)' };
+      const statusText = { ok: 'OK', degraded: 'Degradado', error: 'Erro' };
+      const statusClass = { ok: 'ok', degraded: 'warn', error: 'err' };
+      let cards = '';
+      for (const [key, svc] of Object.entries(data.services || {})) {
+        const ic = key === 'database' ? 'bi-database-fill' : key === 'cache' ? 'bi-lightning-charge-fill' : 'bi-cpu-fill';
+        cards += '<div class="settings-health-card status-' + (statusClass[svc.status] || 'err') + '">'
+          + '<div class="settings-health-title"><i class="bi ' + ic + '"></i> ' + svc.label + '</div>'
+          + '<div class="settings-muted">' + svc.detail + '</div></div>';
+      }
+      result.innerHTML = '<div class="settings-health-overall" style="color:' + (statusColor[data.status] || 'inherit') + '">'
+        + 'Status geral: <strong>' + (statusText[data.status] || data.status) + '</strong></div>'
+        + '<div class="settings-health-grid">' + cards + '</div>';
+      if (ts) ts.textContent = 'Última verificação: ' + new Date().toLocaleTimeString('pt-BR');
+      if (overview) {
+        overview.textContent = statusText[data.status] || data.status;
+        overview.className = 'settings-status-pill ' + (statusClass[data.status] || 'err');
+      }
+    })
+    .catch(() => {
+      result.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Não foi possível contatar o servidor.</span>';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Verificar agora';
+    });
+}
+</script>
+{% endif %}
+{% endblock %}

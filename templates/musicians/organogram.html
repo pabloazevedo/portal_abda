@@ -1,0 +1,787 @@
+{% extends "base.html" %}
+{% block title %}Organograma{% endblock %}
+{% block page_title %}Organograma da Orquestra & Coral{% endblock %}
+
+{% block content %}
+
+{# ─────────────────────────────────────────────────────────────── #}
+{# ESTILOS                                                         #}
+{# ─────────────────────────────────────────────────────────────── #}
+<style>
+/* ── Toolbar ────────────────────────────────────────────────────── */
+.org-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.org-toolbar select,
+.org-toolbar input {
+  height: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  padding: 0 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s;
+}
+.org-toolbar select:focus,
+.org-toolbar input:focus { border-color: var(--accent); }
+.org-toolbar input { min-width: 200px; }
+.org-toolbar .org-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.org-toolbar .org-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Stats ──────────────────────────────────────────────────────── */
+.org-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.org-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  opacity: .9;
+}
+
+/* ── Mensagens de estado ─────────────────────────────────────────── */
+.org-loading,
+.org-empty-msg {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.org-hidden { display: none !important; }
+
+/* ── Árvore CSS (top-down, display:table) ───────────────────────── */
+.org-tree-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 12px;
+}
+
+.org-tree-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.org-scroll-hint {
+  display: none;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  .org-scroll-hint { display: flex; }
+  .org-card-group { min-width: 160px; max-width: 280px; }
+  .org-level > li { padding: 0 6px; }
+  .org-member-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* Nível de filhos: display table para centralização automática */
+.org-level {
+  display: table;
+  margin: 0 auto;
+  position: relative;
+  padding-top: 30px;
+  list-style: none;
+  padding-left: 0;
+  border-spacing: 0;
+}
+
+/* Linha vertical descendo do pai até o conector horizontal */
+.org-level::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 30px;
+  background: var(--border-color);
+}
+
+.org-level > li {
+  display: table-cell;
+  vertical-align: top;
+  text-align: center;
+  padding: 0 10px;
+  position: relative;
+}
+
+/* Conector horizontal entre irmãos */
+.org-level > li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border-color);
+}
+.org-level > li:first-child::before  { left: 50%; }
+.org-level > li:last-child::before   { right: 50%; }
+.org-level > li:only-child::before   { display: none; }
+
+/* Linha vertical do conector ao nó */
+.org-level > li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 30px;
+  background: var(--border-color);
+}
+
+/* Espaço entre o conector e o card */
+.org-node-wrap {
+  display: inline-block;
+  margin-top: 30px;
+}
+
+/* ── Card: ROOT ─────────────────────────────────────────────────── */
+.org-card-root {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 4px 16px rgba(79,110,247,.35);
+  white-space: nowrap;
+}
+.org-card-root i { font-size: 20px; }
+
+/* ── Card: GRUPO ─────────────────────────────────────────────────── */
+.org-card-group {
+  min-width: 220px;
+  max-width: 460px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  text-align: left;
+}
+.org-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: filter .15s;
+}
+.org-group-header:hover { filter: brightness(1.1); }
+.org-group-header .badge-count {
+  background: rgba(255,255,255,.22);
+  border-radius: 20px;
+  padding: 1px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: auto;
+}
+.org-group-header .toggle-icon {
+  font-size: 11px;
+  transition: transform .2s;
+}
+.org-card-group.collapsed .toggle-icon { transform: rotate(-90deg); }
+
+.org-group-body {
+  padding: 10px 12px;
+  overflow: hidden;
+  transition: max-height .3s ease, padding .3s ease;
+}
+.org-card-group.collapsed .org-group-body {
+  max-height: 0 !important;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Orquestra / Coral: resumo com contagem + link (sem cards individuais) */
+.org-card-group.org-card-summary .org-group-header { cursor: default; }
+.org-card-group.org-card-summary .toggle-icon { display: none; }
+.org-group-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 0;
+}
+.org-group-count-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.org-group-count-line strong {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-right: 4px;
+}
+.org-list-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .15s, background .15s;
+}
+.org-list-link:hover {
+  border-color: var(--accent);
+  background: rgba(79,110,247,.06);
+  color: var(--accent);
+}
+
+/* ── Grid de membros dentro de cada grupo ───────────────────────── */
+.org-member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 7px;
+}
+
+/* ── Card: MEMBRO ────────────────────────────────────────────────── */
+.org-member-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: rgba(79,110,247,.04);
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: background .15s, border-color .15s;
+  text-align: left;
+}
+.org-member-card:hover {
+  background: rgba(79,110,247,.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.org-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--border-color);
+}
+.org-avatar-ph {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(79,110,247,.1);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid var(--border-color);
+  font-size: 14px;
+}
+.org-member-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.org-member-sub  { font-size: 10px; color: var(--text-secondary); }
+.org-maestro-badge {
+  font-size: 10px; font-weight: 700;
+  color: #d97706;
+  background: rgba(245,158,11,.12);
+  border-radius: 10px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+/* Sub-grupos (Coral, Suporte) ficam dentro do grupo pai como sub-seções */
+.org-subgroup { margin-top: 10px; }
+.org-subgroup:first-child { margin-top: 0; }
+.org-subgroup-label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-secondary);
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 6px;
+}
+
+/* ── Highlight de busca ──────────────────────────────────────────── */
+.org-member-card.search-hidden { display: none; }
+</style>
+
+{# ─────────────────────────────────────────────────────────────── #}
+{# TOOLBAR                                                         #}
+{# ─────────────────────────────────────────────────────────────── #}
+<div class="org-toolbar">
+  <select id="filter-role" aria-label="Filtrar por papel">
+    <option value="all">Hierarquia Completa</option>
+    <option value="lideranca">Direção + Chefia de Naipes</option>
+    <option value="maestros">Somente Maestros / Maestrinas</option>
+    <option value="chefes">Somente Chefes de Naipe</option>
+    <option value="musicos">Orquestra — Músicos</option>
+    <option value="coral">Coral — Coralistas</option>
+    <option value="suporte">Suporte Artístico</option>
+  </select>
+
+  <input type="search" id="search-name"
+         placeholder="&#xF52A; Buscar membro…" autocomplete="off" aria-label="Buscar membro" />
+
+  <button class="org-btn" id="btn-expand-all" title="Expandir todos os grupos">
+    <i class="bi bi-arrows-expand"></i> Expandir
+  </button>
+  <button class="org-btn" id="btn-collapse-all" title="Colapsar todos os grupos">
+    <i class="bi bi-arrows-collapse"></i> Colapsar
+  </button>
+</div>
+
+{# ─────────────────────────────────────────────────────────────── #}
+{# PILLS DE ESTATÍSTICAS                                           #}
+{# ─────────────────────────────────────────────────────────────── #}
+<div class="org-stats" id="org-stats"></div>
+
+{# ─────────────────────────────────────────────────────────────── #}
+{# ESTADO: LOADING / VAZIO                                         #}
+{# ─────────────────────────────────────────────────────────────── #}
+<div id="org-loading" class="org-loading">
+  <i class="bi bi-hourglass-split" style="font-size:28px; display:block; margin-bottom:10px;"></i>
+  Carregando organograma…
+</div>
+<div id="org-empty" class="org-empty-msg org-hidden">
+  <i class="bi bi-inbox" style="font-size:28px; display:block; margin-bottom:10px;"></i>
+  Nenhum membro encontrado para o filtro selecionado.
+</div>
+
+{# ─────────────────────────────────────────────────────────────── #}
+{# CONTAINER DA ÁRVORE                                             #}
+{# ─────────────────────────────────────────────────────────────── #}
+<p class="org-scroll-hint d-md-none" id="org-scroll-hint" aria-hidden="true">
+  <i class="bi bi-hand-index-thumb"></i>
+  Role o dedo horizontalmente para ver a árvore
+</p>
+<div class="org-tree-scroll org-hidden" id="org-tree-scroll">
+  <div class="org-tree-root" id="org-chart"></div>
+</div>
+
+{# ─────────────────────────────────────────────────────────────── #}
+{# JAVASCRIPT                                                      #}
+{# ─────────────────────────────────────────────────────────────── #}
+<script>
+(function () {
+  'use strict';
+
+  /* ── Dados que filtros incluem por valor do combo ─────────────────
+     Cada entrada mapeia ao conjunto de `type` de nós visíveis.
+     Grupos/sub-grupos que não tiverem filhos visíveis são omitidos
+     automaticamente pelo renderizador.                             */
+  const FILTER_SETS = {
+    all:       null,
+    lideranca: new Set(['root','group','maestro','chefe_naipe']),
+    maestros:  new Set(['root','group','maestro']),
+    chefes:    new Set(['root','group','chefe_naipe']),
+    musicos:   new Set(['root','group']),
+    coral:     new Set(['root','group']),
+    suporte:   new Set(['root','group','subgroup','arranjador','compositor','arquivista']),
+  };
+
+  /* Grupos que NÃO pertencem ao filtro são ocultados junto com
+     os sub-grupos filhos. Para isso, mapeamos grupo → filtros que o exibem. */
+  const GROUP_FILTER_MAP = {
+    grp_maestro: ['all','lideranca','maestros'],
+    grp_chefe:   ['all','lideranca','chefes'],
+    grp_musico:  ['all','musicos'],
+    grp_coral:   ['all','coral'],
+    grp_suporte: ['all','suporte'],
+  };
+
+  /* Cores das pills de estatísticas */
+  const GROUP_COLORS = {
+    grp_maestro: '#1e3a5f', grp_chefe: '#7c3aed',
+    grp_musico:  '#065f46', grp_coral: '#be185d', grp_suporte: '#374151',
+  };
+
+  /* ── Estado global ────────────────────────────────────────────── */
+  let allNodes   = [];        // cache da resposta da API
+  let currentFilter = 'all';
+  let currentSearch  = '';
+
+  /* ── Elementos DOM ─────────────────────────────────────────────── */
+  const elLoading   = document.getElementById('org-loading');
+  const elEmpty     = document.getElementById('org-empty');
+  const elScroll    = document.getElementById('org-tree-scroll');
+  const elChart     = document.getElementById('org-chart');
+  const elStats     = document.getElementById('org-stats');
+  const selFilter   = document.getElementById('filter-role');
+  const inpSearch   = document.getElementById('search-name');
+
+  /* ── Helpers ─────────────────────────────────────────────────────*/
+  const show = el => el.classList.remove('org-hidden');
+  const hide = el => el.classList.add('org-hidden');
+
+  function escHtml(s) {
+    return String(s || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Filtrar nós pelo combo + busca ────────────────────────────── */
+  function applyFilter(nodes, filterKey, search) {
+    const allowed = FILTER_SETS[filterKey];     // null = tudo
+    const q = (search || '').trim().toLowerCase();
+
+    return nodes.filter(n => {
+      // 1. Nós não-membro (root, group, subgroup) sempre passam pelo combo
+      const isMember = !['root','group','subgroup'].includes(n.type);
+
+      if (allowed && isMember && !allowed.has(n.type)) return false;
+
+      // 2. Filtra grupos que não pertencem ao filtro atual
+      if (n.type === 'group' && allowed) {
+        const allowed_groups = Object.entries(GROUP_FILTER_MAP)
+          .filter(([,v]) => v.includes(filterKey))
+          .map(([k]) => k);
+        if (!allowed_groups.includes(n.id)) return false;
+      }
+
+      // 3. Busca textual (somente em membros)
+      if (q && isMember) {
+        const haystack = [n.name, n.apelido, n.role, ...(n.instruments||[])]
+          .join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+
+      return true;
+    });
+  }
+
+  /* ── Construir árvore aninhada a partir do array flat ─────────── */
+  function buildTree(nodes) {
+    const map   = {};
+    const roots = [];
+
+    nodes.forEach(n => { map[n.id] = { ...n, children: [] }; });
+
+    nodes.forEach(n => {
+      if (!n.pid || !map[n.pid]) {
+        roots.push(map[n.id]);
+      } else {
+        map[n.pid].children.push(map[n.id]);
+      }
+    });
+
+    // Ordenar maestros por maestro_order dentro do grupo
+    nodes.forEach(n => {
+      if (n.id === 'grp_maestro' && map[n.id]) {
+        map[n.id].children.sort((a,b) => (a.maestro_order||99) - (b.maestro_order||99));
+      }
+    });
+
+    return roots[0] || null;
+  }
+
+  /* ── Renderizar card de MEMBRO ─────────────────────────────────── */
+  function memberCardHTML(n, accentColor) {
+    const avatarPH = accentColor || 'var(--accent)';
+    const avatar = n.photo
+      ? `<img src="${escHtml(n.photo)}" class="org-avatar" alt="${escHtml(n.name)}" loading="lazy">`
+      : `<div class="org-avatar-ph" style="border-color:${escHtml(avatarPH)}20;">
+           <i class="bi bi-person-fill" style="color:${escHtml(avatarPH)};"></i>
+         </div>`;
+
+    const instrLine = n.instruments && n.instruments.length
+      ? `<div class="org-member-sub">${escHtml(n.instruments.join(' · '))}</div>` : '';
+
+    const maestroBadge = n.maestro_order
+      ? `<span class="org-maestro-badge">${escHtml(n.role)}</span>` : '';
+
+    const roleLabel = (!n.maestro_order && n.role)
+      ? `<div class="org-member-sub">${escHtml(n.role)}</div>` : '';
+
+    return `<a class="org-member-card" href="${escHtml(n.profile_url||'#')}">
+      ${avatar}
+      <div style="min-width:0;">
+        <div class="org-member-name">${escHtml(n.name)}</div>
+        ${n.apelido ? `<div class="org-member-sub"><i class="bi bi-tag" style="font-size:9px;"></i> ${escHtml(n.apelido)}</div>` : ''}
+        ${instrLine}${roleLabel}${maestroBadge}
+      </div>
+    </a>`;
+  }
+
+  /* ── Renderizar card de GRUPO (com membros aninhados) ──────────── */
+  function groupCardHTML(node) {
+    const color = node.color || '#374151';
+
+    /* Orquestra / Coral: só quantidade + link para a lista de membros */
+    if (node.list_url) {
+      const count = Number(node.member_count || 0);
+      const roleWord = node.role || 'membros';
+      const listLabel = node.id === 'grp_coral'
+        ? 'Ver lista do Coral'
+        : (node.id === 'grp_musico' ? 'Ver lista da Orquestra' : 'Ver lista completa');
+      return `<div class="org-card-group org-card-summary" data-group-id="${escHtml(node.id)}">
+        <div class="org-group-header" style="background:linear-gradient(90deg,${escHtml(color)},${escHtml(color)}cc);">
+          <i class="bi ${escHtml(node.icon||'bi-circle')}" style="font-size:16px;"></i>
+          <span>${escHtml(node.name)}</span>
+          <span style="font-size:11px;font-weight:400;opacity:.8;margin-left:4px;">${escHtml(roleWord)}</span>
+          <span class="badge-count">${count}</span>
+          <i class="bi bi-chevron-down toggle-icon"></i>
+        </div>
+        <div class="org-group-body" style="max-height:none;">
+          <div class="org-group-summary">
+            <p class="org-group-count-line">
+              <strong>${count}</strong>
+              ${count === 1 ? roleWord.replace(/s$/, '') || roleWord : roleWord}
+            </p>
+            <a class="org-list-link" href="${escHtml(node.list_url)}">
+              <i class="bi bi-people"></i> ${escHtml(listLabel)}
+            </a>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    const memberTypes = new Set(['maestro','chefe_naipe','musico','cantor',
+                                 'arranjador','compositor','arquivista']);
+
+    const subgroups = node.children.filter(c => c.type === 'subgroup');
+    const members   = node.children.filter(c => memberTypes.has(c.type));
+
+    let bodyHTML = '';
+
+    if (subgroups.length) {
+      bodyHTML = subgroups.map(sg => {
+        if (!sg.children.length) return '';
+        const membersHTML = sg.children.map(m => memberCardHTML(m, sg.color)).join('');
+        return `<div class="org-subgroup">
+          <div class="org-subgroup-label" style="color:${escHtml(sg.color||'inherit')};">
+            <i class="bi ${escHtml(sg.icon||'bi-circle')}"></i>
+            ${escHtml(sg.name)}
+            <span style="background:rgba(0,0,0,.06);border-radius:10px;padding:0 7px;font-size:10px;color:var(--text-secondary);">
+              ${sg.children.length}
+            </span>
+          </div>
+          <div class="org-member-grid">${membersHTML}</div>
+        </div>`;
+      }).join('');
+    } else {
+      bodyHTML = `<div class="org-member-grid">${members.map(m => memberCardHTML(m, color)).join('')}</div>`;
+    }
+
+    const countMembers = subgroups.length
+      ? subgroups.reduce((acc, sg) => acc + sg.children.length, 0)
+      : members.length;
+
+    return `<div class="org-card-group" data-group-id="${escHtml(node.id)}">
+      <div class="org-group-header" style="background:linear-gradient(90deg,${escHtml(color)},${escHtml(color)}cc);"
+           role="button" aria-expanded="true" tabindex="0">
+        <i class="bi ${escHtml(node.icon||'bi-circle')}" style="font-size:16px;"></i>
+        <span>${escHtml(node.name)}</span>
+        <span style="font-size:11px;font-weight:400;opacity:.8;margin-left:4px;">${escHtml(node.role||'')}</span>
+        <span class="badge-count">${countMembers}</span>
+        <i class="bi bi-chevron-down toggle-icon"></i>
+      </div>
+      <div class="org-group-body" style="max-height:2000px;">
+        ${bodyHTML || '<p style="color:var(--text-secondary);font-size:12px;font-style:italic;margin:0;">Nenhum membro neste grupo.</p>'}
+      </div>
+    </div>`;
+  }
+
+  /* ── Renderizar nó ROOT ─────────────────────────────────────────── */
+  function rootCardHTML(node) {
+    return `<div class="org-card-root">
+      <i class="bi ${escHtml(node.icon||'bi-building')}"></i>
+      <span>${escHtml(node.name)}</span>
+    </div>`;
+  }
+
+  /* ── Renderizar a árvore completa no DOM ────────────────────────── */
+  function renderTree(root) {
+    if (!root) { return ''; }
+
+    /* Nível 1: grupos filhos da raiz */
+    const groups = root.children.filter(c => c.type === 'group');
+
+    if (!groups.length) {
+      return rootCardHTML(root);
+    }
+
+    const groupItems = groups.map(g => `
+      <li>
+        <div class="org-node-wrap">${groupCardHTML(g)}</div>
+      </li>`).join('');
+
+    return `
+      ${rootCardHTML(root)}
+      <ul class="org-level" role="list">
+        ${groupItems}
+      </ul>`;
+  }
+
+  /* ── Atualizar pills de estatísticas ────────────────────────────── */
+  function updateStats(nodes) {
+    const memberTypes = new Set(['maestro','chefe_naipe','musico','cantor',
+                                 'arranjador','compositor','arquivista']);
+    const counts = {};
+    nodes.forEach(n => {
+      if (n.type === 'group' && typeof n.member_count === 'number') {
+        counts[n.id] = n.member_count;
+      }
+      if (memberTypes.has(n.type)) {
+        counts[n.pid] = (counts[n.pid] || 0) + 1;
+        if (['grp_arranjador','grp_compositor','grp_arquivista'].includes(n.pid)) {
+          counts['grp_suporte'] = (counts['grp_suporte'] || 0) + 1;
+        }
+      }
+    });
+
+    const pillDefs = [
+      {id:'grp_maestro', label:'Maestros',    icon:'bi-music-note-beamed'},
+      {id:'grp_chefe',   label:'Chefes',      icon:'bi-award-fill'},
+      {id:'grp_musico',  label:'Orquestra',   icon:'bi-music-note-list'},
+      {id:'grp_coral',   label:'Coral',       icon:'bi-mic-fill'},
+      {id:'grp_suporte', label:'Staff',        icon:'bi-people-fill'},
+    ];
+
+    elStats.innerHTML = pillDefs
+      .filter(p => counts[p.id])
+      .map(p => `
+        <div class="org-stat-pill" style="background:${escHtml(GROUP_COLORS[p.id]||'#666')};">
+          <i class="bi ${escHtml(p.icon)}"></i>
+          ${escHtml(p.label)}: <strong>${counts[p.id]}</strong>
+        </div>`).join('');
+  }
+
+  /* ── Pipeline principal de re-render ────────────────────────────── */
+  function render() {
+    const filtered = applyFilter(allNodes, currentFilter, currentSearch);
+    const root     = buildTree(filtered);
+
+    updateStats(allNodes);
+
+    const memberTypes = new Set(['maestro','chefe_naipe','musico','cantor',
+                                 'arranjador','compositor','arquivista']);
+    const hasMembers = filtered.some(n => memberTypes.has(n.type));
+    const hasGroups  = filtered.some(n => n.type === 'group');
+
+    if (!hasGroups && !hasMembers) {
+      hide(elScroll);
+      show(elEmpty);
+      return;
+    }
+
+    hide(elEmpty);
+    show(elScroll);
+    elChart.innerHTML = renderTree(root);
+
+    attachCollapseHandlers();
+    // Mobile: start with groups collapsed (accordion-style)
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      setAllGroups(true);
+    }
+  }
+
+  /* ── Expand / Collapse ──────────────────────────────────────────── */
+  function attachCollapseHandlers() {
+    elChart.querySelectorAll('.org-card-group:not(.org-card-summary) .org-group-header').forEach(header => {
+      header.addEventListener('click', toggleGroup);
+      header.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroup.call(header, e); }
+      });
+    });
+  }
+
+  function toggleGroup(e) {
+    const card = e.currentTarget.closest('.org-card-group');
+    if (!card) return;
+    const body      = card.querySelector('.org-group-body');
+    const collapsed = card.classList.toggle('collapsed');
+    e.currentTarget.setAttribute('aria-expanded', String(!collapsed));
+    body.style.maxHeight = collapsed ? '0' : '2000px';
+  }
+
+  function setAllGroups(collapse) {
+    elChart.querySelectorAll('.org-card-group:not(.org-card-summary)').forEach(card => {
+      const body   = card.querySelector('.org-group-body');
+      const header = card.querySelector('.org-group-header');
+      card.classList.toggle('collapsed', collapse);
+      if (header) header.setAttribute('aria-expanded', String(!collapse));
+      if (body)   body.style.maxHeight = collapse ? '0' : '2000px';
+    });
+  }
+
+  /* ── Busca com debounce ─────────────────────────────────────────── */
+  let searchTimer;
+  inpSearch.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      currentSearch = inpSearch.value;
+      render();
+    }, 220);
+  });
+
+  /* ── Filtro combo ───────────────────────────────────────────────── */
+  selFilter.addEventListener('change', () => {
+    currentFilter = selFilter.value;
+    render();
+  });
+
+  /* ── Botões expandir / colapsar ─────────────────────────────────── */
+  document.getElementById('btn-expand-all').addEventListener('click',  () => setAllGroups(false));
+  document.getElementById('btn-collapse-all').addEventListener('click', () => setAllGroups(true));
+
+  /* ── Carga inicial via fetch ────────────────────────────────────── */
+  async function loadData() {
+    try {
+      const res = await fetch('/musicians/organogram/data');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      allNodes = await res.json();
+      hide(elLoading);
+      render();
+    } catch (err) {
+      elLoading.innerHTML = `
+        <i class="bi bi-exclamation-triangle" style="font-size:28px;color:#ef4444;display:block;margin-bottom:10px;"></i>
+        Erro ao carregar o organograma. <br>
+        <small style="opacity:.7;">${escHtml(err.message)}</small>`;
+    }
+  }
+
+  loadData();
+})();
+</script>
+
+{% endblock %}

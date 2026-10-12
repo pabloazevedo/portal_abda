@@ -1,0 +1,11 @@
+{% extends "pwa/base.html" %}
+{% block title %}{{ brand_name }} — Indisponível{% endblock %}
+{% block body_class %}pwa-center{% endblock %}
+{% block content %}
+<main class="pwa-card pwa-disabled-shell" role="main">
+  <div class="pwa-disabled-mark" aria-hidden="true">Portal</div>
+  <p class="pwa-brand">{{ brand_name }}</p>
+  <h1 class="pwa-h1">{{ t.get('pwa_disabled_title', 'Site mobile desligado') }}</h1>
+  <p class="pwa-lead">{{ t.get('pwa_disabled_body', 'O administrador desativou o aplicativo web. Use o portal no computador ou peça para ligar em Configurações → Sistema.') }}</p>
+</main>
+{% endblock %}

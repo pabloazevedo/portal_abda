@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.get('acervo_concertos', 'Concertos') }}{% endblock %}
+{% block page_title %}{{ t.get('acervo_concertos', 'Concertos') }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_acervo %}
+<a href="/acervo/concertos/new" class="btn-primary-custom" style="padding:8px 16px; font-size:13px; text-decoration:none;">
+  <i class="bi bi-plus-lg" aria-hidden="true"></i> {{ t.get('acervo_concertos_add', 'Novo Concerto') }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+  <div class="filter-bar mb-3 page-toolbar">
+    <a href="/acervo/obras" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-music-note-beamed" aria-hidden="true"></i> {{ t.get('acervo_obras_list', 'Obras') }}
+    </a>
+    <a href="/acervo/historico" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-bar-chart-fill" aria-hidden="true"></i> {{ t.get('acervo_historico', 'Histórico') }}
+    </a>
+    <a href="/acervo/calendario.ics" class="btn btn-outline-success btn-sm" target="_blank" rel="noopener"
+       title="Assine este link no Google Calendar, Apple Calendar ou Outlook">
+      <i class="bi bi-calendar-check" aria-hidden="true"></i> {{ t.get('acervo_calendario_ics', 'Exportar .ics') }}
+    </a>
+  </div>
+
+  <div class="ics-help mb-3">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>
+    <strong>Integração de Calendário:</strong> Assine o link <code>/acervo/calendario.ics</code> no
+    Google Calendar, Apple Calendar ou Outlook para atualizações automáticas.
+  </div>
+
+  {% if concertos %}
+  <div class="row g-3">
+    {% for concerto in concertos %}
+    <div class="col-12">
+      <div class="card shadow-sm event-list-card" style="border-left:4px solid {% if concerto.data_execucao_registrada is defined and concerto.data_execucao_registrada %}#10b981{% else %}#6b84ff{% endif %};">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div style="flex:1; min-width:0;">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <h6 class="mb-0 fw-bold">
+                  <a href="/acervo/concertos/{{ concerto.id }}" class="text-decoration-none" style="color:var(--text-primary);">
+                    {{ concerto.titulo }}
+                  </a>
+                </h6>
+                {% if not concerto.publico %}
+                <span class="badge bg-secondary">Privado</span>
+                {% endif %}
+              </div>
+              <div class="event-meta-row mt-1">
+                <span>
+                  <i class="bi bi-calendar3" aria-hidden="true"></i>
+                  {{ concerto.data_inicio.strftime('%d/%m/%Y %H:%M') }}
+                  {% if concerto.data_fim %}— {{ concerto.data_fim.strftime('%H:%M') }}{% endif %}
+                </span>
+                {% if concerto.local %}
+                <span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ concerto.local }}</span>
+                {% endif %}
+                {% if concerto.maestro %}
+                <span><i class="bi bi-person-badge" aria-hidden="true"></i> {{ concerto.maestro.full_name }}</span>
+                {% endif %}
+                <span>
+                  <i class="bi bi-music-note-list" aria-hidden="true"></i>
+                  {{ concerto.programa | length }} obra(s) no programa
+                </span>
+              </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <a href="/acervo/concertos/{{ concerto.id }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye" aria-hidden="true"></i> Abrir
+              </a>
+              {% if can_manage_acervo %}
+              <a href="/acervo/concertos/{{ concerto.id }}/edit" class="btn btn-sm btn-outline-secondary" aria-label="Editar">
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  {% set title = t.get('acervo_no_concertos', 'Nenhum concerto cadastrado.') %}
+  {% set icon = "bi-calendar3" %}
+  {% if can_manage_acervo %}
+  {% set cta_href = "/acervo/concertos/new" %}
+  {% set cta_label = t.get('acervo_concertos_add', 'Novo Concerto') %}
+  {% endif %}
+  {% include "partials/_empty_state.html" %}
+  {% endif %}
+{% endblock %}

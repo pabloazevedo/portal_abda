@@ -1,0 +1,52 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Secrets & local env (never commit)
+.env
+.env.local
+.env.*.local
+
+# Runtime / uploads
+uploads/*
+!uploads/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE / tooling
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+.DS_Store
+
+# Test / coverage caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Local runtime (dev without Docker)
+.python_packages/
+.mamba/
+.pgdata/
+.pg.log
+.uvicorn.log
+.uvicorn.pid
+bin/micromamba
+
+# Local S3 mock / temp
+.moto/
+tmp/
+temp/

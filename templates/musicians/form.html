@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+
+{% block title %}{% if musician %}{{ t.musicians_edit }}{% else %}{{ t.musicians_add }}{% endif %}{% endblock %}
+{% block page_title %}{% if musician %}{{ t.musicians_edit }}{% else %}{{ t.musicians_add }}{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/musicians/?lang={{ lang }}" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+
+  <form method="post" enctype="multipart/form-data" data-guard
+        action="{% if musician %}/musicians/{{ musician.id }}/edit{% else %}/musicians/new{% endif %}">
+    <input type="hidden" name="lang" value="{{ lang }}" />
+
+    <!-- ══════════════════════════════════════════════════════
+         1. DADOS PESSOAIS
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-section-title"><i class="bi bi-person-fill"></i> &nbsp;Dados Pessoais</div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="first_name">{{ t.label_first_name }} <span class="required">*</span></label>
+        <input type="text" id="first_name" name="first_name" class="form-control {% if errors.first_name %}is-invalid{% endif %}"
+               value="{{ form_data.get('first_name', musician.first_name if musician else '') }}"
+               required maxlength="100" />
+        {% if errors.first_name %}<div class="invalid-feedback">{{ errors.first_name }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label" for="last_name">{{ t.label_last_name }} <span class="required">*</span></label>
+        <input type="text" id="last_name" name="last_name" class="form-control {% if errors.last_name %}is-invalid{% endif %}"
+               value="{{ form_data.get('last_name', musician.last_name if musician else '') }}"
+               required maxlength="100" />
+        {% if errors.last_name %}<div class="invalid-feedback">{{ errors.last_name }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label" for="apelido">{{ t.get('label_apelido', 'Apelido') }}</label>
+        <input type="text" id="apelido" name="apelido" class="form-control"
+               value="{{ form_data.get('apelido', musician.apelido or '' if musician else '') }}"
+               maxlength="100" placeholder="Nome artístico ou apelido (opcional)" />
+        <div class="form-text"><i class="bi bi-tag"></i> Opcional · Nome pelo qual o membro é conhecido</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label" for="email">{{ t.label_email }} <span class="required">*</span></label>
+        <input type="email" id="email" name="email" class="form-control {% if errors.email %}is-invalid{% endif %}"
+               value="{{ form_data.get('email', musician.email if musician else '') }}"
+               required maxlength="150" />
+        {% if errors.email %}<div class="invalid-feedback">{{ errors.email }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label" for="celular">{{ t.label_celular }} <span class="required">*</span></label>
+        <input type="tel" id="celular" name="celular"
+               class="form-control {% if errors.celular %}is-invalid{% endif %}"
+               value="{{ form_data.get('celular', musician.celular or musician.phone if musician else '') }}"
+               required maxlength="20" placeholder="(11) 98888-8888" />
+        {% if errors.celular %}<div class="invalid-feedback">{{ errors.celular }}</div>{% endif %}
+        <div class="form-text"><i class="bi bi-phone"></i> DDD + 9 dígitos (ex: 11 98888-8888)</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label" for="telefone">{{ t.label_telefone }}</label>
+        <input type="tel" id="telefone" name="telefone"
+               class="form-control {% if errors.telefone %}is-invalid{% endif %}"
+               value="{{ form_data.get('telefone', musician.telefone or '' if musician else '') }}"
+               maxlength="20" placeholder="(11) 3333-8888" />
+        {% if errors.telefone %}<div class="invalid-feedback">{{ errors.telefone }}</div>{% endif %}
+        <div class="form-text"><i class="bi bi-telephone"></i> Opcional · DDD + 8 dígitos (ex: 11 3333-8888)</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label" for="birth_date">{{ t.label_birth_date }} <span class="required">*</span></label>
+        <input type="date" id="birth_date" name="birth_date"
+               class="form-control {% if errors.birth_date %}is-invalid{% endif %}"
+               value="{{ form_data.get('birth_date', musician.birth_date.isoformat() if musician else '') }}"
+               required max="{{ now }}" />
+        {% if errors.birth_date %}<div class="invalid-feedback">{{ errors.birth_date }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         2. PAPÉIS
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-person-badge-fill"></i> &nbsp;{{ t.label_roles }}</div>
+
+    {% if errors.roles %}
+    <div style="color:var(--danger); font-size:12px; margin-bottom:10px;">
+      <i class="bi bi-exclamation-circle-fill"></i> {{ errors.roles }}
+    </div>
+    {% endif %}
+
+    <div class="role-checkbox-grid">
+      <!-- Músico -->
+      <label class="role-check-item {% if 'musico' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="musico"
+               id="role-musico"
+               {% if 'musico' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-music-note-beamed"></i></span>
+        <span class="role-check-label">{{ t.role_musico }}</span>
+      </label>
+
+      <!-- Maestro -->
+      <label class="role-check-item {% if 'maestro' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="maestro"
+               id="role-maestro"
+               {% if 'maestro' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-vinyl-fill"></i></span>
+        <span class="role-check-label">{{ t.role_maestro }}</span>
+      </label>
+
+      <!-- Chefe de Naipe -->
+      <label class="role-check-item {% if 'chefe_naipe' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="chefe_naipe"
+               {% if 'chefe_naipe' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-award-fill"></i></span>
+        <span class="role-check-label">{{ t.role_chefe_naipe }}</span>
+      </label>
+
+      <!-- Arquivista -->
+      <label class="role-check-item {% if 'arquivista' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="arquivista"
+               {% if 'arquivista' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-folder-fill"></i></span>
+        <span class="role-check-label">{{ t.role_arquivista }}</span>
+      </label>
+
+      <!-- Arranjador -->
+      <label class="role-check-item {% if 'arranjador' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="arranjador"
+               {% if 'arranjador' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-file-music-fill"></i></span>
+        <span class="role-check-label">{{ t.role_arranjador }}</span>
+      </label>
+
+      <!-- Compositor -->
+      <label class="role-check-item {% if 'compositor' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="compositor"
+               {% if 'compositor' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-pen-fill"></i></span>
+        <span class="role-check-label">{{ t.get('role_compositor', 'Compositor') }}</span>
+      </label>
+
+      <!-- Cantor -->
+      <label class="role-check-item {% if 'cantor' in selected_role_values %}checked{% endif %}">
+        <input type="checkbox" name="roles" value="cantor"
+               id="role-cantor"
+               {% if 'cantor' in selected_role_values %}checked{% endif %} />
+        <span class="role-check-icon" aria-hidden="true"><i class="bi bi-mic-fill"></i></span>
+        <span class="role-check-label">{{ t.role_cantor }}</span>
+      </label>
+    </div>
+
+    <div class="form-text" style="margin-top:6px;">
+      <i class="bi bi-info-circle"></i> {{ t.info_roles_required }}
+    </div>
+
+    <!-- Maestro order (condicional) -->
+    <div id="maestro-order-group" style="margin-top:16px; display:{% if 'maestro' in selected_role_values %}block{% else %}none{% endif %};">
+      <label class="form-label" for="maestro_order">
+        {{ t.label_maestro_order }} <span class="required">*</span>
+      </label>
+      <select id="maestro_order" name="maestro_order"
+              class="form-select {% if errors.maestro_order %}is-invalid{% endif %}"
+              style="max-width:260px;">
+        <option value="">{{ t.placeholder_maestro_order }}</option>
+        {% for n in range(1, 10) %}
+        <option value="{{ n }}" {% if maestro_order_value and maestro_order_value|int == n %}selected{% endif %}>
+          {{ n }}º Maestro/Maestrina
+        </option>
+        {% endfor %}
+      </select>
+      {% if errors.maestro_order %}
+      <div class="invalid-feedback" style="display:block;">{{ errors.maestro_order }}</div>
+      {% endif %}
+      <div class="form-text"><i class="bi bi-info-circle"></i> {{ t.info_maestro_order_required }}</div>
+    </div>
+
+    <!-- Tipo de voz (condicional — visível apenas quando Cantor está marcado) -->
+    <div id="voice-type-group" style="margin-top:16px; display:{% if 'cantor' in selected_role_values %}block{% else %}none{% endif %};">
+      <label class="form-label" for="voice_type">
+        {{ t.get('label_voice_type', 'Tipo de Voz') }} <span class="required">*</span>
+      </label>
+      <select id="voice_type" name="voice_type"
+              class="form-select {% if errors.voice_type %}is-invalid{% endif %}"
+              style="max-width:260px;">
+        <option value="">{{ t.get('placeholder_voice_type', 'Selecione o tipo de voz...') }}</option>
+        {% for vt in voice_types %}
+        <option value="{{ vt.value }}" {% if voice_type_value == vt.value %}selected{% endif %}>
+          {{ vt.value|capitalize }}
+        </option>
+        {% endfor %}
+      </select>
+      {% if errors.voice_type %}
+      <div class="invalid-feedback" style="display:block;">{{ errors.voice_type }}</div>
+      {% endif %}
+      <div class="form-text"><i class="bi bi-info-circle"></i> {{ t.get('info_voice_type', 'Soprano, Alto, Tenor ou Baixo (SATB)') }}</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         3. INSTRUMENTOS
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-music-note-list"></i> &nbsp;{{ t.label_instruments }}</div>
+
+    <!-- Container de inputs ocultos (enviados ao servidor) -->
+    <div id="instrument-hidden-inputs">
+      {% for iid in selected_instrumento_ids %}
+      <input type="hidden" name="instrumento_ids" value="{{ iid }}" id="hidden-inst-{{ iid }}" />
+      {% endfor %}
+    </div>
+
+    <!-- Tags dos instrumentos já selecionados -->
+    <div id="instrument-tags" class="instrument-tags-edit">
+      {% for inst in selected_instruments %}
+      <span class="instrument-tag-edit" data-id="{{ inst.id }}">
+        {{ inst.nome }}
+        <button type="button" onclick="removeInstrument('{{ inst.id }}')" aria-label="Remover">&times;</button>
+      </span>
+      {% endfor %}
+    </div>
+
+    <!-- Campo de busca (typeahead) -->
+    <div class="typeahead-wrapper" style="max-width:440px; margin-top:10px;">
+      <div style="position:relative;">
+        <span style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-secondary); font-size:15px; pointer-events:none;">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" id="instrument-search" class="form-control" autocomplete="off"
+               placeholder="{{ t.placeholder_search_instrument }}"
+               style="padding-left:34px;" />
+      </div>
+      <div id="instrument-dropdown" class="typeahead-dropdown" style="display:none;"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         4. FOTO
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-image"></i> &nbsp;{{ t.label_photo }}</div>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div style="text-align:center; margin-bottom:14px;">
+          {% if musician and musician.photo %}
+            <img id="photo-preview" src="/uploads/{{ musician.photo }}" alt="photo" class="photo-preview" />
+          {% else %}
+            <img id="photo-preview" src="" alt="photo" class="photo-preview" style="display:none;" />
+          {% endif %}
+          <div id="photo-placeholder" class="photo-placeholder"
+               style="{% if musician and musician.photo %}display:none;{% endif %}">
+            <i class="bi bi-person-fill"></i>
+          </div>
+        </div>
+
+        <div style="text-align:center;">
+          <label for="photo-input" style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border:2px dashed #cbd5e1; border-radius:10px; cursor:pointer; font-size:13px; color:var(--text-secondary); background:#f8fafc; transition:border-color .2s, background .2s;"
+                 onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(79,110,247,0.04)'"
+                 onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'">
+            <i class="bi bi-cloud-upload" style="font-size:16px;"></i>
+            <span>{{ t.btn_change_photo }}</span>
+          </label>
+          <input type="file" id="photo-input" name="photo"
+                 accept="image/jpeg,image/png,image/gif,image/webp"
+                 style="position:absolute; width:1px; height:1px; opacity:0; overflow:hidden;" />
+        </div>
+
+        <p style="font-size:11px; color:var(--text-secondary); margin-top:8px; text-align:center;">
+          {{ t.info_photo_hint }}
+        </p>
+
+        {% if musician and musician.photo %}
+        <div style="margin-top:6px; text-align:center;">
+          <input type="hidden" name="remove_photo" id="remove_photo" value="0" />
+          <button type="button" id="remove-photo-btn" class="btn btn-sm btn-outline-danger" style="border-radius:6px; font-size:12px;">
+            <i class="bi bi-trash"></i> {{ t.btn_remove_photo }}
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         4b. ACESSO AO APP (PWA)
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-section-title" style="margin-top:28px;">
+      <i class="bi bi-phone"></i> &nbsp;{{ t.get('label_app_access', 'Acesso ao App (PWA)') }}
+    </div>
+    <p style="font-size:13px; color:var(--text-secondary); margin:0 0 14px;">
+      {{ t.get('help_app_access', 'Permite que este membro entre no site mobile (/m) e no app para ver partituras. Usuários de sistema (admin, maestro, etc.) são cadastrados em Usuários.') }}
+    </p>
+    {% if errors.app_access %}
+    <div class="alert alert-danger py-2" style="font-size:13px;">{{ errors.app_access }}</div>
+    {% endif %}
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="app_access" id="app_access" value="1"
+             {% if app_access %}checked{% endif %}
+             {% if app_access and app_user and not is_admin %}data-locked="1"{% endif %} />
+      <label class="form-check-label" for="app_access">
+        {{ t.get('label_app_access_enable', 'Conceder acesso ao App / PWA') }}
+      </label>
+    </div>
+    {% if app_user and app_user.is_active %}
+    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+      <i class="bi bi-person-check"></i>
+      {{ t.get('label_app_login', 'Login do app') }}: <code>{{ app_user.username }}</code>
+      {% if not is_admin %}
+      <span class="ms-1">({{ t.get('help_app_revoke_admin', 'Somente admin pode remover o acesso.') }})</span>
+      {% endif %}
+    </p>
+    {% endif %}
+    <div id="app-password-fields" class="row g-3" style="{% if not app_access %}display:none;{% endif %}">
+      <div class="col-md-6">
+        <label class="form-label" for="app_password">
+          {{ t.get('label_app_password', 'Senha do App') }}
+          {% if not app_user %}<span class="required">*</span>{% endif %}
+        </label>
+        <input type="password" name="app_password" id="app_password"
+               class="form-control {% if errors.app_password %}is-invalid{% endif %}"
+               minlength="6" autocomplete="new-password"
+               placeholder="{% if app_user %}{{ t.get('password_leave_blank_short', 'Deixe em branco para manter') }}{% else %}••••••••{% endif %}" />
+        {% if errors.app_password %}<div class="invalid-feedback">{{ errors.app_password }}</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="app_password_confirm">
+          {{ t.label_confirm_password }}
+          {% if not app_user %}<span class="required">*</span>{% endif %}
+        </label>
+        <input type="password" name="app_password_confirm" id="app_password_confirm"
+               class="form-control {% if errors.app_password_confirm %}is-invalid{% endif %}"
+               autocomplete="new-password" placeholder="••••••••" />
+        {% if errors.app_password_confirm %}<div class="invalid-feedback">{{ errors.app_password_confirm }}</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         5. EQUIPAMENTOS EM POSSE  (somente em edição)
+    ══════════════════════════════════════════════════════ -->
+    {% if musician %}
+    <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-archive-fill"></i> &nbsp;{{ t.get('equip_em_posse', 'Equipamentos em Posse') }}</div>
+
+    <!-- Itens atualmente com o músico -->
+    {% if equipamentos_ativos %}
+    <div class="table-responsive mb-3">
+      <table class="table table-sm" style="font-size:13px;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th>Desde</th>
+            {% if can_manage_patrimonio %}<th style="width:100px;"></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for emp in equipamentos_ativos %}
+          <tr>
+            <td><code style="font-size:11px; color:var(--accent);">{{ emp.patrimonio.identificador_interno }}</code></td>
+            <td>{{ emp.patrimonio.tipo_label }}</td>
+            <td>
+              {{ emp.patrimonio.fabricante or '' }}
+              {% if emp.patrimonio.fabricante and emp.patrimonio.modelo %} · {% endif %}
+              {{ emp.patrimonio.modelo or '' }}
+              {% if emp.patrimonio.detalhes and emp.patrimonio.detalhes.get('nome_obra') %}
+                <em>{{ emp.patrimonio.detalhes.get('nome_obra') }}</em>
+              {% endif %}
+            </td>
+            <td style="color:var(--text-secondary);">{{ emp.data_emprestimo.strftime('%d/%m/%Y') }}</td>
+            {% if can_manage_patrimonio %}
+            <td>
+              <form id="devolver-{{ emp.id }}" method="post" action="/patrimonio/{{ emp.patrimonio.id }}/desvincular/{{ emp.id }}" style="display:inline;">
+                <button type="button" class="btn btn-sm btn-outline-warning" style="border-radius:6px; font-size:11px;"
+                        onclick="confirmAction('Confirmar devolução de {{ emp.patrimonio.identificador_interno }}?', 'devolver-{{ emp.id }}', 'warning')">
+                  <i class="bi bi-arrow-return-left"></i> Devolver
+                </button>
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+      <i class="bi bi-inbox"></i> {{ t.get('equip_nenhum', 'Nenhum item vinculado a este músico.') }}
+    </p>
+    {% endif %}
+
+    <!-- Vincular novo item ao músico -->
+    {% if can_manage_patrimonio and patrimonio_disponivel %}
+    <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:14px;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text-secondary);">
+        <i class="bi bi-link-45deg"></i> {{ t.get('equip_vincular_item', 'Vincular item do inventário') }}
+      </div>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-7" id="vincular-form-wrapper">
+          <select id="vincular-select" class="form-select form-select-sm">
+            <option value="">Selecione um item disponível...</option>
+            {% for pat in patrimonio_disponivel %}
+            <option value="{{ pat.id }}">
+              [{{ pat.identificador_interno }}] {{ pat.tipo_label }}
+              {% if pat.fabricante %} — {{ pat.fabricante }}{% endif %}
+              {% if pat.modelo %} {{ pat.modelo }}{% endif %}
+              {% if pat.detalhes and pat.detalhes.get('nome_obra') %} — {{ pat.detalhes.get('nome_obra') }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="text" id="vincular-obs" class="form-control form-control-sm"
+                 placeholder="Obs. (opcional)" maxlength="200" />
+        </div>
+        <div class="col-md-2">
+          <button type="button" onclick="vincularItem({{ musician.id }})"
+                  class="btn btn-sm btn-primary w-100" style="border-radius:7px;">
+            <i class="bi bi-link-45deg"></i> Vincular
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if can_manage_patrimonio %}
+    <div style="margin-top:10px;">
+      <a href="/patrimonio/?status=Disponivel" style="font-size:12px; color:var(--accent);">
+        <i class="bi bi-box-arrow-up-right"></i> Ver inventário completo
+      </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- ══════════════════════════════════════════════════════
+         6. SUBMIT
+    ══════════════════════════════════════════════════════ -->
+    <div class="form-actions-bar">
+      <button type="submit" class="btn-primary-custom" style="padding:11px 28px; font-size:15px;">
+        <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+      </button>
+      <a href="/musicians/?lang={{ lang }}" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; padding:10px 20px; font-size:14px;">
+        {{ t.btn_cancel }}
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('birth_date').max = new Date().toISOString().split('T')[0];
+
+  (function () {
+    const cb = document.getElementById('app_access');
+    const box = document.getElementById('app-password-fields');
+    if (!cb || !box) return;
+    const locked = cb.getAttribute('data-locked') === '1';
+    function sync() {
+      box.style.display = cb.checked ? '' : 'none';
+      if (locked && !cb.checked) {
+        cb.checked = true;
+        alert('Somente administradores podem remover o acesso ao App.');
+      }
+    }
+    cb.addEventListener('change', sync);
+    sync();
+  })();
+
+  function vincularItem(musicianId) {
+    const select = document.getElementById('vincular-select');
+    const obs    = document.getElementById('vincular-obs');
+    const itemId = select ? select.value : '';
+    if (!itemId) { alert('Selecione um item do inventário.'); return; }
+
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = `/patrimonio/${itemId}/vincular`;
+
+    const fMid = document.createElement('input');
+    fMid.type  = 'hidden';
+    fMid.name  = 'musician_id';
+    fMid.value = musicianId;
+    form.appendChild(fMid);
+
+    const fObs = document.createElement('input');
+    fObs.type  = 'hidden';
+    fObs.name  = 'observacoes';
+    fObs.value = obs ? obs.value : '';
+    form.appendChild(fObs);
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+</script>
+{% endblock %}
