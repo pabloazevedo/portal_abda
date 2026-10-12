@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% set back_url = ('/acervo/obras/' ~ arranjo.obra_id) if arranjo.obra_id else '/acervo/arranjos' %}
+
+{% block title %}Upload de Partes Coral - {{ arranjo.titulo_arranjo or 'Arranjo' }}{% endblock %}
+{% block page_title %}Upload de Partes Coral{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:900px; margin:0 auto;">
+
+  <!-- Breadcrumb -->
+  <div class="mb-3">
+    <a href="{{ back_url }}" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+
+  <div class="card shadow-sm" style="border-radius:14px; border:none;">
+    <div class="card-body" style="padding:28px;">
+
+      <h4 style="font-size:16px; font-weight:700; margin-bottom:8px;">
+        {{ arranjo.titulo_arranjo or 'Arranjo (sem título)' }}
+      </h4>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:24px;">
+        {{ arranjo.instrumentacao[:80] }}
+      </p>
+
+      <!-- Toggle entre modo STAB e partitura única -->
+      <div class="mb-4" style="border-bottom:1px solid var(--border-color); padding-bottom:20px;">
+        <label style="font-size:13px; font-weight:600; display:block; margin-bottom:12px;">
+          Modo de Upload
+        </label>
+        <div style="display:flex; gap:16px;">
+          <label style="display:flex; align-items:center; cursor:pointer; font-size:13px;">
+            <input type="radio" name="modo_coral" value="stab" checked style="margin-right:8px;">
+            <i class="bi bi-collection-fill" style="margin-right:4px;"></i> Partes Separadas (S/A/T/B)
+          </label>
+          <label style="display:flex; align-items:center; cursor:pointer; font-size:13px;">
+            <input type="radio" name="modo_coral" value="unico" style="margin-right:8px;">
+            <i class="bi bi-file-earmark-music" style="margin-right:4px;"></i> Partitura Única
+          </label>
+        </div>
+      </div>
+
+      <!-- Modo STAB (4 dropzones) -->
+      <div id="modo_stab">
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+          Faça upload de até 4 arquivos (um para cada voz)
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+
+          {% for stab_key, stab_label in [('soprano', 'Soprano'), ('alto', 'Alto'), ('tenor', 'Tenor'), ('baixo', 'Baixo')] %}
+          <div class="dropzone-container"
+               data-stab="{{ stab_key }}"
+               style="border:2px dashed var(--border-color); border-radius:12px; padding:24px; text-align:center; cursor:pointer; transition:all 0.3s;"
+               onmouseover="this.style.borderColor='var(--primary-color)'; this.style.backgroundColor='rgba(79, 110, 247, 0.05)'"
+               onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent'">
+
+            <input type="file" class="file-input" accept=".pdf,.xml,.mxl,.mus,.sib,.musicxml" style="display:none;" />
+
+            <i class="bi bi-cloud-upload" style="font-size:28px; color:var(--text-secondary); display:block; margin-bottom:8px;"></i>
+            <p style="font-size:13px; font-weight:600; margin-bottom:4px;">{{ stab_label }}</p>
+            <p style="font-size:11px; color:var(--text-secondary); margin:0;">
+              Clique ou arraste arquivo
+            </p>
+          </div>
+          {% endfor %}
+
+        </div>
+      </div>
+
+      <!-- Modo Partitura Única -->
+      <div id="modo_unico" style="display:none;">
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+          Faça upload de uma partitura com todas as vozes (STAB combinadas)
+        </p>
+
+        <div class="dropzone-container-unico"
+             style="border:2px dashed var(--border-color); border-radius:12px; padding:40px 24px; text-align:center; cursor:pointer; transition:all 0.3s;"
+             onmouseover="this.style.borderColor='var(--primary-color)'; this.style.backgroundColor='rgba(79, 110, 247, 0.05)'"
+             onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent'">
+
+          <input type="file" class="file-input-unico" accept=".pdf,.xml,.mxl,.mus,.sib,.musicxml" style="display:none;" />
+
+          <i class="bi bi-file-earmark-music" style="font-size:40px; color:var(--text-secondary); display:block; margin-bottom:12px;"></i>
+          <p style="font-size:14px; font-weight:600; margin-bottom:4px;">Partitura Completa</p>
+          <p style="font-size:12px; color:var(--text-secondary); margin:0;">
+            Clique para selecionar ou arraste o arquivo
+          </p>
+        </div>
+      </div>
+
+      <!-- Lista de Arquivos Pendentes -->
+      <div style="margin-top:32px;">
+        <h5 style="font-size:13px; font-weight:600; margin-bottom:12px;">
+          <i class="bi bi-hourglass-split"></i> Arquivos Pendentes
+        </h5>
+
+        <div id="pending-list" style="max-height:300px; overflow-y:auto;">
+          <p style="font-size:12px; color:var(--text-secondary); text-align:center; padding:20px;">
+            Nenhum arquivo adicionado
+          </p>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid var(--border-color);">
+        <button type="button" id="btn-confirm" class="btn btn-primary" style="border-radius:8px; font-size:14px; font-weight:600; display:none;">
+          <i class="bi bi-check-lg"></i> Confirmar e Salvar
+        </button>
+        <button type="button" id="btn-clear" class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:none;">
+          <i class="bi bi-trash"></i> Limpar
+        </button>
+        <a href="{{ back_url }}" class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;">
+          Cancelar
+        </a>
+      </div>
+
+      <!-- Status Messages -->
+      <div id="status-message" style="margin-top:16px; display:none;">
+        <div id="status-content"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loading-overlay" hidden
+  style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:white; border-radius:12px; padding:32px; text-align:center; max-width:90vw;">
+    <div class="spinner-border mb-3" role="status" style="color:var(--primary-color);"></div>
+    <p style="font-size:14px; font-weight:600; margin:0;">Processando uploads...</p>
+    <p style="font-size:12px; color:var(--text-secondary); margin:8px 0 0;">Por favor, aguarde</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const arranjoId = {{ arranjo.id }};
+const backUrl = {{ back_url | tojson }};
+const pendingUploads = new Map(); // file_id => {tipo, stab_tipo, nome_original, file_input}
+
+function setLoading(on) {
+  const el = document.getElementById('loading-overlay');
+  if (!el) return;
+  if (on) {
+    el.hidden = false;
+    el.style.display = 'flex';
+  } else {
+    el.hidden = true;
+    el.style.display = 'none';
+  }
+}
+setLoading(false);
+
+// Setup: mudar modo STAB/Único
+document.querySelectorAll('input[name="modo_coral"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    document.getElementById('modo_stab').style.display = e.target.value === 'stab' ? 'block' : 'none';
+    document.getElementById('modo_unico').style.display = e.target.value === 'unico' ? 'block' : 'none';
+  });
+});
+
+// Modo STAB: Dropzones para cada voz
+document.querySelectorAll('.dropzone-container').forEach(dropzone => {
+  const stabType = dropzone.dataset.stab;
+  const fileInput = dropzone.querySelector('.file-input');
+
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      handleFileSelect(fileInput.files[0], 'coral', stabType);
+      fileInput.value = ''; // Reset
+    }
+  });
+
+  // Drag and drop
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = 'var(--primary-color)';
+  });
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.style.borderColor = 'var(--border-color)';
+  });
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = 'var(--border-color)';
+    if (e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files[0], 'coral', stabType);
+    }
+  });
+});
+
+// Modo Único: Single dropzone
+const dropzoneUnico = document.querySelector('.dropzone-container-unico');
+const fileInputUnico = dropzoneUnico.querySelector('.file-input-unico');
+
+dropzoneUnico.addEventListener('click', () => fileInputUnico.click());
+
+fileInputUnico.addEventListener('change', () => {
+  if (fileInputUnico.files.length > 0) {
+    handleFileSelect(fileInputUnico.files[0], 'coral', 'completo');
+    fileInputUnico.value = '';
+  }
+});
+
+dropzoneUnico.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropzoneUnico.style.borderColor = 'var(--primary-color)';
+});
+dropzoneUnico.addEventListener('dragleave', () => {
+  dropzoneUnico.style.borderColor = 'var(--border-color)';
+});
+dropzoneUnico.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzoneUnico.style.borderColor = 'var(--border-color)';
+  if (e.dataTransfer.files.length > 0) {
+    handleFileSelect(e.dataTransfer.files[0], 'coral', 'completo');
+  }
+});
+
+// Handle file selection
+function handleFileSelect(file, tipo, stabTipo) {
+  const maxSizeMB = 50;
+  if (file.size > maxSizeMB * 1024 * 1024) {
+    showStatus('error', `Arquivo muito grande (máx ${maxSizeMB}MB)`);
+    return;
+  }
+
+  const allowedExts = ['.pdf', '.xml', '.mxl', '.mus', '.sib', '.musicxml'];
+  const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+  if (!allowedExts.includes(fileExt)) {
+    showStatus('error', `Formato não suportado: ${fileExt}`);
+    return;
+  }
+
+  uploadTemporario(file, tipo, stabTipo);
+}
+
+// Upload para /arranjos/{arranjo_id}/upload-temp
+async function uploadTemporario(file, tipo, stabTipo) {
+  const formData = new FormData();
+  formData.append('arquivo', file);
+  formData.append('tipo', tipo);
+  formData.append('stab_tipo', stabTipo);
+
+  try {
+    const resp = await fetch(`/acervo/arranjos/${arranjoId}/upload-temp`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!resp.ok) {
+      const error = await resp.json();
+      showStatus('error', error.detail || 'Erro no upload');
+      return;
+    }
+
+    const data = await resp.json();
+    pendingUploads.set(data.file_id, {
+      tipo: data.tipo,
+      stab_tipo: data.stab_tipo,
+      nome_original: data.nome_original,
+      file_id: data.file_id,
+      caminho_temp: data.caminho_temp
+    });
+
+    updatePendingList();
+    showStatus('success', `${file.name} adicionado`);
+
+  } catch (e) {
+    showStatus('error', `Erro: ${e.message}`);
+  }
+}
+
+// Update pending list UI
+function updatePendingList() {
+  const list = document.getElementById('pending-list');
+
+  if (pendingUploads.size === 0) {
+    list.innerHTML = '<p style="font-size:12px; color:var(--text-secondary); text-align:center; padding:20px;">Nenhum arquivo adicionado</p>';
+    document.getElementById('btn-confirm').style.display = 'none';
+    document.getElementById('btn-clear').style.display = 'none';
+    return;
+  }
+
+  let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+  pendingUploads.forEach((upload, fileId) => {
+    const stabLabel = { soprano: 'Soprano', alto: 'Alto', tenor: 'Tenor', baixo: 'Baixo', completo: 'Completa' }[upload.stab_tipo] || upload.stab_tipo;
+    html += `
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:var(--bg-secondary); border-radius:8px; font-size:12px;">
+        <div style="flex:1;">
+          <div style="font-weight:600; color:var(--text-primary);">${upload.nome_original}</div>
+          <div style="color:var(--text-secondary);">${stabLabel}</div>
+        </div>
+        <button type="button" onclick="removePending('${fileId}')" class="btn btn-sm btn-outline-danger" style="border-radius:6px;">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    `;
+  });
+  html += '</div>';
+  list.innerHTML = html;
+
+  document.getElementById('btn-confirm').style.display = 'inline-block';
+  document.getElementById('btn-clear').style.display = 'inline-block';
+}
+
+// Remove upload from pending
+function removePending(fileId) {
+  pendingUploads.delete(fileId);
+  updatePendingList();
+}
+
+// Confirmar e salvar
+document.getElementById('btn-confirm').addEventListener('click', async () => {
+  if (pendingUploads.size === 0) return;
+
+  setLoading(true);
+
+  const uploads = Array.from(pendingUploads.values()).map(u => ({
+    file_id: u.file_id,
+    tipo: u.tipo,
+    stab_tipo: u.stab_tipo,
+    nome_original: u.nome_original,
+    instrumento_nome: null
+  }));
+
+  try {
+    const resp = await fetch(`/acervo/arranjos/${arranjoId}/confirmar-uploads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ uploads: JSON.stringify(uploads) }),
+      credentials: 'same-origin',
+    });
+
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      const detail = data.detail;
+      const msg = typeof detail === 'string' ? detail : (detail && JSON.stringify(detail)) || 'Erro ao confirmar uploads';
+      showStatus('error', msg);
+      return;
+    }
+
+    if (data.success) {
+      showStatus('success', `${data.processados} arquivo(s) salvos com sucesso!`);
+      pendingUploads.clear();
+      updatePendingList();
+      setTimeout(() => { window.location.href = backUrl; }, 800);
+    } else {
+      const erros = (data.erros || []).join('; ');
+      showStatus('error', `Erro(s): ${erros}`);
+    }
+  } catch (e) {
+    showStatus('error', `Erro: ${e.message}`);
+  } finally {
+    setLoading(false);
+  }
+});
+
+// Clear all
+document.getElementById('btn-clear').addEventListener('click', () => {
+  if (confirm('Limpar todos os arquivos pendentes?')) {
+    pendingUploads.clear();
+    updatePendingList();
+  }
+});
+
+// Status message
+function showStatus(type, msg) {
+  const el = document.getElementById('status-message');
+  const content = document.getElementById('status-content');
+
+  el.className = `alert alert-${type === 'error' ? 'danger' : 'success'}`;
+  el.style.borderRadius = '10px';
+  el.style.fontSize = '13px';
+  content.innerHTML = `<i class="bi ${type === 'error' ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill'} me-2"></i> ${msg}`;
+  el.style.display = 'block';
+
+  if (type === 'success') {
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+}
+</script>
+{% endblock %}

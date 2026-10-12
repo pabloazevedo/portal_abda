@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ t.get('settings_audit_view', 'Ver auditoria') }}{% endblock %}
+{% block page_title %}{{ t.get('settings_audit_view', 'Ver auditoria') }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/settings/?section=sistema" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
+  <i class="bi bi-arrow-left"></i> {{ t.get('nav_settings', 'Configurações') }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+  <header class="settings-header">
+    <p class="page-subheading">
+      {{ t.get('settings_audit_list_help', 'Eventos recentes do sistema.') }}
+      {{ t.get('settings_audit_retention', 'Retenção') }}: <strong>{{ retention_days }}</strong>
+      {{ t.get('settings_audit_days', 'dias') }}
+      ({{ retention_min }}–{{ retention_max }}).
+    </p>
+  </header>
+
+  <form method="get" action="/settings/auditoria" class="settings-panel mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label" for="audit-q">{{ t.btn_search }}</label>
+        <input type="text" id="audit-q" name="q" class="form-control" value="{{ q }}"
+               placeholder="{{ t.get('settings_audit_search_ph', 'Usuário, resumo, entidade…') }}" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="audit-action">{{ t.get('settings_audit_action', 'Ação') }}</label>
+        <input type="text" id="audit-action" name="action" class="form-control" value="{{ action_filter }}"
+               placeholder="ex.: auth.login" />
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn-primary-custom w-100">
+          <i class="bi bi-search"></i> {{ t.btn_search }}
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div class="settings-panel">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0" style="font-size:13px;">
+        <thead>
+          <tr>
+            <th>{{ t.get('settings_audit_when', 'Quando') }}</th>
+            <th>{{ t.get('settings_audit_who', 'Quem') }}</th>
+            <th>{{ t.get('settings_audit_action', 'Ação') }}</th>
+            <th>{{ t.get('settings_audit_summary', 'Resumo') }}</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in audit_rows %}
+          <tr>
+            <td style="white-space:nowrap;">
+              {% if row.created_at %}{{ row.created_at.strftime('%d/%m/%Y %H:%M:%S') }}{% else %}—{% endif %}
+            </td>
+            <td>{{ row.actor_username or '—' }}</td>
+            <td><code>{{ row.action }}</code></td>
+            <td>{{ row.summary or '—' }}</td>
+            <td class="settings-muted">{{ row.ip or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center settings-muted py-4">
+              {{ t.get('settings_audit_empty', 'Nenhum evento encontrado.') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if pages > 1 %}
+    <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+      {% if page > 1 %}
+      <a class="btn btn-sm btn-outline-secondary" href="?page={{ page - 1 }}&q={{ q }}&action={{ action_filter }}">{{ t.page_prev }}</a>
+      {% endif %}
+      <span class="settings-muted align-self-center">{{ page }} / {{ pages }} · {{ total }}</span>
+      {% if page < pages %}
+      <a class="btn btn-sm btn-outline-secondary" href="?page={{ page + 1 }}&q={{ q }}&action={{ action_filter }}">{{ t.page_next }}</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

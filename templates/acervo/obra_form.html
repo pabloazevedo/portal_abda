@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% set is_edit = obra is not none %}
+{% set fd = form_data or {} %}
+{% block title %}{% if is_edit %}{{ t.get('acervo_obras_edit', 'Editar Obra') }}{% else %}{{ t.get('acervo_obras_add', 'Nova Obra') }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_edit %}{{ t.get('acervo_obras_edit', 'Editar Obra') }}{% else %}{{ t.get('acervo_obras_add', 'Nova Obra') }}{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/acervo/obras" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:{% if is_edit %}700px{% else %}820px{% endif %}; margin:0 auto;">
+
+  {% if error %}
+  <div class="alert alert-danger" style="border-radius:10px; font-size:13px;">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+  </div>
+  {% endif %}
+
+  <div class="form-card">
+
+      <form method="post" data-guard
+            action="{% if is_edit %}/acervo/obras/{{ obra.id }}/edit{% else %}/acervo/obras/new{% endif %}"
+            {% if not is_edit %}enctype="multipart/form-data"{% endif %}>
+
+        <h6 style="font-weight:700; font-size:14px; margin-bottom:16px; color:var(--text-secondary);">
+          <i class="bi bi-book me-1"></i> Dados da Obra
+        </h6>
+
+        <!-- Título -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_titulo', 'Título') }} <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="titulo" class="form-control"
+                 value="{% if is_edit %}{{ obra.titulo }}{% else %}{{ fd.get('titulo', '') }}{% endif %}"
+                 required style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <!-- Título original -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_titulo_original', 'Título Original') }}
+          </label>
+          <input type="text" name="titulo_original" class="form-control"
+                 value="{% if is_edit %}{{ obra.titulo_original or '' }}{% else %}{{ fd.get('titulo_original', '') }}{% endif %}"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <!-- Compositor membro -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_compositor_membro', 'Compositor (Membro)') }}
+          </label>
+          <select name="compositor_id" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Externo (preencha abaixo) —</option>
+            {% for m in membros %}
+            <option value="{{ m.id }}"
+              {% if is_edit and obra.compositor_id == m.id %}selected
+              {% elif not is_edit and fd.get('compositor_id')|string == m.id|string %}selected{% endif %}>
+              {{ m.full_name }}
+            </option>
+            {% endfor %}
+          </select>
+          <div class="form-text" style="font-size:11px;">Selecione se o compositor é membro da orquestra/coral.</div>
+        </div>
+
+        <!-- Compositor externo -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_compositor_nome', 'Nome do Compositor') }}
+          </label>
+          <input type="text" name="compositor_nome" class="form-control"
+                 value="{% if is_edit %}{{ obra.compositor_nome or '' }}{% else %}{{ fd.get('compositor_nome', '') }}{% endif %}"
+                 placeholder="Ex: Ludwig van Beethoven"
+                 style="border-radius:8px; font-size:13px;" />
+          <div class="form-text" style="font-size:11px;">Obrigatório se não selecionou um membro acima.</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              {{ t.get('acervo_genero', 'Gênero Musical') }}
+            </label>
+            <select name="genero" class="form-select" style="border-radius:8px; font-size:13px;">
+              {% for g in generos %}
+              <option value="{{ g.value }}"
+                {% if is_edit and obra.genero == g %}selected
+                {% elif not is_edit and fd.get('genero', 'outro') == g.value %}selected
+                {% elif not is_edit and not fd.get('genero') and g.value == 'outro' %}selected{% endif %}>
+                {{ genero_labels.get(g, g.value) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              {{ t.get('acervo_tonalidade', 'Tonalidade') }}
+            </label>
+            <input type="text" name="tonalidade" class="form-control"
+                   value="{% if is_edit %}{{ obra.tonalidade or '' }}{% else %}{{ fd.get('tonalidade', '') }}{% endif %}"
+                   placeholder="Ex: Ré menor, D minor"
+                   style="border-radius:8px; font-size:13px;" />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_ano_composicao', 'Ano de Composição') }}
+          </label>
+          <input type="number" name="ano_composicao" class="form-control"
+                 value="{% if is_edit %}{{ obra.ano_composicao or '' }}{% else %}{{ fd.get('ano_composicao', '') }}{% endif %}"
+                 min="1" max="2100" placeholder="Ex: 1824"
+                 style="border-radius:8px; font-size:13px; max-width:200px;" />
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_observacoes', 'Observações') }}
+          </label>
+          <textarea name="observacoes" class="form-control" rows="3"
+                    style="border-radius:8px; font-size:13px; resize:vertical;">{% if is_edit %}{{ obra.observacoes or '' }}{% else %}{{ fd.get('observacoes', '') }}{% endif %}</textarea>
+        </div>
+
+        {% if not is_edit %}
+        <hr style="margin:8px 0 24px; border-color:rgba(0,0,0,0.06);" />
+
+        <h6 style="font-weight:700; font-size:14px; margin-bottom:16px; color:var(--text-secondary);">
+          <i class="bi bi-layers me-1"></i> Arranjo e Partituras
+        </h6>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:18px;">
+          Cadastre a grade do maestro e as partes de cada instrumento. Os arquivos ficam associados a esta obra.
+        </p>
+
+        <!-- Arranjador membro -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_arranjador_membro', 'Arranjador (Membro)') }}
+          </label>
+          <select name="arranjador_id" class="form-select" style="border-radius:8px; font-size:13px;">
+            <option value="">— Externo ou sem arranjador —</option>
+            {% for m in membros %}
+            <option value="{{ m.id }}"
+              {% if fd.get('arranjador_id')|string == m.id|string %}selected{% endif %}>
+              {{ m.full_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_arranjador_nome', 'Nome do Arranjador') }}
+          </label>
+          <input type="text" name="arranjador_nome" class="form-control"
+                 value="{{ fd.get('arranjador_nome', '') }}"
+                 placeholder="Ex: John Williams"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_instrumentacao', 'Instrumentação') }} <span class="text-danger">*</span>
+          </label>
+          <textarea name="instrumentacao" class="form-control" rows="2" required
+                    placeholder="Ex: 2Vl, Va, Vc, Cb, Fl, Ob, Cl, Fg, 2Cor"
+                    style="border-radius:8px; font-size:13px; resize:vertical;">{{ fd.get('instrumentacao', '') }}</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_duracao', 'Duração') }}
+          </label>
+          <div class="d-flex gap-2 align-items-center">
+            <input type="number" name="duracao_min" min="0" max="999" class="form-control"
+                   value="{{ fd.get('duracao_min', '') }}"
+                   placeholder="min" style="border-radius:8px; font-size:13px; max-width:100px;" />
+            <span style="font-size:13px; color:var(--text-secondary);">min</span>
+            <input type="number" name="duracao_seg" min="0" max="59" class="form-control"
+                   value="{{ fd.get('duracao_seg', '') }}"
+                   placeholder="seg" style="border-radius:8px; font-size:13px; max-width:100px;" />
+            <span style="font-size:13px; color:var(--text-secondary);">s</span>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              {{ t.get('acervo_editora', 'Editora') }}
+            </label>
+            <input type="text" name="editora" class="form-control"
+                   value="{{ fd.get('editora', '') }}"
+                   placeholder="Ex: Breitkopf &amp; Härtel"
+                   style="border-radius:8px; font-size:13px;" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold" style="font-size:13px;">
+              {{ t.get('acervo_copyright', 'Direitos Autorais') }} <span class="text-danger">*</span>
+            </label>
+            <select name="copyright_status" id="copyright_status" class="form-select"
+                    style="border-radius:8px; font-size:13px;" onchange="toggleLicenca()">
+              {% for c in copyright_list %}
+              <option value="{{ c.value }}"
+                {% if fd.get('copyright_status', 'pendente') == c.value %}selected{% endif %}>
+                {{ copyright_labels.get(c, c.value) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3" id="licenca_row" style="display:{% if fd.get('copyright_status') == 'licenciado' %}block{% else %}none{% endif %};">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            {{ t.get('acervo_numero_licenca', 'Nº da Licença') }}
+          </label>
+          <input type="text" name="numero_licenca" class="form-control"
+                 value="{{ fd.get('numero_licenca', '') }}"
+                 placeholder="Ex: Portal-LIC-2024-001"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+
+        <!-- Grade do maestro -->
+        <div class="mb-4 p-3" style="background:rgba(107,132,255,0.06); border-radius:10px;">
+          <label class="form-label fw-semibold" style="font-size:13px;">
+            <i class="bi bi-file-earmark-music me-1"></i>
+            Grade (partitura do maestro) <span class="text-danger">*</span>
+          </label>
+          <input type="file" name="grade" class="form-control" required
+                 accept=".pdf,.xml,.mxl,.mus,.sib,.musicxml"
+                 style="border-radius:8px; font-size:13px;" />
+          <div class="form-text" style="font-size:11px;">PDF, MusicXML, MUS, SIB · Máx. 50MB · Reenvie o arquivo após corrigir erros</div>
+        </div>
+
+        <!-- Partes por instrumento -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-semibold mb-0" style="font-size:13px;">
+              <i class="bi bi-music-note-beamed me-1"></i>
+              Partes por instrumento
+            </label>
+            <button type="button" class="btn btn-sm btn-outline-primary" style="border-radius:7px; font-size:12px;"
+                    onclick="addParteRow()">
+              <i class="bi bi-plus-lg"></i> Adicionar parte
+            </button>
+          </div>
+          <div id="partes-container"></div>
+          <div class="form-text" style="font-size:11px;">
+            Opcional no cadastro inicial — você também pode enviar partes depois na página da obra.
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions-bar">
+          <button type="submit" class="btn-primary-custom">
+            <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+          </button>
+          <a href="{% if is_edit %}/acervo/obras/{{ obra.id }}{% else %}/acervo/obras{% endif %}"
+             data-guard-leave class="btn btn-outline-secondary">
+            {{ t.btn_cancel }}
+          </a>
+        </div>
+      </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if not is_edit %}
+<script>
+const INSTRUMENTOS = [
+  {% for i in instrumentos_padrao %}"{{ i|e }}"{% if not loop.last %},{% endif %}{% endfor %}
+];
+
+function toggleLicenca() {
+  const sel = document.getElementById('copyright_status');
+  const row = document.getElementById('licenca_row');
+  if (sel && row) row.style.display = sel.value === 'licenciado' ? 'block' : 'none';
+}
+
+function addParteRow() {
+  const container = document.getElementById('partes-container');
+  const row = document.createElement('div');
+  row.className = 'row g-2 mb-2 align-items-end parte-row';
+  row.innerHTML = `
+    <div class="col-md-5">
+      <label class="form-label" style="font-size:12px;">Instrumento</label>
+      <select name="parte_instrumento_nome" class="form-select" style="border-radius:8px; font-size:13px;">
+        <option value="">— Selecione —</option>
+        ${INSTRUMENTOS.map(i => `<option value="${i}">${i}</option>`).join('')}
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label" style="font-size:12px;">Arquivo</label>
+      <input type="file" name="parte_arquivo" class="form-control"
+             accept=".pdf,.xml,.mxl,.mus,.sib,.musicxml"
+             style="border-radius:8px; font-size:13px;" />
+    </div>
+    <div class="col-md-2">
+      <button type="button" class="btn btn-outline-danger w-100" style="border-radius:8px; font-size:12px;"
+              onclick="this.closest('.parte-row').remove()">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  `;
+  container.appendChild(row);
+}
+
+addParteRow();
+toggleLicenca();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,37 +1,10 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg-info/
-*.egg
-.eggs/
-.Python
-build/
-dist/
-develop-eggs/
-downloads/
-eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-.installed.cfg
-MANIFEST
-*.manifest
-*.spec
-.venv/
-venv/
-ENV/
-env/
-env.bak/
-venv.bak/
-__pypackages__/
+# =============================================================================
+# Portal ABDA — .gitignore
+# Versione: código-fonte, templates, migrations, requirements, .env*.example
+# NÃO versione: secrets, deps instaladas, builds, DB/logs locais, uploads
+# =============================================================================
 
-# Secrets & local env (never commit real secrets)
+# ── Secrets / ambiente ───────────────────────────────────────────────────────
 .env
 .env.*
 .envrc
@@ -42,26 +15,97 @@ __pypackages__/
 .pypirc
 credentials.json
 secrets/
+*.secret
 
-# Runtime / uploads / DB
-uploads/*
-!uploads/.gitkeep
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+wheels/
+*.whl
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.hypothesis/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+cover/
+.cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/
+
+# ── Dependências locais (NÃO é source — reinstalar via pip/Docker) ────────────
+.python_packages/
+.python_packages
+.mamba/
+.mamba
+.pixi/
+.pdm-python
+.pdm-build/
+__pypackages__/
+
+# ── Runtime local sem Docker ─────────────────────────────────────────────────
+.pgdata/
+.pgdata
+.pg.log
+.uvicorn.log
+.uvicorn.pid
+/bin/
+
+# ── Uploads / DB locais ──────────────────────────────────────────────────────
+/uploads/*
+!/uploads/.gitkeep
 *.db
 *.sqlite
 *.sqlite3
 db.sqlite3
 db.sqlite3-journal
 
-# Logs & PIDs
+# ── Frontend (Vite / React SPA) ──────────────────────────────────────────────
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/.vite/
+/frontend/*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Docker / compose overrides locais ────────────────────────────────────────
+docker-compose.override.yml
+docker-compose*.local.yml
+
+# ── Logs / PIDs / temp ───────────────────────────────────────────────────────
 *.log
 *.pid
 pip-log.txt
 pip-delete-this-directory.txt
-.pg.log
-.uvicorn.log
-.uvicorn.pid
+.moto/
+/tmp/
+/temp/
+.temp/
+tempCodeRunnerFile.py
 
-# IDE / OS / tooling
+# ── IDE / OS ─────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 .claude/
@@ -72,50 +116,13 @@ pip-delete-this-directory.txt
 *~
 .DS_Store
 Thumbs.db
-tempCodeRunnerFile.py
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
-# Test / coverage / type caches
-.pytest_cache/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache/
-htmlcov/
-cover/
-coverage.xml
-nosetests.xml
-*.cover
-*.py.cover
-*.lcov
-.hypothesis/
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.ruff_cache/
-.pyre/
-.pytype/
-cython_debug/
-
-# Frontend (Vite / npm)
-frontend/node_modules/
-frontend/dist/
-frontend/dist-ssr/
-frontend/.vite/
-*.local
-
-# Local runtime (dev without Docker)
-.python_packages/
-.mamba/
-.pgdata/
-.pixi/
-.pdm-python
-.pdm-build/
-bin/
-bin/micromamba
-
-# Local S3 mock / temp
-.moto/
-tmp/
-temp/
-.temp/
+# ── Observabilidade / misc ───────────────────────────────────────────────────
+*.rdb
+*.aof
+celerybeat-schedule*
+celerybeat.pid

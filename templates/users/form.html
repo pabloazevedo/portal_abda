@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{% if user_obj %}{{ t.users_edit }}{% else %}{{ t.users_add }}{% endif %}{% endblock %}
+{% block page_title %}{% if user_obj %}{{ t.users_edit }}{% else %}{{ t.users_add }}{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/users/" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <p style="font-size:13px; color:var(--text-secondary); margin:0 0 20px;">
+    {{ t.get('users_system_help', 'Cadastro exclusivo da equipe operacional: administradores, maestros, arquivistas, secretaria e demais papéis de sistema. Acesso ao App para músicos/coralistas é concedido no cadastro de Membros.') }}
+  </p>
+  <form method="post" action="{% if user_obj %}/users/{{ user_obj.id }}/edit{% else %}/users/new{% endif %}">
+
+    <div class="form-section-title"><i class="bi bi-person-fill"></i> &nbsp;{{ t.label_username }}</div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">{{ t.label_username }} <span class="required">*</span></label>
+        <input type="text" name="username" class="form-control {% if errors.username %}is-invalid{% endif %}"
+               value="{{ form_data.get('username', user_obj.username if user_obj else '') }}"
+               required maxlength="50" />
+        {% if errors.username %}<div class="invalid-feedback">{{ errors.username }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">{{ t.label_email }} <span class="required">*</span></label>
+        <input type="email" name="email" class="form-control {% if errors.email %}is-invalid{% endif %}"
+               value="{{ form_data.get('email', user_obj.email if user_obj else '') }}"
+               required maxlength="150" />
+        {% if errors.email %}<div class="invalid-feedback">{{ errors.email }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">{{ t.label_role }} <span class="required">*</span></label>
+        <select name="role" class="form-select {% if errors.role %}is-invalid{% endif %}" required>
+          <option value="secretaria" {% if form_data.get('role', user_obj.role.value if user_obj else 'secretaria') == 'secretaria' %}selected{% endif %}>{{ t.role_secretaria }}</option>
+          <option value="arquivista" {% if form_data.get('role', user_obj.role.value if user_obj else '') == 'arquivista' %}selected{% endif %}>{{ t.role_arquivista_sistema }}</option>
+          <option value="maestro"    {% if form_data.get('role', user_obj.role.value if user_obj else '') == 'maestro'    %}selected{% endif %}>{{ t.role_maestro_sistema }}</option>
+          <option value="admin"      {% if form_data.get('role', user_obj.role.value if user_obj else '') == 'admin'      %}selected{% endif %}>{{ t.role_admin }}</option>
+        </select>
+        {% if errors.role %}<div class="invalid-feedback">{{ errors.role }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-section-title" style="margin-top:28px;"><i class="bi bi-lock-fill"></i> &nbsp;{{ t.label_password }}</div>
+
+    {% if user_obj %}
+    <p class="form-text" style="margin-bottom:16px;"><i class="bi bi-info-circle"></i> {{ t.password_leave_blank }}</p>
+    {% endif %}
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">{{ t.label_password }} {% if not user_obj %}<span class="required">*</span>{% endif %}</label>
+        <input type="password" name="password" class="form-control {% if errors.password %}is-invalid{% endif %}"
+               {% if not user_obj %}required{% endif %} minlength="6"
+               placeholder="{% if user_obj %}{{ t.password_leave_blank_short }}{% else %}••••••••{% endif %}" />
+        {% if errors.password %}<div class="invalid-feedback">{{ errors.password }}</div>{% endif %}
+        <div class="form-text">{{ t.error_password_min }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">{{ t.label_confirm_password }} {% if not user_obj %}<span class="required">*</span>{% endif %}</label>
+        <input type="password" name="confirm_password" class="form-control {% if errors.confirm_password %}is-invalid{% endif %}"
+               {% if not user_obj %}required{% endif %}
+               placeholder="••••••••" />
+        {% if errors.confirm_password %}<div class="invalid-feedback">{{ errors.confirm_password }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-actions-bar">
+      <button type="submit" class="btn-primary-custom" style="padding:11px 28px; font-size:15px;">
+        <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+      </button>
+      <a href="/users/" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; padding:10px 20px; font-size:14px;">
+        {{ t.btn_cancel }}
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

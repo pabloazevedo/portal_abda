@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}{{ evento.titulo }}{% endblock %}
+{% block page_title %}{{ evento.titulo }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_acervo %}
+<a href="/acervo/programacao/{{ evento.id }}/edit" class="btn btn-sm btn-outline-primary">
+  <i class="bi bi-pencil" aria-hidden="true"></i> Editar
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="page-narrow">
+
+  <nav class="page-breadcrumb" aria-label="breadcrumb">
+    <a href="/acervo/programacao/calendario">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i> Programação
+    </a>
+  </nav>
+
+  <div class="form-card form-card--roomy mb-4">
+    <div class="detail-hero-row">
+      <div>
+        {% if not evento.publico %}
+        <span class="badge bg-secondary mb-2">Privado</span>
+        {% endif %}
+        <div class="event-meta-row">
+          <span>
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            {{ evento.data_inicio.strftime('%d/%m/%Y %H:%M') }}
+            {% if evento.data_fim %}– {{ evento.data_fim.strftime('%H:%M') }}{% endif %}
+          </span>
+          {% if evento.local %}
+          <span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ evento.local }}</span>
+          {% endif %}
+          {% if evento.maestro %}
+          <span><i class="bi bi-person-badge" aria-hidden="true"></i> {{ evento.maestro.full_name }}</span>
+          {% endif %}
+        </div>
+        {% if evento.descricao %}
+        <p class="detail-subtitle" style="margin:0;">{{ evento.descricao }}</p>
+        {% endif %}
+      </div>
+      <div class="d-flex flex-column gap-2 align-items-end">
+        {% if can_manage_acervo and evento.programa %}
+        <a href="/acervo/programacao/{{ evento.id }}/distribuir" class="btn btn-sm btn-primary">
+          <i class="bi bi-send" aria-hidden="true"></i> Distribuir partituras
+        </a>
+        <a href="/acervo/programacao/{{ evento.id }}/whatsapp?auto=1" class="btn btn-sm btn-success">
+          <i class="bi bi-whatsapp" aria-hidden="true"></i> WhatsApp (link mobile)
+        </a>
+        {% endif %}
+        <a href="/acervo/programacao/ical/feed.ics" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-calendar-check" aria-hidden="true"></i> Exportar .ics
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if request.query_params.get('distribuido') %}
+  <div class="alert alert-success mb-4">
+    <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
+    Distribuição de partituras salva. Links enviados (ou registrados no log se SMTP não estiver configurado).
+  </div>
+  {% endif %}
+
+  {% if can_manage_acervo and sugestoes_distribuicao %}
+  <div class="form-card form-card--compact mb-4" style="background:rgba(107,132,255,0.05);">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="small">
+        <strong>{{ sugestoes_distribuicao|length }}</strong> músico(s) com partes sugeridas pelo instrumento/voz.
+      </div>
+      <a href="/acervo/programacao/{{ evento.id }}/distribuir" class="btn btn-sm btn-outline-primary">
+        Revisar e enviar
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="section-heading">
+      <i class="bi bi-list-ol" aria-hidden="true" style="color:var(--accent);"></i>
+      Programa do Evento
+      <span class="badge" style="background:rgba(107,132,255,0.15); color:#6b84ff;">{{ evento.programa|length }}</span>
+    </h5>
+  </div>
+
+  {% if evento.programa %}
+  <div class="table-card mb-4">
+    <div class="table-responsive">
+      <table class="table mb-0" style="font-size:13px;">
+        <thead>
+          <tr>
+            <th style="width:50px;">#</th>
+            <th>Arranjo</th>
+            <th>Instrumentação</th>
+            <th>Execução</th>
+            <th style="width:130px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ca in evento.programa %}
+          <tr>
+            <td class="text-secondary">{{ ca.ordem or loop.index }}</td>
+            <td>
+              {% if ca.arranjo.obra %}
+              <div class="fw-semibold">{{ ca.arranjo.obra.titulo }}</div>
+              {% endif %}
+              <div class="small text-secondary">
+                {{ ca.arranjo.titulo_arranjo or 'Arranjo principal' }}
+                {% if ca.arranjo.arranjador_label != '—' %} · Arr: {{ ca.arranjo.arranjador_label }}{% endif %}
+              </div>
+            </td>
+            <td class="text-secondary small">
+              {{ ca.arranjo.instrumentacao[:50] }}{% if ca.arranjo.instrumentacao|length > 50 %}…{% endif %}
+            </td>
+            <td>
+              {% if ca.data_execucao %}
+              <span class="status-pill status-pill--active">
+                <i class="bi bi-check-circle" aria-hidden="true"></i> {{ ca.data_execucao.strftime('%d/%m/%Y') }}
+              </span>
+              {% elif can_manage_acervo %}
+              <button type="button" class="btn btn-sm btn-outline-secondary"
+                      data-bs-toggle="modal" data-bs-target="#execModal{{ ca.id }}">
+                <i class="bi bi-check2" aria-hidden="true"></i> Registrar
+              </button>
+              {% else %}
+              <span class="small text-secondary">Pendente</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if can_manage_acervo and not ca.data_execucao %}
+              <form id="rm-prog-{{ ca.id }}" method="post" action="/acervo/programacao/{{ evento.id }}/programa/{{ ca.id }}/remove" class="d-inline">
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        aria-label="Remover do programa"
+                        onclick="confirmAction('Remover esta obra do programa?', 'rm-prog-{{ ca.id }}', 'danger')">
+                  <i class="bi bi-x-lg" aria-hidden="true"></i> Remover
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% for ca in evento.programa %}
+  {% if not ca.data_execucao and can_manage_acervo %}
+  <div class="modal fade" id="execModal{{ ca.id }}" tabindex="-1" aria-labelledby="execModalLabel{{ ca.id }}">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="execModalLabel{{ ca.id }}">
+            <i class="bi bi-check-circle me-2" aria-hidden="true" style="color:#10b981;"></i>Registrar Execução
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <form method="post" action="/acervo/programacao/{{ evento.id }}/programa/{{ ca.id }}/execucao">
+          <div class="modal-body">
+            <p class="detail-subtitle">
+              {% if ca.arranjo.obra %}<strong>{{ ca.arranjo.obra.titulo }}</strong> — {% endif %}
+              {{ ca.arranjo.titulo_arranjo or 'Arranjo principal' }}
+            </p>
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="data_execucao_{{ ca.id }}">Data/Hora <span class="text-danger">*</span></label>
+              <input type="datetime-local" name="data_execucao" id="data_execucao_{{ ca.id }}" class="form-control" required
+                     value="{{ evento.data_inicio.strftime('%Y-%m-%dT%H:%M') }}" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Duração Real</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="number" name="duracao_real_m" min="0" max="999" placeholder="min"
+                       class="form-control" style="max-width:90px;" aria-label="Minutos" />
+                <span>min</span>
+                <input type="number" name="duracao_real_s" min="0" max="59" placeholder="s"
+                       class="form-control" style="max-width:90px;" aria-label="Segundos" />
+                <span>s</span>
+              </div>
+            </div>
+            <div>
+              <label class="form-label fw-semibold" for="obs_{{ ca.id }}">Observações</label>
+              <textarea name="observacoes" id="obs_{{ ca.id }}" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-lg" aria-hidden="true"></i> Confirmar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {% else %}
+  <div class="empty-state mb-4">
+    <div class="empty-state-icon" aria-hidden="true"><i class="bi bi-music-note-list"></i></div>
+    <p class="mb-0">Nenhum arranjo no programa.</p>
+  </div>
+  {% endif %}
+
+  {% if can_manage_acervo %}
+  <div class="form-card form-card--roomy">
+    <h6 class="detail-section-title" style="margin-bottom:14px;">
+      <i class="bi bi-plus-circle" aria-hidden="true"></i>Adicionar Arranjo ao Programa
+    </h6>
+    {% if arranjos_disponiveis %}
+    <form method="post" action="/acervo/programacao/{{ evento.id }}/programa/add">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-7">
+          <label class="visually-hidden" for="arranjo_id">Arranjo</label>
+          <select name="arranjo_id" id="arranjo_id" class="form-select" required>
+            <option value="">— Selecione um arranjo —</option>
+            {% for a in arranjos_disponiveis %}
+            <option value="{{ a.id }}">
+              {% if a.obra %}{{ a.obra.titulo }} · {% endif %}
+              {{ a.titulo_arranjo or 'Arranjo principal' }}
+              ({{ a.instrumentacao[:40] }}{% if a.instrumentacao|length > 40 %}…{% endif %})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="visually-hidden" for="ordem">Ordem</label>
+          <input type="number" name="ordem" id="ordem" min="1" max="99" class="form-control" placeholder="Ordem" />
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> Adicionar
+          </button>
+        </div>
+      </div>
+    </form>
+    {% else %}
+    <p class="detail-subtitle mb-0">
+      Todos os arranjos disponíveis já estão no programa.
+      <a href="/acervo/arranjos/new">Cadastrar novo arranjo</a>
+    </p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

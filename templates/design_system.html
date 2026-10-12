@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% block title %}Design System{% endblock %}
+{% block page_title %}Design System{% endblock %}
+
+{% block content %}
+<style>
+  .ds-section { margin-bottom: 48px; }
+  .ds-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-secondary);
+    border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 20px;
+  }
+  .swatch-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .swatch {
+    width: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .swatch-color { height: 56px; }
+  .swatch-label {
+    background: var(--card-bg);
+    padding: 6px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-top: 1px solid #f0f2f5;
+  }
+  .spacing-demo { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .spacing-box {
+    background: rgba(79,110,247,0.15);
+    border: 1px dashed var(--accent);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--accent);
+  }
+  .type-row { padding: 8px 0; border-bottom: 1px solid #f0f2f5; }
+  .type-row:last-child { border-bottom: none; }
+  .ds-card { background: var(--card-bg); border-radius: 14px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+</style>
+
+<div style="max-width: 900px;">
+
+  <!-- ── Paleta de Cores ── -->
+  <div class="ds-section">
+    <div class="ds-title">🎨 Paleta de Cores</div>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--accent);"></div>
+        <div class="swatch-label">--accent<br>#4f6ef7</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--accent-hover);"></div>
+        <div class="swatch-label">--accent-hover<br>#3a5be0</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--success);"></div>
+        <div class="swatch-label">--success<br>#27c4a3</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--warning);"></div>
+        <div class="swatch-label">--warning<br>#f59e0b</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--danger);"></div>
+        <div class="swatch-label">--danger<br>#e74c5e</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--sidebar-bg);"></div>
+        <div class="swatch-label">--sidebar-bg<br>#1A365C</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--content-bg);"></div>
+        <div class="swatch-label">--content-bg<br>#f0f2f8</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--card-bg); border: 1px solid #e2e8f0;"></div>
+        <div class="swatch-label">--card-bg<br>#ffffff</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--text-primary);"></div>
+        <div class="swatch-label">--text-primary<br>#1a1f2e</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--text-secondary);"></div>
+        <div class="swatch-label">--text-secondary<br>#4b5563</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--border-color);"></div>
+        <div class="swatch-label">--border-color<br>#e5e7eb</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background:var(--primary-color);"></div>
+        <div class="swatch-label">--primary-color<br>= accent</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tipografia ── -->
+  <div class="ds-section">
+    <div class="ds-title">✍️ Tipografia — Inter</div>
+    <div class="ds-card">
+      <div class="type-row">
+        <div style="font-size:28px; font-weight:800; line-height:1.2;">H1 — 28px / 800</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Títulos de stat-card · stat-value</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:18px; font-weight:700;">H2 — 18px / 700</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">topbar-title</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:15px; font-weight:700;">H3 — 15px / 700</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">musician-name · form-section-title</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:14px; font-weight:500;">Body — 14px / 500</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Texto padrão · inputs · botões</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:13px; font-weight:600;">Label — 13px / 600</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">form-label · nav-item</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:12px; color:var(--text-secondary);">Caption — 12px / 400 — Secondary</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">musician-info · form-text</div>
+      </div>
+      <div class="type-row">
+        <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-secondary);">OVERLINE — 10px / 700 UPPERCASE</div>
+        <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">nav-section-title · typeahead-category</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Botões ── -->
+  <div class="ds-section">
+    <div class="ds-title">Botões</div>
+    <div class="ds-card">
+      <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+        <button class="btn-primary-custom"><i class="bi bi-plus-lg" aria-hidden="true"></i> Primário (.btn-primary-custom)</button>
+        <button class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Bootstrap .btn-primary (alinhado)</button>
+        <button class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;">Secundário</button>
+        <button class="btn btn-danger" style="border-radius:8px; font-size:14px; font-weight:600;">Perigo</button>
+        <button class="btn btn-warning text-dark" style="border-radius:8px; font-size:14px; font-weight:600;">Aviso</button>
+        <button class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;" disabled>Desabilitado</button>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <a class="btn-icon edit" title="Editar" aria-label="Editar"><i class="bi bi-pencil-fill" aria-hidden="true"></i></a>
+        <a class="btn-icon delete" title="Excluir" aria-label="Excluir"><i class="bi bi-trash-fill" aria-hidden="true"></i></a>
+        <a class="btn-icon toggle-off" title="Inativar" aria-label="Inativar"><i class="bi bi-pause-circle-fill" aria-hidden="true"></i></a>
+        <a class="btn-icon toggle-on" title="Ativar" aria-label="Ativar"><i class="bi bi-play-circle-fill" aria-hidden="true"></i></a>
+        <span style="font-size:12px; color:var(--text-secondary); margin-left:4px;">btn-icon variants (32×32)</span>
+      </div>
+      <div class="mt-3">
+        <div class="form-actions-bar" style="position:static; background:transparent;">
+          <button class="btn-primary-custom">Salvar</button>
+          <button class="btn btn-outline-secondary" style="border-radius:8px;">Cancelar</button>
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary);">.form-actions-bar (sticky no mobile)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Badges ── -->
+  <div class="ds-section">
+    <div class="ds-title">🏷️ Badges</div>
+    <div class="ds-card">
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px; font-weight:600;">Status</p>
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <span class="badge-type badge-active"><i class="bi bi-circle-fill" style="font-size:7px;" aria-hidden="true"></i> Ativo</span>
+        <span class="badge-type badge-inactive"><i class="bi bi-circle-fill" style="font-size:7px;" aria-hidden="true"></i> Inativo</span>
+        <span class="badge-type badge-orchestra">Orquestra</span>
+        <span class="badge-type badge-choir">Coral</span>
+        <span class="badge-type badge-both">Ambos</span>
+      </div>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px; font-weight:600;">Papéis (badge-role)</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge-role badge-role-musico">Músico</span>
+        <span class="badge-role badge-role-maestro">Maestro</span>
+        <span class="badge-role badge-role-chefe_naipe">Chefe de Naipe</span>
+        <span class="badge-role badge-role-arquivista">Arquivista</span>
+        <span class="badge-role badge-role-arranjador">Arranjador</span>
+        <span class="badge-role badge-role-cantor">Coralista</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Formulários ── -->
+  <div class="ds-section">
+    <div class="ds-title">📝 Formulários</div>
+    <div class="ds-card" style="max-width:560px;">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="ds-input-ok">Campo válido</label>
+          <input id="ds-input-ok" type="text" class="form-control is-valid" value="João Silva" readonly />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="ds-input-err">Campo com erro <span class="required">*</span></label>
+          <input id="ds-input-err" type="text" class="form-control is-invalid" value="" readonly />
+          <div class="invalid-feedback">Este campo é obrigatório</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="ds-tel">Celular (com máscara)</label>
+          <input id="ds-tel" type="tel" name="celular" class="form-control" placeholder="(11) 98888-8888" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="ds-select">Seleção</label>
+          <select id="ds-select" class="form-select">
+            <option>Opção 1</option>
+            <option>Opção 2</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="ds-email">Email</label>
+          <input id="ds-email" type="email" class="form-control" placeholder="membro@example.org" />
+          <div class="form-text">Validação em tempo real ao sair do campo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cards ── -->
+  <div class="ds-section">
+    <div class="ds-title">🃏 Cards</div>
+    <div class="row g-3">
+      <div class="col-sm-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="bi bi-people-fill" style="color:var(--accent);"></i></div>
+          <div><div class="stat-value">42</div><div class="stat-label">Membros Ativos</div></div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="bi bi-music-note-beamed" style="color:#059669;"></i></div>
+          <div><div class="stat-value">28</div><div class="stat-label">Musicistas</div></div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="bi bi-mic-fill" style="color:var(--warning);"></i></div>
+          <div><div class="stat-value">14</div><div class="stat-label">Coralistas</div></div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="bi bi-archive-fill" style="color:#7c3aed;"></i></div>
+          <div><div class="stat-value">87</div><div class="stat-label">Inventário</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Espaçamento ── -->
+  <div class="ds-section">
+    <div class="ds-title">📐 Escala de Espaçamento</div>
+    <div class="ds-card">
+      <div class="spacing-demo">
+        <div>
+          <div class="spacing-box" style="width:8px; height:8px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">4px</div>
+        </div>
+        <div>
+          <div class="spacing-box" style="width:16px; height:16px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">8px</div>
+        </div>
+        <div>
+          <div class="spacing-box" style="width:24px; height:24px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">12px</div>
+        </div>
+        <div>
+          <div class="spacing-box" style="width:32px; height:32px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">16px</div>
+        </div>
+        <div>
+          <div class="spacing-box" style="width:48px; height:48px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">24px</div>
+        </div>
+        <div>
+          <div class="spacing-box" style="width:64px; height:64px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">32px</div>
+        </div>
+        <div>
+          <div class="spacing-box" style="width:96px; height:96px;"></div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; text-align:center;">48px</div>
+        </div>
+      </div>
+      <div class="mt-3" style="font-size:12px; color:var(--text-secondary);">
+        Variáveis recomendadas: <code>--sp-xs: 4px</code> · <code>--sp-sm: 8px</code> ·
+        <code>--sp-md: 16px</code> · <code>--sp-lg: 24px</code> ·
+        <code>--sp-xl: 32px</code> · <code>--sp-2xl: 48px</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Alertas ── -->
+  <div class="ds-section">
+    <div class="ds-title">🔔 Alertas</div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="alert alert-success alert-auto-dismiss d-flex align-items-center gap-2 mb-0" role="alert">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        Operação realizada com sucesso. <small class="ms-auto text-muted">Desaparece em 3.5s · pausa no hover</small>
+      </div>
+      <div class="alert alert-danger d-flex align-items-center gap-2 mb-0" role="alert">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        Ocorreu um erro. Tente novamente.
+      </div>
+      <div class="alert alert-warning d-flex align-items-center gap-2 mb-0" role="alert">
+        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+        Atenção: esta ação não pode ser desfeita.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Listagens / chrome ── -->
+  <div class="ds-section">
+    <div class="ds-title">Listagens e formulários</div>
+    <div class="ds-card mb-3">
+      <p class="mb-2" style="font-size:12px; color:var(--text-secondary); font-weight:600;">.filter-bar · .page-toolbar</p>
+      <div class="filter-bar page-toolbar mb-3">
+        <input class="form-control form-control-sm" style="max-width:200px;" placeholder="Buscar…" readonly />
+        <button type="button" class="btn-primary-custom btn-sm">Filtrar</button>
+        <a class="btn btn-outline-secondary btn-sm" href="#">Limpar</a>
+      </div>
+      <p class="mb-2" style="font-size:12px; color:var(--text-secondary); font-weight:600;">.list-mobile-card</p>
+      <div class="list-mobile-card" style="max-width:360px;">
+        <a href="#" class="list-mobile-card-title">Exemplo de membro</a>
+        <div class="list-mobile-card-meta">Violinista · Ativo</div>
+        <div class="list-mobile-card-actions">
+          <a class="btn btn-sm btn-outline-primary" href="#">Abrir</a>
+        </div>
+      </div>
+      <p class="mt-3 mb-2" style="font-size:12px; color:var(--text-secondary); font-weight:600;">.empty-state</p>
+      <div class="empty-state" style="max-width:360px;">
+        <div class="empty-state-icon" aria-hidden="true"><i class="bi bi-inbox"></i></div>
+        <p class="empty-state-title">Nenhum resultado</p>
+        <p class="empty-state-subtitle">Ajuste os filtros ou cadastre um novo item.</p>
+      </div>
+      <p class="mt-3 mb-2" style="font-size:12px; color:var(--text-secondary); font-weight:600;">.form-card</p>
+      <div class="form-card form-card--roomy" style="max-width:420px;">
+        <label class="form-label">Campo de exemplo</label>
+        <input class="form-control" placeholder="Valor" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modo Escuro ── -->
+  <div class="ds-section">
+    <div class="ds-title">Modo Escuro</div>
+    <div class="ds-card">
+      <p style="font-size:14px; margin-bottom:12px;">
+        Ativado via <kbd>botão 🌙</kbd> na topbar. Preferência salva em <code>localStorage</code>.
+        Respeita <code>prefers-color-scheme</code> do sistema operacional na primeira visita.
+      </p>
+      <p style="font-size:13px; color:var(--text-secondary); margin:0;">
+        Implementação: atributo <code>data-theme="dark"</code> + <code>data-bs-theme="dark"</code> no elemento
+        <code>&lt;html&gt;</code>. Bootstrap 5.3 aplica dark mode nativamente em todos os seus componentes.
+        CSS custom properties sobrescrevem as variáveis do tema customizado.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Atalhos de Teclado ── -->
+  <div class="ds-section">
+    <div class="ds-title">⌨️ Atalhos de Teclado</div>
+    <div class="ds-card">
+      <table class="table table-sm mb-0" style="font-size:14px;">
+        <thead>
+          <tr>
+            <th style="width:160px;">Atalho</th>
+            <th>Ação</th>
+            <th>Contexto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd> + <kbd>K</kbd></td><td>Foca o campo de busca</td><td>Qualquer página</td></tr>
+          <tr><td><kbd>Ctrl</kbd> + <kbd>N</kbd></td><td>Novo membro</td><td>Página de Membros</td></tr>
+          <tr><td><kbd>Ctrl</kbd> + <kbd>N</kbd></td><td>Novo item do inventário</td><td>Página de Patrimônio</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Fecha dropdown / modal</td><td>Typeahead, busca, modal</td></tr>
+          <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Navega nos resultados</td><td>Typeahead, busca global</td></tr>
+          <tr><td><kbd>Tab</kbd></td><td>Navega entre elementos</td><td>Toda a interface</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

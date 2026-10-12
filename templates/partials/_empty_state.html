@@ -1,0 +1,13 @@
+{# Shared empty state
+   Expects: title; optional icon, subtitle, cta_href, cta_label
+#}
+<div class="empty-state">
+  {% if icon %}
+  <div class="empty-state-icon" aria-hidden="true"><i class="bi {{ icon }}"></i></div>
+  {% endif %}
+  <p class="empty-state-title">{{ title }}</p>
+  {% if subtitle %}<p class="empty-state-subtitle">{{ subtitle }}</p>{% endif %}
+  {% if cta_href and cta_label %}
+  <a href="{{ cta_href }}" class="btn-primary-custom empty-state-cta">{{ cta_label }}</a>
+  {% endif %}
+</div>

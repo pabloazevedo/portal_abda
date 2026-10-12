@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etiqueta — {{ item.identificador_interno }}</title>
+  <style>
+    :root {
+      --label-w: 62mm;   /* largura típica Brother / Zebra desktop */
+      --label-h: 40mm;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #e8ecf4;
+      color: #111;
+    }
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 16px;
+      background: #1A365C;
+      color: #fff;
+    }
+    .toolbar a, .toolbar button {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      color: #1A365C;
+      background: #fff;
+    }
+    .toolbar .muted { opacity: 0.85; font-size: 12px; margin-left: auto; }
+    .sheet {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 24px 16px 48px;
+    }
+    .label {
+      width: var(--label-w);
+      min-height: var(--label-h);
+      background: #fff;
+      border: 1px dashed #94a3b8;
+      border-radius: 4px;
+      padding: 4mm;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .label h1 {
+      margin: 0 0 2mm;
+      font-size: 11pt;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .label .sub {
+      margin: 0 0 2mm;
+      font-size: 8pt;
+      color: #475569;
+    }
+    .label img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .label .qr img { width: 28mm; height: 28mm; }
+    .label .barcode img { width: 100%; max-height: 22mm; object-fit: contain; }
+    .hint {
+      max-width: 640px;
+      margin: 0 auto 16px;
+      padding: 0 16px;
+      font-size: 13px;
+      color: #475569;
+      text-align: center;
+    }
+    @media print {
+      body { background: #fff; }
+      .toolbar, .hint, .no-print { display: none !important; }
+      .sheet { padding: 0; gap: 0; }
+      .label {
+        border: none;
+        border-radius: 0;
+        width: 100%;
+        min-height: auto;
+        page-break-after: always;
+      }
+      .label:last-child { page-break-after: auto; }
+      @page {
+        margin: 2mm;
+        size: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar no-print">
+    <button type="button" onclick="window.print()">Imprimir</button>
+    <a href="/patrimonio/{{ item.id }}">Voltar ao item</a>
+    <a href="/patrimonio/{{ item.id }}/etiqueta/imprimir?tipo=qr">Só QR</a>
+    <a href="/patrimonio/{{ item.id }}/etiqueta/imprimir?tipo=barcode">Só código de barras</a>
+    <a href="/patrimonio/{{ item.id }}/etiqueta/imprimir?tipo=ambas">Ambos</a>
+    <span class="muted">Selecione a impressora de etiquetas no diálogo de impressão</span>
+  </div>
+
+  <p class="hint no-print">
+    Formato otimizado para impressoras térmicas de etiquetas (ex.: 62×40&nbsp;mm).
+    No diálogo de impressão, escolha a impressora correta, desative cabeçalhos/rodapés e use escala 100%.
+  </p>
+
+  <div class="sheet">
+    {% if print_tipo in ['qr', 'ambas'] %}
+    <div class="label">
+      <h1>{{ item.identificador_interno }}</h1>
+      <p class="sub">{{ item.fabricante or '' }} {{ item.modelo or '' }}</p>
+      <div class="qr">
+        <img src="{{ qr_img_url }}" alt="QR Code {{ item.identificador_interno }}" />
+      </div>
+      <p class="sub">QR · inventário</p>
+    </div>
+    {% endif %}
+
+    {% if print_tipo in ['barcode', 'ambas'] %}
+    <div class="label">
+      <h1>{{ item.identificador_interno }}</h1>
+      <p class="sub">{{ item.fabricante or '' }} {{ item.modelo or '' }}</p>
+      <div class="barcode">
+        <img src="{{ barcode_img_url }}" alt="Código de barras {{ item.barcode_value }}" />
+      </div>
+      <p class="sub">Code128 · {{ item.barcode_value }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    // Auto-abre o diálogo após carregar as imagens (útil em impressoras de etiqueta)
+    window.addEventListener('load', function () {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('auto') === '1') {
+        setTimeout(function () { window.print(); }, 300);
+      }
+    });
+  </script>
+</body>
+</html>

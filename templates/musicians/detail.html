@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}{{ musician.full_name }}{% endblock %}
+{% block page_title %}{{ musician.full_name }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_members %}
+<a href="/musicians/{{ musician.id }}/edit?lang={{ lang }}" class="btn-primary-custom" style="padding:8px 16px; font-size:14px; text-decoration:none;">
+  <i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.btn_edit }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<nav class="page-breadcrumb" aria-label="breadcrumb">
+  <a href="/musicians/">
+    <i class="bi bi-people-fill" aria-hidden="true"></i> Membros
+  </a>
+  <i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span class="page-breadcrumb-current">{{ musician.full_name }}</span>
+</nav>
+
+<div class="row g-4">
+
+  <div class="col-lg-8">
+
+    <div class="form-card form-card--roomy mb-4">
+      <div class="detail-hero-row">
+        <div>
+          {% if musician.apelido %}
+          <div class="detail-subtitle">
+            <i class="bi bi-tag" aria-hidden="true"></i> <em>{{ musician.apelido }}</em>
+          </div>
+          {% endif %}
+          <div class="detail-badges">
+            {% for role in musician.roles %}
+            <span class="badge-role badge-role-{{ role.role_type.value }}">{{ role.label }}</span>
+            {% else %}
+            {% if musician.member_type %}
+              {% if musician.member_type.value == 'orchestra' %}<span class="badge-role badge-role-musico">Músico</span>
+              {% elif musician.member_type.value == 'choir' %}<span class="badge-role badge-role-cantor">Coralista</span>
+              {% else %}<span class="badge-role badge-role-musico">Músico</span><span class="badge-role badge-role-cantor">Coralista</span>
+              {% endif %}
+            {% endif %}
+            {% endfor %}
+            {% if musician.is_active %}
+            <span class="status-pill status-pill--active">
+              <i class="bi bi-circle-fill" aria-hidden="true"></i> {{ t.status_active }}
+            </span>
+            {% else %}
+            <span class="status-pill status-pill--inactive">
+              <i class="bi bi-circle-fill" aria-hidden="true"></i> {{ t.status_inactive }}
+            </span>
+            {% endif %}
+            {% if has_app_access %}
+            <span class="status-pill status-pill--app">
+              <i class="bi bi-phone" aria-hidden="true"></i> {{ t.get('badge_app_access', 'App / PWA') }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if has_app_access or is_admin %}
+    <div class="form-card form-card--roomy mb-4">
+      <h3 class="detail-section-title">
+        <i class="bi bi-phone" aria-hidden="true"></i>
+        {{ t.get('label_app_access', 'Acesso ao App (PWA)') }}
+      </h3>
+      {% if has_app_access %}
+      <p class="field-value" style="margin:0 0 8px;">
+        {{ t.get('label_app_login', 'Login do app') }}: <code>{{ app_user.username }}</code>
+      </p>
+      <p class="detail-subtitle" style="margin:0 0 14px;">
+        {{ t.get('help_app_access_active', 'Este membro pode entrar no site mobile e no app com o usuário acima.') }}
+      </p>
+      {% if is_admin %}
+      <form id="revoke-app-form" method="post" action="/musicians/{{ musician.id }}/revoke-app" class="d-inline">
+        <button type="button" class="btn btn-outline-danger btn-sm"
+          onclick="confirmAction('{{ t.get('confirm_revoke_app', 'Remover o acesso ao App deste membro?') }}', 'revoke-app-form', 'danger')">
+          <i class="bi bi-phone-vibrate" aria-hidden="true"></i> {{ t.get('btn_revoke_app', 'Remover Acesso ao App') }}
+        </button>
+      </form>
+      {% endif %}
+      {% else %}
+      <p class="detail-subtitle" style="margin:0;">
+        {{ t.get('help_app_access_none', 'Sem acesso ao App. Conceda na edição do membro.') }}
+      </p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="form-card form-card--roomy mb-4">
+      <h3 class="detail-section-title">
+        <i class="bi bi-person-lines-fill" aria-hidden="true"></i>
+        Dados de Contato
+      </h3>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <div class="field-label-sm">E-mail</div>
+          <a class="field-value" href="mailto:{{ musician.email }}">
+            <i class="bi bi-envelope-fill" aria-hidden="true"></i> {{ musician.email }}
+          </a>
+        </div>
+        <div class="col-sm-6">
+          <div class="field-label-sm">Celular</div>
+          <span class="field-value">
+            <i class="bi bi-phone-fill" aria-hidden="true" style="color:var(--accent);"></i>
+            {{ musician.celular or musician.phone or '—' }}
+          </span>
+        </div>
+        {% if musician.telefone %}
+        <div class="col-sm-6">
+          <div class="field-label-sm">Telefone Fixo</div>
+          <span class="field-value">
+            <i class="bi bi-telephone-fill" aria-hidden="true" style="color:var(--accent);"></i> {{ musician.telefone }}
+          </span>
+        </div>
+        {% endif %}
+        <div class="col-sm-6">
+          <div class="field-label-sm">Data de Nascimento</div>
+          <span class="field-value">
+            <i class="bi bi-cake2-fill" aria-hidden="true" style="color:var(--accent);"></i>
+            {{ musician.birth_date.strftime('%d/%m/%Y') }} &nbsp;·&nbsp;
+            <strong>{{ musician.age }} anos</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    {% if musician.instruments or musician.instrument %}
+    <div class="form-card form-card--roomy mb-4">
+      <h3 class="detail-section-title">
+        <i class="bi bi-music-note-beamed" aria-hidden="true"></i>
+        Instrumentos
+      </h3>
+      <div class="detail-badges">
+        {% if musician.instruments %}
+        {% for inst in musician.instruments %}
+        <span class="chip-tag">
+          <i class="bi bi-music-note" aria-hidden="true"></i> {{ inst.nome }}
+          <span class="chip-tag-meta">{{ inst.categoria }}</span>
+        </span>
+        {% endfor %}
+        {% elif musician.instrument %}
+        <span class="chip-tag">
+          <i class="bi bi-music-note" aria-hidden="true"></i> {{ musician.instrument }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if emprestimos %}
+    <div class="form-card form-card--roomy mb-4">
+      <h3 class="detail-section-title">
+        <i class="bi bi-archive-fill text-warning" aria-hidden="true"></i>
+        Itens do Inventário em uso
+        <span class="badge-count">{{ emprestimos|length }}</span>
+      </h3>
+      <div class="loan-rows">
+        {% for emp in emprestimos %}
+        <div class="loan-row">
+          <div>
+            <span class="font-monospace small fw-bold" style="color:var(--accent);">{{ emp.patrimonio.identificador_interno }}</span>
+            <span class="ms-2">{{ emp.patrimonio.tipo_label }}</span>
+            {% if emp.patrimonio.fabricante %}<span class="text-secondary small"> · {{ emp.patrimonio.fabricante }}{% if emp.patrimonio.modelo %} {{ emp.patrimonio.modelo }}{% endif %}</span>{% endif %}
+          </div>
+          <div class="text-secondary small text-nowrap ms-3">
+            desde {{ emp.data_emprestimo.strftime('%d/%m/%Y') }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="form-card form-card--compact">
+      <div class="meta-inline">
+        <div>
+          <div class="field-label-sm">Cadastrado em</div>
+          <span class="field-value" style="font-size:13px;">
+            <i class="bi bi-calendar-plus" aria-hidden="true" style="color:var(--accent);"></i>
+            {% if musician.created_at %}{{ musician.created_at.strftime('%d/%m/%Y às %H:%M') }}{% else %}—{% endif %}
+          </span>
+        </div>
+        {% if musician.updated_at and musician.updated_at != musician.created_at %}
+        <div>
+          <div class="field-label-sm">Atualizado em</div>
+          <span class="field-value" style="font-size:13px;">
+            <i class="bi bi-calendar-check" aria-hidden="true" style="color:var(--accent);"></i>
+            {{ musician.updated_at.strftime('%d/%m/%Y às %H:%M') }}
+          </span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if can_manage_members or is_admin %}
+    <div class="detail-actions">
+      {% if can_manage_members %}
+      <a href="/musicians/{{ musician.id }}/edit?lang={{ lang }}" class="btn-primary-custom" style="text-decoration:none;">
+        <i class="bi bi-pencil-fill" aria-hidden="true"></i> Editar dados
+      </a>
+
+      <form id="toggle-form" method="post" action="/musicians/{{ musician.id }}/toggle-status" class="d-inline">
+        <input type="hidden" name="lang" value="{{ lang }}" />
+        <button type="button"
+          class="btn-primary-custom {% if musician.is_active %}btn-warn-custom{% else %}btn-ok-custom{% endif %}"
+          onclick="confirmAction('{% if musician.is_active %}{{ t.confirm_inactivate }}{% else %}{{ t.confirm_activate }}{% endif %}', 'toggle-form', '{% if musician.is_active %}warning{% else %}success{% endif %}')">
+          {% if musician.is_active %}
+          <i class="bi bi-pause-circle-fill" aria-hidden="true"></i> {{ t.btn_inactivate }}
+          {% else %}
+          <i class="bi bi-play-circle-fill" aria-hidden="true"></i> {{ t.btn_activate }}
+          {% endif %}
+        </button>
+      </form>
+      {% endif %}
+
+      {% if is_admin %}
+      <form id="delete-form" method="post" action="/musicians/{{ musician.id }}/delete" class="d-inline">
+        <input type="hidden" name="lang" value="{{ lang }}" />
+        <button type="button" class="btn-primary-custom btn-danger-custom"
+          onclick="confirmAction('{{ t.confirm_delete }}', 'delete-form', 'danger')">
+          <i class="bi bi-trash-fill" aria-hidden="true"></i> {{ t.btn_delete }}
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+
+  <div class="col-lg-4">
+    <div class="form-card detail-photo-card">
+      {% if musician.photo %}
+      <img src="/uploads/{{ musician.photo }}" alt="{{ musician.full_name }}" class="detail-photo" />
+      {% else %}
+      <div class="detail-photo-placeholder" aria-hidden="true">
+        <i class="bi bi-person-fill"></i>
+      </div>
+      {% endif %}
+      <div class="detail-photo-name">{{ musician.full_name }}</div>
+      <div class="detail-photo-id">ID #{{ musician.id }}</div>
+      {% if can_manage_members %}
+      <div class="detail-photo-footer">
+        <a href="/musicians/{{ musician.id }}/edit?lang={{ lang }}">
+          <i class="bi bi-camera-fill" aria-hidden="true"></i> Alterar foto
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

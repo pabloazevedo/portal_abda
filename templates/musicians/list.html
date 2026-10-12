@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.musicians_list }}{% endblock %}
+{% block page_title %}{{ t.musicians_list }}{% endblock %}
+
+{% block topbar_actions %}
+{% if can_manage_members %}
+<a href="/musicians/new?lang={{ lang }}" class="btn-primary-custom">
+  <i class="bi bi-person-plus-fill" aria-hidden="true"></i> {{ t.nav_add_musician }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-people-fill" aria-hidden="true" style="color:var(--accent);"></i></div>
+      <div><div class="stat-value">{{ stats.active }}</div><div class="stat-label">{{ t.home_total_active }}</div></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-music-note-beamed" aria-hidden="true" style="color:#059669;"></i></div>
+      <div><div class="stat-value">{{ stats.musicos }}</div><div class="stat-label">{{ t.home_musicos }}</div></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="bi bi-mic-fill" aria-hidden="true" style="color:var(--warning);"></i></div>
+      <div><div class="stat-value">{{ stats.cantores }}</div><div class="stat-label">{{ t.home_cantores }}</div></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="bi bi-person-lines-fill" aria-hidden="true" style="color:#7c3aed;"></i></div>
+      <div><div class="stat-value">{{ stats.total }}</div><div class="stat-label">{{ t.home_total }}</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Aniversariantes do mês -->
+<details class="mb-4" {% if aniversariantes %}open{% endif %} style="background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+  <summary style="padding:14px 20px; cursor:pointer; font-weight:700; font-size:14px; display:flex; align-items:center; gap:10px; list-style:none; user-select:none;">
+    <span aria-hidden="true"><i class="bi bi-gift-fill" aria-hidden="true"></i></span>
+    <span>{{ t.birthday_section }} {{ mes_nome }}</span>
+    {% if aniversariantes %}
+    <span style="background:var(--accent); color:#fff; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700; margin-left:2px;">{{ aniversariantes|length }}</span>
+    {% endif %}
+    <span style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+      {% if aniversariantes and is_admin %}
+      <a href="/settings/export-aniversariantes?month={{ mes_atual }}&lang={{ lang }}"
+         class="btn-primary-custom" style="font-size:12px; padding:5px 12px; text-decoration:none;"
+         onclick="event.stopPropagation()">
+        <i class="bi bi-file-earmark-excel-fill" aria-hidden="true"></i> {{ t.birthday_download }}
+      </a>
+      {% endif %}
+      <i class="bi bi-chevron-down" aria-hidden="true" style="font-size:13px; color:var(--text-secondary);"></i>
+    </span>
+  </summary>
+  {% if aniversariantes %}
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr style="background:var(--sidebar-bg); color:var(--sidebar-text);">
+          <th style="padding:10px 16px; text-align:left; font-weight:600;">{{ t.birthday_col_name }}</th>
+          <th style="padding:10px 16px; text-align:left; font-weight:600;">{{ t.birthday_col_date }}</th>
+          <th style="padding:10px 8px; text-align:center; font-weight:600; width:60px;">{{ t.birthday_col_day }}</th>
+          <th style="padding:10px 16px; text-align:left; font-weight:600;">{{ t.birthday_col_roles }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in aniversariantes %}
+        <tr style="border-top:1px solid var(--border); {% if loop.index is odd %}background:rgba(0,0,0,0.015);{% endif %}">
+          <td style="padding:10px 16px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              {% if m.photo %}
+              <img src="/uploads/{{ m.photo }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0;" />
+              {% else %}
+              <div style="width:32px; height:32px; border-radius:50%; background:rgba(99,102,241,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="bi bi-person-fill" aria-hidden="true" style="color:var(--accent); font-size:15px;"></i>
+              </div>
+              {% endif %}
+              <a href="/musicians/{{ m.id }}" style="font-weight:600; color:var(--text-primary); text-decoration:none;">{{ m.full_name }}</a>
+            </div>
+          </td>
+          <td style="padding:10px 16px; color:var(--text-secondary);">{{ m.birth_date.strftime('%d/%m/%Y') }}</td>
+          <td style="padding:10px 8px; text-align:center;">
+            <span style="font-size:15px; font-weight:800; color:var(--accent);">{{ m.birth_date.day }}</span>
+          </td>
+          <td style="padding:10px 16px;">
+            <div style="display:flex; flex-wrap:wrap; gap:3px;">
+              {% for role in m.roles %}
+              <span class="badge-role badge-role-{{ role.role_type.value }}">{{ role.label }}</span>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding:16px 20px; color:var(--text-secondary); font-size:13px;">
+    <i class="bi bi-calendar-x" aria-hidden="true" style="margin-right:6px;"></i>{{ t.birthday_none }}
+  </div>
+  {% endif %}
+</details>
+
+<!-- Filtros -->
+<div class="filter-bar mb-3">
+  <form id="search-form" method="get" action="/musicians/">
+    <input type="hidden" name="lang" value="{{ lang }}" />
+    <div class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <input type="text" name="search" class="form-control" placeholder="{{ t.musicians_search }}" value="{{ search }}" />
+      </div>
+      <div class="col-md-2">
+        <select name="role_filter" class="form-select">
+          <option value="">{{ t.filter_all_roles }}</option>
+          {% for rt in role_types %}
+          <option value="{{ rt.value }}" {% if role_filter == rt.value %}selected{% endif %}>
+            {{ t['role_' + rt.value] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="status" class="form-select">
+          <option value="">{{ t.filter_all_status }}</option>
+          <option value="active" {% if status == 'active' %}selected{% endif %}>{{ t.filter_active }}</option>
+          <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>{{ t.filter_inactive }}</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn-primary-custom flex-grow-1" style="justify-content:center;">
+          <i class="bi bi-search" aria-hidden="true"></i> {{ t.btn_search }}
+        </button>
+        <button type="button" id="clear-search" class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px;">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Tabela de membros -->
+{% if musicians %}
+
+<!-- Card view (mobile) -->
+<div class="d-md-none">
+  {% for m in musicians %}
+  <div class="card mb-2 {% if not m.is_active %}opacity-50{% endif %}"
+       style="border-radius:12px;border:1px solid #e2e8f0;background:var(--card-bg);">
+    <div class="card-body p-3">
+      <div style="display:flex;align-items:center;gap:12px;">
+        {% if m.photo %}
+        <img src="/uploads/{{ m.photo }}" alt="{{ m.full_name }}"
+             style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" />
+        {% else %}
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(79,110,247,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="bi bi-person-fill" aria-hidden="true" style="color:var(--accent);font-size:22px;"></i>
+        </div>
+        {% endif %}
+        <div style="flex:1;min-width:0;">
+          <a href="/musicians/{{ m.id }}"
+             style="font-weight:700;font-size:15px;color:var(--text-primary);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ m.full_name }}
+          </a>
+          <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;">
+            {% for role in m.roles %}
+            <span class="badge-role badge-role-{{ role.role_type.value }}">{{ role.label }}</span>
+            {% else %}
+            {% if m.member_type %}
+              {% if m.member_type.value == 'orchestra' %}<span class="badge-role badge-role-musico">Músico</span>
+              {% elif m.member_type.value == 'choir' %}<span class="badge-role badge-role-cantor">Coralista</span>
+              {% else %}<span class="badge-role badge-role-musico">Músico</span><span class="badge-role badge-role-cantor">Coralista</span>
+              {% endif %}
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <div style="flex-shrink:0;">
+          {% if m.is_active %}
+          <span class="badge bg-success" style="font-size:11px;">{{ t.status_active }}</span>
+          {% else %}
+          <span class="badge bg-secondary" style="font-size:11px;">{{ t.status_inactive }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if m.email or m.celular or m.phone %}
+      <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);display:flex;flex-direction:column;gap:2px;">
+        {% if m.email %}<span><i class="bi bi-envelope" aria-hidden="true" style="margin-right:4px;"></i>{{ m.email }}</span>{% endif %}
+        {% if m.celular or m.phone %}<span><i class="bi bi-phone" aria-hidden="true" style="margin-right:4px;"></i>{{ m.celular or m.phone }}</span>{% endif %}
+      </div>
+      {% endif %}
+
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+        {% if can_manage_members %}
+        <a href="/musicians/{{ m.id }}/edit?lang={{ lang }}"
+           class="btn btn-sm btn-outline-primary"
+           style="border-radius:8px;min-height:44px;padding:0 16px;display:flex;align-items:center;gap:5px;">
+          <i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ t.btn_edit }}
+        </a>
+        <form id="mc-toggle-{{ m.id }}" method="post" action="/musicians/{{ m.id }}/toggle-status" style="display:inline;">
+          <input type="hidden" name="lang" value="{{ lang }}" />
+          <button type="button"
+            class="btn btn-sm {% if m.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+            style="border-radius:8px;min-height:44px;padding:0 14px;"
+            onclick="confirmAction('{% if m.is_active %}{{ t.confirm_inactivate }}{% else %}{{ t.confirm_activate }}{% endif %}', 'mc-toggle-{{ m.id }}', '{% if m.is_active %}warning{% else %}success{% endif %}')">
+            <i class="bi bi-{% if m.is_active %}pause-circle-fill{% else %}play-circle-fill{% endif %}"></i>
+          </button>
+        </form>
+        {% endif %}
+        {% if is_admin %}
+        <form id="mc-del-{{ m.id }}" method="post" action="/musicians/{{ m.id }}/delete" style="display:inline;">
+          <input type="hidden" name="lang" value="{{ lang }}" />
+          <button type="button" class="btn btn-sm btn-outline-danger"
+            style="border-radius:8px;min-height:44px;padding:0 14px;"
+            onclick="confirmAction('{{ t.confirm_delete }}', 'mc-del-{{ m.id }}', 'danger')">
+            <i class="bi bi-trash-fill" aria-hidden="true"></i>
+          </button>
+        </form>
+        {% endif %}
+        {% if not can_manage_members %}
+        <a href="/musicians/{{ m.id }}"
+           class="btn btn-sm btn-outline-secondary"
+           style="border-radius:8px;min-height:44px;padding:0 16px;display:flex;align-items:center;gap:5px;">
+          <i class="bi bi-eye-fill" aria-hidden="true"></i> Ver perfil
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Tabela (desktop/tablet) -->
+<div class="d-none d-md-block table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0" style="font-size:13px;">
+      <thead>
+        <tr style="background:var(--sidebar-bg); color:var(--sidebar-text);">
+          <th style="padding:12px 16px; font-weight:600; white-space:nowrap;">Nome</th>
+          <th style="padding:12px 12px; font-weight:600;">Papéis</th>
+          <th style="padding:12px 12px; font-weight:600;">Contato</th>
+          <th style="padding:12px 12px; font-weight:600;">Instrumentos</th>
+          <th style="padding:12px 12px; font-weight:600; white-space:nowrap;">Nascimento</th>
+          <th style="padding:12px 12px; font-weight:600; text-align:center; width:90px;">Status</th>
+          {% if can_manage_members or is_admin %}
+          <th style="padding:12px 12px; font-weight:600; text-align:center; width:100px;">Ações</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in musicians %}
+        <tr class="{% if not m.is_active %}opacity-50{% endif %}" style="border-top:1px solid var(--border-color);">
+
+          <!-- Nome + avatar -->
+          <td style="padding:10px 16px; vertical-align:middle;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              {% if m.photo %}
+              <img src="/uploads/{{ m.photo }}" alt="{{ m.full_name }}"
+                   style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid var(--border-color);" />
+              {% else %}
+              <div style="width:36px; height:36px; border-radius:50%; background:rgba(79,110,247,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:2px solid var(--border-color);">
+                <i class="bi bi-person-fill" aria-hidden="true" style="color:var(--accent); font-size:16px;"></i>
+              </div>
+              {% endif %}
+              <a href="/musicians/{{ m.id }}"
+                 style="font-weight:600; color:var(--text-primary); text-decoration:none; white-space:nowrap;">
+                {{ m.full_name }}
+              </a>
+            </div>
+          </td>
+
+          <!-- Papéis -->
+          <td style="padding:10px 12px; vertical-align:middle;">
+            <div style="display:flex; flex-wrap:wrap; gap:3px;">
+              {% for role in m.roles %}
+              <span class="badge-role badge-role-{{ role.role_type.value }}">{{ role.label }}</span>
+              {% else %}
+              {% if m.member_type %}
+                {% if m.member_type.value == 'orchestra' %}<span class="badge-role badge-role-musico">Músico</span>
+                {% elif m.member_type.value == 'choir' %}<span class="badge-role badge-role-cantor">Coralista</span>
+                {% else %}<span class="badge-role badge-role-musico">Músico</span><span class="badge-role badge-role-cantor">Coralista</span>
+                {% endif %}
+              {% endif %}
+              {% endfor %}
+            </div>
+          </td>
+
+          <!-- Contato -->
+          <td style="padding:10px 12px; vertical-align:middle; color:var(--text-secondary);">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <span style="font-size:12px;"><i class="bi bi-envelope" aria-hidden="true" style="margin-right:4px;"></i>{{ m.email }}</span>
+              <span style="font-size:12px;"><i class="bi bi-phone" aria-hidden="true" style="margin-right:4px;"></i>{{ m.celular or m.phone or '—' }}</span>
+            </div>
+          </td>
+
+          <!-- Instrumentos -->
+          <td style="padding:10px 12px; vertical-align:middle; max-width:180px;">
+            {% if m.instruments %}
+            <div style="display:flex; flex-wrap:wrap; gap:3px;">
+              {% for inst in m.instruments %}
+              <span class="instrument-tag-small">{{ inst.nome }}</span>
+              {% endfor %}
+            </div>
+            {% elif m.instrument %}
+            <span class="instrument-tag-small">{{ m.instrument }}</span>
+            {% else %}
+            <span style="color:var(--text-secondary);">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Nascimento / Idade -->
+          <td style="padding:10px 12px; vertical-align:middle; white-space:nowrap; color:var(--text-secondary); font-size:12px;">
+            {% if m.birth_date %}
+            <div>{{ m.birth_date.strftime('%d/%m/%Y') }}</div>
+            <div style="color:var(--accent); font-weight:600;">{{ m.age }} anos</div>
+            {% else %}—{% endif %}
+          </td>
+
+          <!-- Status -->
+          <td style="padding:10px 12px; vertical-align:middle; text-align:center;">
+            {% if m.is_active %}
+            <span class="badge bg-success" style="font-size:11px;">{{ t.status_active }}</span>
+            {% else %}
+            <span class="badge bg-secondary" style="font-size:11px;">{{ t.status_inactive }}</span>
+            {% endif %}
+          </td>
+
+          <!-- Ações -->
+          {% if can_manage_members or is_admin %}
+          <td style="padding:10px 12px; vertical-align:middle; text-align:center;">
+            <div class="d-flex gap-1 justify-content-center">
+              {% if can_manage_members %}
+              <a href="/musicians/{{ m.id }}/edit?lang={{ lang }}"
+                 class="btn btn-sm btn-outline-primary" title="{{ t.btn_edit }}" style="border-radius:6px; padding:3px 7px;" aria-label="{{ t.btn_edit }}">
+                <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+              </a>
+              <form id="toggle-form-{{ m.id }}" method="post" action="/musicians/{{ m.id }}/toggle-status" style="display:inline;">
+                <input type="hidden" name="lang" value="{{ lang }}" />
+                <button type="button"
+                  class="btn btn-sm {% if m.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                  title="{% if m.is_active %}{{ t.btn_inactivate }}{% else %}{{ t.btn_activate }}{% endif %}"
+                  style="border-radius:6px; padding:3px 7px;"
+                  onclick="confirmAction('{% if m.is_active %}{{ t.confirm_inactivate }}{% else %}{{ t.confirm_activate }}{% endif %}', 'toggle-form-{{ m.id }}', '{% if m.is_active %}warning{% else %}success{% endif %}')" aria-label="{% if m.is_active %}{{ t.btn_inactivate }}{% else %}{{ t.btn_activate }}{% endif %}">
+                  <i class="bi bi-{% if m.is_active %}pause-circle-fill{% else %}play-circle-fill{% endif %}"></i>
+                </button>
+              </form>
+              {% endif %}
+              {% if is_admin %}
+              <form id="delete-form-{{ m.id }}" method="post" action="/musicians/{{ m.id }}/delete" style="display:inline;">
+                <input type="hidden" name="lang" value="{{ lang }}" />
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                  title="{{ t.btn_delete }}" style="border-radius:6px; padding:3px 7px;"
+                  onclick="confirmAction('{{ t.confirm_delete }}', 'delete-form-{{ m.id }}', 'danger')" aria-label="{{ t.btn_delete }}">
+                  <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Total -->
+<div style="text-align:right; font-size:12px; color:var(--text-secondary); margin-top:8px; padding-right:4px;">
+  {{ total }} membro(s) encontrado(s)
+</div>
+
+<!-- Paginação -->
+{% set base_query = "search=" ~ (search or "") ~ "&role_filter=" ~ (role_filter or "") ~ "&status=" ~ (status or "") ~ "&lang=" ~ lang %}
+{% include "partials/_pagination.html" %}
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></div>
+  <p class="empty-state-title">{{ t.musicians_no_results }}</p>
+  {% if can_manage_members %}
+  <a href="/musicians/new?lang={{ lang }}" class="btn-primary-custom" style="margin-top:12px;">
+    <i class="bi bi-person-plus-fill" aria-hidden="true"></i> {{ t.nav_add_musician }}
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .table thead th { border-bottom: none; }
+  .table-hover tbody tr:hover { background: rgba(79,110,247,0.04); }
+</style>
+{% endblock %}

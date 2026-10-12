@@ -1,0 +1,91 @@
+<section class="settings-panel" aria-labelledby="settings-aparencia-title">
+  <h3 id="settings-aparencia-title" class="settings-panel-title">
+    <i class="bi bi-palette" aria-hidden="true"></i>
+    {{ t.get('settings_nav_aparencia', 'Aparência') }}
+  </h3>
+  <p class="settings-panel-desc">{{ t.get('settings_aparencia_help', 'Logo institucional e dados exibidos no rodapé do portal.') }}</p>
+
+  <div class="settings-subpanel">
+    <h4 class="settings-subtitle">{{ t.get('settings_logo', 'Logo') }}</h4>
+    <div class="settings-logo-row">
+      {% if branding.get('logo') %}
+      <div class="settings-logo-preview">
+        <img src="/uploads/{{ branding.logo }}" alt="Logo" />
+      </div>
+      <form id="remove-logo-form" method="post" action="/settings/logo/remove">
+        <button type="button" class="btn btn-outline-danger btn-sm"
+                onclick="confirmAction('{{ t.get('settings_logo_remove_confirm', 'Remover o logo atual?') }}', 'remove-logo-form', 'danger')">
+          <i class="bi bi-trash" aria-hidden="true"></i> {{ t.get('settings_logo_remove', 'Remover logo') }}
+        </button>
+      </form>
+      {% else %}
+      <div class="settings-logo-preview settings-logo-default" aria-hidden="true">
+        <i class="bi bi-music-note-beamed"></i>
+      </div>
+      <span class="settings-muted">{{ t.get('settings_logo_none', 'Nenhum logo personalizado. Exibindo ícone padrão.') }}</span>
+      {% endif %}
+    </div>
+
+    <form method="post" action="/settings/logo" enctype="multipart/form-data" class="settings-form mt-3">
+      <label class="form-label" for="logo-input">{{ t.get('settings_logo_upload', 'Enviar novo logo') }}</label>
+      <p class="form-text mb-2">{{ t.get('settings_logo_hint', 'PNG, JPG, SVG ou WebP · máx. 2 MB · recomendado fundo transparente.') }}</p>
+      <div class="photo-upload-area settings-upload" id="logo-upload-area">
+        <input type="file" name="logo" id="logo-input" accept=".png,.jpg,.jpeg,.svg,.webp" required />
+        <div id="logo-placeholder">
+          <i class="bi bi-image" style="font-size:28px;" aria-hidden="true"></i>
+          <div class="fw-semibold">{{ t.get('settings_logo_drop', 'Clique ou arraste o arquivo') }}</div>
+        </div>
+        <img id="logo-preview" src="" alt="Preview" hidden class="settings-logo-file-preview" />
+      </div>
+      <div class="settings-actions">
+        <button type="submit" class="btn-primary-custom">
+          <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ t.get('settings_logo_save', 'Salvar logo') }}
+        </button>
+        <a href="/settings/?section=aparencia" class="btn btn-outline-secondary btn-sm">{{ t.btn_cancel }}</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="settings-subpanel">
+    <h4 class="settings-subtitle">{{ t.get('settings_footer', 'Rodapé do portal') }}</h4>
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <form method="post" action="/settings/footer" class="settings-form">
+          <div class="mb-3">
+            <label class="form-label" for="nome_institucional">{{ t.get('settings_footer_name', 'Nome institucional') }}</label>
+            <input type="text" id="nome_institucional" name="nome_institucional" class="form-control"
+                   value="{{ footer_config.get('nome_institucional', '') }}" maxlength="200" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="endereco">{{ t.get('settings_footer_address', 'Endereço') }}</label>
+            <textarea id="endereco" name="endereco" class="form-control" rows="2" maxlength="400">{{ footer_config.get('endereco', '') }}</textarea>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="link_estatuto">{{ t.get('settings_footer_statute', 'Link do estatuto') }}</label>
+              <input type="url" id="link_estatuto" name="link_estatuto" class="form-control"
+                     value="{{ footer_config.get('link_estatuto', '') }}" maxlength="500" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="link_repositorio">{{ t.get('settings_footer_repo', 'Link do repositório / TI') }}</label>
+              <input type="url" id="link_repositorio" name="link_repositorio" class="form-control"
+                     value="{{ footer_config.get('link_repositorio', '') }}" maxlength="500" />
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button type="submit" class="btn-primary-custom">
+              <i class="bi bi-check-lg" aria-hidden="true"></i> {{ t.btn_save }}
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="col-lg-5">
+        <div class="settings-footer-preview" aria-live="polite">
+          <div class="settings-footer-preview-label">{{ t.get('settings_footer_preview', 'Pré-visualização') }}</div>
+          <strong id="preview-nome">{{ footer_config.get('nome_institucional') or t.app_title }}</strong>
+          <p id="preview-endereco" class="settings-muted mb-0">{{ footer_config.get('endereco') or '—' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

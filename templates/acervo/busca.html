@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.get('acervo_busca', 'Busca no Acervo') }}{% endblock %}
+{% block page_title %}{{ t.get('acervo_busca', 'Busca no Acervo') }}{% endblock %}
+
+{% block content %}
+<div style="padding:24px; max-width:1100px; margin:0 auto;">
+
+  <div class="mb-3">
+    <a href="/acervo/obras" style="color:var(--text-secondary); font-size:13px; text-decoration:none;">
+      <i class="bi bi-arrow-left"></i> {{ t.get('nav_acervo', 'Acervo Musical') }}
+    </a>
+  </div>
+
+  <!-- Formulário de busca avançada -->
+  <form method="get" action="/acervo/busca" class="card shadow-sm mb-4" style="border-radius:14px; border:none;">
+    <div class="card-body" style="padding:22px;">
+      <h6 style="font-weight:700; font-size:14px; margin-bottom:16px;">
+        <i class="bi bi-funnel me-2" style="color:#6b84ff;"></i>Filtros de Busca
+      </h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" style="font-size:12px; font-weight:600;">Busca Geral (título, compositor, instrumentação)</label>
+          <input type="text" name="q" value="{{ q }}" class="form-control"
+                 placeholder="{{ t.get('acervo_busca_placeholder', 'Buscar...') }}"
+                 style="border-radius:8px; font-size:13px;" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" style="font-size:12px; font-weight:600;">{{ t.get('acervo_compositor', 'Compositor') }}</label>
+          <input type="text" name="compositor" value="{{ filtro_compositor }}" class="form-control"
+                 placeholder="Ex: Beethoven" style="border-radius:8px; font-size:13px;" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" style="font-size:12px; font-weight:600;">{{ t.get('acervo_arranjador', 'Arranjador') }}</label>
+          <input type="text" name="arranjador" value="{{ filtro_arranjador }}" class="form-control"
+                 placeholder="Ex: Williams" style="border-radius:8px; font-size:13px;" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" style="font-size:12px; font-weight:600;">{{ t.get('acervo_instrumentacao', 'Instrumento') }}</label>
+          <input type="text" name="instrumento" value="{{ filtro_instrumento }}" class="form-control"
+                 placeholder="Ex: Violino, Flauta, Coro" style="border-radius:8px; font-size:13px;" />
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary" style="border-radius:8px; font-size:13px; font-weight:600;">
+          <i class="bi bi-search"></i> {{ t.btn_search }}
+        </button>
+        <a href="/acervo/busca" class="btn btn-outline-secondary" style="border-radius:8px; font-size:13px;">
+          <i class="bi bi-x-lg"></i> {{ t.btn_clear }}
+        </a>
+      </div>
+    </div>
+  </form>
+
+  <!-- Resultados -->
+  {% if q or filtro_compositor or filtro_arranjador or filtro_instrumento %}
+    {% if resultados %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span style="font-size:13px; color:var(--text-secondary);">
+        <strong>{{ resultados | length }}</strong> resultado(s) encontrado(s)
+      </span>
+    </div>
+    <div class="card shadow-sm" style="border-radius:12px; border:none;">
+      <div class="table-responsive">
+        <table class="table" style="margin:0; font-size:13px;">
+          <thead style="background:rgba(107,132,255,0.06);">
+            <tr>
+              <th style="padding:12px 16px; font-weight:600;">Obra</th>
+              <th style="padding:12px 16px; font-weight:600;">Compositor</th>
+              <th style="padding:12px 16px; font-weight:600;">Arranjo / Arranjador</th>
+              <th style="padding:12px 16px; font-weight:600;">Instrumentação</th>
+              <th style="padding:12px 16px; font-weight:600;">Direitos</th>
+              <th style="padding:12px 16px; font-weight:600; width:80px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in resultados %}
+            <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
+              <td style="padding:12px 16px;">
+                <div style="font-weight:600;">{{ r.titulo }}</div>
+                {% if r.tonalidade %}
+                <div style="font-size:11px; color:var(--text-secondary);">
+                  <i class="bi bi-music-note me-1"></i>{{ r.tonalidade }}
+                </div>
+                {% endif %}
+              </td>
+              <td style="padding:12px 16px; color:var(--text-secondary);">{{ r.compositor or '—' }}</td>
+              <td style="padding:12px 16px;">
+                <div>{{ r.titulo_arranjo }}</div>
+                <div style="font-size:11px; color:var(--text-secondary);">{{ r.arranjador }}</div>
+              </td>
+              <td style="padding:12px 16px; color:var(--text-secondary); font-size:12px;">
+                {{ r.instrumentacao[:60] }}{% if r.instrumentacao|length > 60 %}…{% endif %}
+              </td>
+              <td style="padding:12px 16px;">
+                {% if r.copyright_status == 'dominio_publico' %}
+                <span class="badge" style="background:rgba(16,185,129,0.15); color:#059669; border-radius:6px; font-size:10px;">
+                  {{ copyright_labels.get(r.copyright_status, r.copyright_status) }}
+                </span>
+                {% elif r.copyright_status == 'licenciado' %}
+                <span class="badge" style="background:rgba(245,158,11,0.15); color:#b45309; border-radius:6px; font-size:10px;">
+                  {{ copyright_labels.get(r.copyright_status, r.copyright_status) }}
+                </span>
+                {% else %}
+                <span class="badge" style="background:rgba(231,76,94,0.12); color:#e74c5e; border-radius:6px; font-size:10px;">
+                  {{ copyright_labels.get(r.copyright_status, r.copyright_status) }}
+                </span>
+                {% endif %}
+              </td>
+              <td style="padding:12px 16px;">
+                <a href="/acervo/obras/{{ r.obra_id }}" class="btn btn-sm btn-outline-primary"
+                   style="border-radius:6px; font-size:11px; padding:2px 8px;">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-search" style="font-size:40px; color:var(--text-secondary); opacity:0.3;"></i>
+      <p style="color:var(--text-secondary); margin-top:12px; font-size:13px;">
+        Nenhum resultado encontrado para os filtros informados.
+      </p>
+    </div>
+    {% endif %}
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-music-note-beamed" style="font-size:40px; color:var(--text-secondary); opacity:0.3;"></i>
+    <p style="color:var(--text-secondary); margin-top:12px; font-size:13px;">
+      Use os filtros acima para buscar obras por título, compositor, arranjador ou instrumentação.
+    </p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

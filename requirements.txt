@@ -1,0 +1,31 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+python-multipart==0.0.18
+jinja2==3.1.4
+aiofiles==24.1.0
+pillow==11.0.0
+python-dotenv==1.0.1
+bcrypt==4.2.1
+PyJWT==2.9.0
+itsdangerous==2.2.0
+openpyxl==3.1.5
+cryptography==43.0.3
+slowapi==0.1.9
+redis==5.2.1
+icalendar==5.0.13
+
+# ──────────────────────────────────────────────────────────────────
+# Fase 1: S3 + Validação de Documentos
+# ──────────────────────────────────────────────────────────────────
+boto3>=1.26.0,<2.0              # AWS SDK for S3
+botocore>=1.29.0,<2.0           # AWS SDK core
+PyPDF2>=3.0.0                   # PDF metadata extraction
+lxml>=4.9.0                     # XML/MXL parsing
+fuzzywuzzy>=0.18.0              # Fuzzy string matching
+python-Levenshtein>=0.21.0      # Optimization for fuzzywuzzy
+python-magic>=0.4.27            # Magic bytes detection (MIME type)
+moto>=4.2.0                     # AWS S3 mock for testing
+qrcode==8.0                     # QR Code PNG (etiquetas de inventário)
+python-barcode==0.15.1          # Code128 PNG (etiquetas de inventário)

@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.identificador_interno }} — {{ t.patrimonio_detail }}{% endblock %}
+{% block page_title %}{{ item.identificador_interno }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/patrimonio/" data-guard-leave class="btn btn-outline-secondary" style="border-radius:8px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+  <i class="bi bi-arrow-left"></i> {{ t.btn_cancel }}
+</a>
+{% if current_user and current_user.role == 'admin' %}
+<a href="/patrimonio/{{ item.id }}/edit" class="btn-primary-custom" style="padding:8px 16px; font-size:14px; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+  <i class="bi bi-pencil-fill"></i> {{ t.btn_edit }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% set ea = item.emprestimo_ativo %}
+
+{% set erro_msg = request.query_params.get('erro', '') %}
+{% if erro_msg %}
+<div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+  <i class="bi bi-exclamation-triangle-fill"></i> {{ erro_msg }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="row g-4">
+
+  <!-- Coluna esquerda: dados + empréstimo -->
+  <div class="col-lg-7">
+
+    <div class="detail-card mb-4">
+      <div class="detail-card-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="detail-type-icon" aria-hidden="true">
+            {% if item.tipo_item.value == 'Instrumento' %}
+              <i class="bi bi-music-note-beamed"></i>
+            {% elif item.tipo_item.value == 'Movel' %}
+              <i class="bi bi-box-seam"></i>
+            {% elif item.tipo_item.value == 'Eletronico' %}
+              <i class="bi bi-laptop"></i>
+            {% elif item.tipo_item.value == 'Partitura' %}
+              <i class="bi bi-file-earmark-music"></i>
+            {% elif item.tipo_item.value == 'Decoracao' %}
+              <i class="bi bi-image"></i>
+            {% else %}
+              <i class="bi bi-box2"></i>
+            {% endif %}
+          </div>
+          <div>
+            <div style="font-size:18px; font-weight:700; color:var(--text-primary);">
+              {{ item.fabricante or '' }}{% if item.fabricante and item.modelo %} · {% endif %}{{ item.modelo or '' }}
+              {% if not item.fabricante and not item.modelo %}<span style="color:var(--text-secondary);">Item sem descrição</span>{% endif %}
+            </div>
+            <div style="font-size:13px; color:var(--text-secondary);">
+              {{ tipo_label.get(item.tipo_item, item.tipo_item.value) }}
+              {% if item.ano_compra %} · Comprado em {{ item.ano_compra }}{% endif %}
+            </div>
+          </div>
+        </div>
+        <div>
+          {% if item.status.value == 'Disponivel' %}
+            <span class="badge bg-success fs-6">{{ t.status_disponivel }}</span>
+          {% elif item.status.value == 'Emprestado' %}
+            <span class="badge bg-warning text-dark fs-6">{{ t.status_emprestado }}</span>
+          {% elif item.status.value == 'Manutencao' %}
+            <span class="badge bg-danger fs-6">{{ t.status_manutencao }}</span>
+          {% else %}
+            <span class="badge bg-secondary fs-6">{{ t.status_baixa }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="detail-grid mt-3">
+        <div class="detail-row">
+          <span class="detail-label">{{ t.patrimonio_id_interno }}</span>
+          <span class="detail-value" style="font-family:monospace; font-weight:700; color:var(--accent);">
+            {{ item.identificador_interno }}
+          </span>
+        </div>
+        {% if item.valor_mercado %}
+        <div class="detail-row">
+          <span class="detail-label">{{ t.patrimonio_valor }}</span>
+          <span class="detail-value">R$ {{ "%.2f"|format(item.valor_mercado|float) }}</span>
+        </div>
+        {% endif %}
+        {% if item.observacoes %}
+        <div class="detail-row">
+          <span class="detail-label">{{ t.patrimonio_observacoes }}</span>
+          <span class="detail-value">{{ item.observacoes }}</span>
+        </div>
+        {% endif %}
+
+        {% set det = item.detalhes or {} %}
+        {% if item.tipo_item.value == 'Instrumento' %}
+          {% if det.get('categoria_familia') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.inst_categoria_familia }}</span>
+            <span class="detail-value">{{ det.get('categoria_familia') }}</span>
+          </div>
+          {% endif %}
+          {% if det.get('ano_fabricacao') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.inst_ano_fabricacao }}</span>
+            <span class="detail-value">{{ det.get('ano_fabricacao') }}</span>
+          </div>
+          {% endif %}
+          {% if det.get('avaliacao_condicao') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.inst_avaliacao_condicao }}</span>
+            <span class="detail-value">{{ det.get('avaliacao_condicao') }}</span>
+          </div>
+          {% endif %}
+
+        {% elif item.tipo_item.value == 'Partitura' %}
+          {% if det.get('nome_obra') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.part_nome_obra }}</span>
+            <span class="detail-value" style="font-weight:600;">{{ det.get('nome_obra') }}</span>
+          </div>
+          {% endif %}
+          {% if det.get('compositor') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.part_compositor }}</span>
+            <span class="detail-value">{{ det.get('compositor') }}</span>
+          </div>
+          {% endif %}
+          {% if det.get('arranjador') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.part_arranjador }}</span>
+            <span class="detail-value">{{ det.get('arranjador') }}</span>
+          </div>
+          {% endif %}
+
+        {% elif item.tipo_item.value == 'Decoracao' %}
+          {% if det.get('descricao_livre') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.dec_descricao }}</span>
+            <span class="detail-value">{{ det.get('descricao_livre') }}</span>
+          </div>
+          {% endif %}
+          {% if det.get('local_armazenamento') %}
+          <div class="detail-row">
+            <span class="detail-label">{{ t.dec_local }}</span>
+            <span class="detail-value">{{ det.get('local_armazenamento') }}</span>
+          </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Empréstimo ativo -->
+    <div class="detail-card mb-4">
+      <h6 style="font-weight:700; margin-bottom:14px;"><i class="bi bi-person-lines-fill"></i> {{ t.patrimonio_emprestimo_ativo }}</h6>
+
+      {% if ea %}
+      <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:14px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          {% if ea.musician.photo %}
+          <img src="/uploads/{{ ea.musician.photo }}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" />
+          {% else %}
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(79,110,247,0.15); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--accent);">
+            {{ ea.musician.first_name[0] }}
+          </div>
+          {% endif %}
+          <div>
+            <div style="font-weight:600;">{{ ea.musician.full_name }}</div>
+            <div style="font-size:12px; color:var(--text-secondary);">
+              {{ t.patrimonio_data_emprestimo }}: {{ ea.data_emprestimo.strftime('%d/%m/%Y') }}
+            </div>
+          </div>
+        </div>
+        {% if ea.observacoes %}
+        <div style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">{{ ea.observacoes }}</div>
+        {% endif %}
+        {% if current_user and current_user.role == 'admin' %}
+        <form method="post" action="/patrimonio/{{ item.id }}/desvincular/{{ ea.id }}"
+              onsubmit="return confirm('Confirmar devolução do item?')">
+          <button type="submit" class="btn btn-sm btn-warning" style="border-radius:7px; font-weight:600;">
+            <i class="bi bi-arrow-return-left"></i> {{ t.patrimonio_desvincular }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% else %}
+      <div style="color:var(--text-secondary); font-size:14px;">
+        <i class="bi bi-check-circle-fill" style="color:#27c4a3;"></i> {{ t.patrimonio_sem_emprestimo }}
+      </div>
+
+      {% if current_user and current_user.role == 'admin' and item.status.value == 'Disponivel' %}
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color);">
+        <div style="font-size:13px; font-weight:600; margin-bottom:10px;">{{ t.patrimonio_vincular }}</div>
+        <form method="post" action="/patrimonio/{{ item.id }}/vincular">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <select name="musician_id" class="form-select form-select-sm" required>
+                <option value="">Selecione o músico...</option>
+                {% for m in musicians %}
+                <option value="{{ m.id }}">{{ m.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="observacoes" class="form-control form-control-sm"
+                     placeholder="{{ t.patrimonio_observacoes }} (opcional)" maxlength="200" />
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-sm btn-primary w-100" style="border-radius:7px;">
+                <i class="bi bi-link-45deg"></i> Vincular
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Histórico de empréstimos -->
+    {% if item.emprestimos %}
+    <div class="detail-card">
+      <h6 style="font-weight:700; margin-bottom:14px;"><i class="bi bi-clock-history"></i> {{ t.patrimonio_historico }}</h6>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Músico</th>
+              <th>{{ t.patrimonio_data_emprestimo }}</th>
+              <th>{{ t.patrimonio_data_devolucao }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp in item.emprestimos %}
+            <tr>
+              <td>{{ emp.musician.full_name }}</td>
+              <td style="font-size:13px;">{{ emp.data_emprestimo.strftime('%d/%m/%Y') }}</td>
+              <td style="font-size:13px;">
+                {% if emp.data_devolucao %}
+                  {{ emp.data_devolucao.strftime('%d/%m/%Y') }}
+                {% else %}
+                  <span class="badge bg-warning text-dark">Em posse</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Coluna direita: QR + código de barras + ações -->
+  <div class="col-lg-5">
+    <div class="detail-card text-center">
+      <h6 style="font-weight:700; margin-bottom:6px;"><i class="bi bi-qr-code"></i> QR Code</h6>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+        {{ t.get('patrimonio_codes_auto', 'Gerado automaticamente no cadastro do item.') }}
+      </p>
+      <div style="display:inline-block; padding:12px; background:#fff; border-radius:10px; border:2px solid var(--border-color);">
+        <img src="/patrimonio/{{ item.id }}/etiqueta/qr.png" alt="QR {{ item.identificador_interno }}"
+             style="width:200px; height:200px; display:block;" />
+      </div>
+      <div style="margin-top:12px;">
+        <code style="font-size:11px; color:var(--text-secondary); word-break:break-all;">{{ item.qr_payload }}</code>
+      </div>
+      <div style="margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
+        <a href="/patrimonio/{{ item.id }}/etiqueta/imprimir?tipo=qr&auto=1" target="_blank"
+           class="btn btn-outline-secondary btn-sm" style="border-radius:7px;">
+          <i class="bi bi-printer"></i> Imprimir QR
+        </a>
+      </div>
+    </div>
+
+    <div class="detail-card text-center mt-3">
+      <h6 style="font-weight:700; margin-bottom:6px;"><i class="bi bi-upc"></i> Código de barras</h6>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+        Code128 · {{ t.get('patrimonio_codes_auto', 'Gerado automaticamente no cadastro do item.') }}
+      </p>
+      <div style="padding:12px; background:#fff; border-radius:10px; border:2px solid var(--border-color);">
+        <img src="/patrimonio/{{ item.id }}/etiqueta/barcode.png" alt="Barcode {{ item.barcode_value }}"
+             style="width:100%; max-width:320px; height:auto; display:block; margin:0 auto;" />
+      </div>
+      <div style="margin-top:10px;">
+        <code style="font-size:13px; font-weight:700;">{{ item.barcode_value }}</code>
+      </div>
+      <div style="margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
+        <a href="/patrimonio/{{ item.id }}/etiqueta/imprimir?tipo=barcode&auto=1" target="_blank"
+           class="btn btn-outline-secondary btn-sm" style="border-radius:7px;">
+          <i class="bi bi-printer"></i> Imprimir código de barras
+        </a>
+        <a href="/patrimonio/{{ item.id }}/etiqueta/imprimir?tipo=ambas&auto=1" target="_blank"
+           class="btn btn-outline-primary btn-sm" style="border-radius:7px;">
+          <i class="bi bi-printer-fill"></i> Imprimir ambos
+        </a>
+      </div>
+      <p style="font-size:11px; color:var(--text-secondary); margin:12px 0 0;">
+        {{ t.get('patrimonio_print_hint', 'Na impressão, selecione a impressora de etiquetas e desative cabeçalhos/rodapés do navegador.') }}
+      </p>
+    </div>
+
+    {% set extras = etiquetas_extras or [] %}
+    {% if extras or (current_user and current_user.role in ['admin', 'arquivista']) %}
+    <div class="detail-card mt-3">
+      <h6 style="font-weight:700; margin-bottom:10px;"><i class="bi bi-broadcast"></i> Etiquetas extras (RFID)</h6>
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+        QR e código de barras não são cadastrados manualmente — o sistema gera no momento do cadastro.
+      </p>
+      {% if extras %}
+      <div class="d-flex flex-column gap-2 mb-3">
+        {% for etiqueta in extras %}
+        <div style="display:flex; align-items:center; justify-content:space-between; background:var(--hover-bg); border-radius:8px; padding:8px 10px;">
+          <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+            <span class="badge bg-secondary" style="font-size:10px; flex-shrink:0;">{{ etiqueta.tipo.value }}</span>
+            <code style="font-size:11px; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ etiqueta.valor }}</code>
+          </div>
+          {% if current_user and current_user.role == 'admin' %}
+          <form method="post" action="/patrimonio/{{ item.id }}/etiqueta/{{ etiqueta.id }}/desativar"
+                onsubmit="return confirm('Desativar esta etiqueta?')"
+                style="flex-shrink:0; margin-left:8px;">
+            <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:6px; padding:2px 7px; line-height:1.4;" title="Desativar etiqueta">
+              <i class="bi bi-x"></i>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if current_user and current_user.role in ['admin', 'arquivista'] %}
+      <form method="post" action="/patrimonio/{{ item.id }}/etiqueta">
+        <div class="row g-2">
+          <div class="col-5">
+            <select name="tipo" class="form-select form-select-sm" required>
+              <option value="rfid_hf">RFID HF</option>
+              <option value="rfid_uhf">RFID UHF</option>
+              <option value="data_matrix">Data Matrix</option>
+            </select>
+          </div>
+          <div class="col-5">
+            <input type="text" name="valor" class="form-control form-control-sm"
+                   placeholder="Valor RFID..." maxlength="255" required />
+          </div>
+          <div class="col-2">
+            <button type="submit" class="btn btn-sm btn-primary w-100" style="border-radius:7px;" title="Adicionar">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if current_user and current_user.role == 'admin' %}
+    <div class="detail-card mt-3">
+      <h6 style="font-weight:700; margin-bottom:12px;"><i class="bi bi-lightning-fill"></i> Ações</h6>
+      <div class="d-flex flex-column gap-2">
+        <a href="/patrimonio/{{ item.id }}/edit" class="btn btn-outline-primary btn-sm" style="border-radius:7px; text-align:left;">
+          <i class="bi bi-pencil-fill"></i> Editar item
+        </a>
+        {% if not ea %}
+        <form method="post" action="/patrimonio/{{ item.id }}/delete"
+              onsubmit="return confirm('{{ t.confirm_delete }}')">
+          <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:7px; text-align:left;">
+            <i class="bi bi-trash-fill"></i> {{ t.btn_delete }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .detail-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .detail-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .detail-type-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(79, 110, 247, 0.12);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .detail-grid { display: flex; flex-direction: column; gap: 8px; }
+  .detail-row {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label {
+    min-width: 160px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .detail-value { color: var(--text-primary); }
+</style>
+{% endblock %}

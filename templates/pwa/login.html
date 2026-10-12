@@ -1,0 +1,28 @@
+{% extends "pwa/base.html" %}
+{% block title %}{{ brand_name }} — Entrar{% endblock %}
+{% block body_class %}pwa-center{% endblock %}
+{% block content %}
+<div class="pwa-login-brand">
+  <p class="pwa-brand">{{ brand_name }}</p>
+  <p>{{ t.get('pwa_login_lead', 'Entre com o usuário do portal.') }}</p>
+</div>
+<main class="pwa-card" role="main">
+  <p class="pwa-brand">{{ brand_name }}</p>
+  <h1 class="pwa-h1">{{ t.get('pwa_login_title', 'Partituras') }}</h1>
+  <p class="pwa-lead">{{ t.get('pwa_login_lead', 'Entre com o usuário do portal.') }}</p>
+  <form id="pwa-login-form" class="pwa-form" autocomplete="on">
+    <label class="pwa-label" for="username">{{ t.get('label_username', 'Usuário') }}</label>
+    <input class="pwa-input" id="username" name="username" type="text" required autocomplete="username" autocapitalize="none" />
+    <label class="pwa-label" for="password">{{ t.get('label_password', 'Senha') }}</label>
+    <input class="pwa-input" id="password" name="password" type="password" required autocomplete="current-password" />
+    <p id="pwa-login-error" class="pwa-error" hidden></p>
+    <button type="submit" class="pwa-btn" id="pwa-login-btn">{{ t.get('btn_login', 'Entrar') }}</button>
+  </form>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/pwa/app.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => window.PortalPwa && PortalPwa.initLogin());
+</script>
+{% endblock %}
