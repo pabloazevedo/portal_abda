@@ -1,0 +1,540 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C383F78C52C931F32EEABB1 /* PortalMobile in Frameworks */ = {isa = PBXBuildFile; productRef = ADCC5BC4EDD21E6C2F1FD311 /* PortalMobile */; };
+		1157652E9CC9A1567F9EB9A5 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F830618C87CA507E571D2D /* LoginView.swift */; };
+		1A579B50DD3398DD6CEB46B5 /* PortalMobile in Frameworks */ = {isa = PBXBuildFile; productRef = 23A802CD2ED049F84B5530FE /* PortalMobile */; };
+		217F9EBCC1145B01AEE808D6 /* PDFViewerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9613969FA38FA43D661D4E9 /* PDFViewerScreen.swift */; };
+		32F07D77C11C6FA4F76E5E62 /* AppSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36AEC618AAECB7C17CC46CD4 /* AppSession.swift */; };
+		3817700A1EA4C6530C8CEC34 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0CAD2BAACDC89AB2A57D155F /* Assets.xcassets */; };
+		5F41FF26E87F4F4AC8A8B8E7 /* PortalMembroTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DA52941CA00B9CA04B42DF5 /* PortalMembroTests.swift */; };
+		6036D2D853FDD36FE3ECBADF /* RefreshRotationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3773CD9A687D5353AA56BBB /* RefreshRotationIntegrationTests.swift */; };
+		B489F46BCA495CFED155926E /* PartituraStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9577AA1BAEB827B2D04CC671 /* PartituraStatusBadge.swift */; };
+		BAA8A7EA5A03D1ECCDCBB846 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B209AE50B4A23000A1FA8 /* RootView.swift */; };
+		C2988F98533783FB2AD5DCB0 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F04C143544BF1AE7880074 /* AppConfig.swift */; };
+		CB6F20E892B7208AAA9FC857 /* PortalMembroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7E3A00234CA93528C6D9C5 /* PortalMembroApp.swift */; };
+		EE1805DFFFD43F88528D9032 /* PartiturasListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0EC085A7E98C3C2AB9090 /* PartiturasListView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4ABF95973411FAB0AF6F054E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1BF263CD8185F1BB3A09C064 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EE85C8A762DD97BBF1E268E0;
+			remoteInfo = PortalMembro;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0CAD2BAACDC89AB2A57D155F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0FF7638548370F3538F0E91C /* PortalMembroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PortalMembroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		36AEC618AAECB7C17CC46CD4 /* AppSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSession.swift; sourceTree = "<group>"; };
+		3DA52941CA00B9CA04B42DF5 /* PortalMembroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMembroTests.swift; sourceTree = "<group>"; };
+		717B209AE50B4A23000A1FA8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		8F9155B14736961A5D8F7ED3 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = ..; sourceTree = SOURCE_ROOT; };
+		9577AA1BAEB827B2D04CC671 /* PartituraStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartituraStatusBadge.swift; sourceTree = "<group>"; };
+		A2B8310C655664B1C697489C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A3773CD9A687D5353AA56BBB /* RefreshRotationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshRotationIntegrationTests.swift; sourceTree = "<group>"; };
+		AB7E3A00234CA93528C6D9C5 /* PortalMembroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMembroApp.swift; sourceTree = "<group>"; };
+		B4F0EC085A7E98C3C2AB9090 /* PartiturasListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartiturasListView.swift; sourceTree = "<group>"; };
+		B9613969FA38FA43D661D4E9 /* PDFViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFViewerScreen.swift; sourceTree = "<group>"; };
+		B9F830618C87CA507E571D2D /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		F1F80E825F94B16D7EA65E19 /* PortalMembro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PortalMembro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F6F04C143544BF1AE7880074 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C52A9FDE5D4A3A3323124869 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A579B50DD3398DD6CEB46B5 /* PortalMobile in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ED1C3AB5FBD664A9D6E55A9F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C383F78C52C931F32EEABB1 /* PortalMobile in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		141AA650AD30DBC96BB41AC0 /* Session */ = {
+			isa = PBXGroup;
+			children = (
+				36AEC618AAECB7C17CC46CD4 /* AppSession.swift */,
+			);
+			path = Session;
+			sourceTree = "<group>";
+		};
+		2A582CD76D015AE2D1332BF7 = {
+			isa = PBXGroup;
+			children = (
+				4890A5D6ECF416366DE7943C /* Packages */,
+				45B76C0C3F23C65CF92677E0 /* PortalMembro */,
+				DF571105E7703CE431B47159 /* PortalMembroTests */,
+				51343249E42D50A4493AF7C1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		45B76C0C3F23C65CF92677E0 /* PortalMembro */ = {
+			isa = PBXGroup;
+			children = (
+				E15C25F28E16FC220FBC5C5E /* Config */,
+				141AA650AD30DBC96BB41AC0 /* Session */,
+				790143D7E66A07A58EA13612 /* Views */,
+				0CAD2BAACDC89AB2A57D155F /* Assets.xcassets */,
+				A2B8310C655664B1C697489C /* Info.plist */,
+				AB7E3A00234CA93528C6D9C5 /* PortalMembroApp.swift */,
+			);
+			path = PortalMembro;
+			sourceTree = "<group>";
+		};
+		4890A5D6ECF416366DE7943C /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				8F9155B14736961A5D8F7ED3 /* ios */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		51343249E42D50A4493AF7C1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F1F80E825F94B16D7EA65E19 /* PortalMembro.app */,
+				0FF7638548370F3538F0E91C /* PortalMembroTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		790143D7E66A07A58EA13612 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B9F830618C87CA507E571D2D /* LoginView.swift */,
+				B4F0EC085A7E98C3C2AB9090 /* PartiturasListView.swift */,
+				9577AA1BAEB827B2D04CC671 /* PartituraStatusBadge.swift */,
+				B9613969FA38FA43D661D4E9 /* PDFViewerScreen.swift */,
+				717B209AE50B4A23000A1FA8 /* RootView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DF571105E7703CE431B47159 /* PortalMembroTests */ = {
+			isa = PBXGroup;
+			children = (
+				3DA52941CA00B9CA04B42DF5 /* PortalMembroTests.swift */,
+				A3773CD9A687D5353AA56BBB /* RefreshRotationIntegrationTests.swift */,
+			);
+			path = PortalMembroTests;
+			sourceTree = "<group>";
+		};
+		E15C25F28E16FC220FBC5C5E /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F6F04C143544BF1AE7880074 /* AppConfig.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0AB7D641F7AED8B1E0CC19CA /* PortalMembroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D650A4640DE5C6571586BC0 /* Build configuration list for PBXNativeTarget "PortalMembroTests" */;
+			buildPhases = (
+				0F57D68F441C3FF1F1CDB7B8 /* Sources */,
+				C52A9FDE5D4A3A3323124869 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7BE408AE75237B61567F805D /* PBXTargetDependency */,
+			);
+			name = PortalMembroTests;
+			packageProductDependencies = (
+				23A802CD2ED049F84B5530FE /* PortalMobile */,
+			);
+			productName = PortalMembroTests;
+			productReference = 0FF7638548370F3538F0E91C /* PortalMembroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EE85C8A762DD97BBF1E268E0 /* PortalMembro */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5175F43F48F64A98C6072AAB /* Build configuration list for PBXNativeTarget "PortalMembro" */;
+			buildPhases = (
+				CFB7578BB754BCA1BD42CF7D /* Sources */,
+				1EA33E74AB5008AAA1D90670 /* Resources */,
+				ED1C3AB5FBD664A9D6E55A9F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PortalMembro;
+			packageProductDependencies = (
+				ADCC5BC4EDD21E6C2F1FD311 /* PortalMobile */,
+			);
+			productName = PortalMembro;
+			productReference = F1F80E825F94B16D7EA65E19 /* PortalMembro.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1BF263CD8185F1BB3A09C064 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					EE85C8A762DD97BBF1E268E0 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 905B300F0075F4C1464BAC70 /* Build configuration list for PBXProject "PortalMembro" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 2A582CD76D015AE2D1332BF7;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9C364F5F4F7FC04E23B4B35E /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EE85C8A762DD97BBF1E268E0 /* PortalMembro */,
+				0AB7D641F7AED8B1E0CC19CA /* PortalMembroTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1EA33E74AB5008AAA1D90670 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3817700A1EA4C6530C8CEC34 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0F57D68F441C3FF1F1CDB7B8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F41FF26E87F4F4AC8A8B8E7 /* PortalMembroTests.swift in Sources */,
+				6036D2D853FDD36FE3ECBADF /* RefreshRotationIntegrationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CFB7578BB754BCA1BD42CF7D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2988F98533783FB2AD5DCB0 /* AppConfig.swift in Sources */,
+				32F07D77C11C6FA4F76E5E62 /* AppSession.swift in Sources */,
+				1157652E9CC9A1567F9EB9A5 /* LoginView.swift in Sources */,
+				217F9EBCC1145B01AEE808D6 /* PDFViewerScreen.swift in Sources */,
+				B489F46BCA495CFED155926E /* PartituraStatusBadge.swift in Sources */,
+				EE1805DFFFD43F88528D9032 /* PartiturasListView.swift in Sources */,
+				CB6F20E892B7208AAA9FC857 /* PortalMembroApp.swift in Sources */,
+				BAA8A7EA5A03D1ECCDCBB846 /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7BE408AE75237B61567F805D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EE85C8A762DD97BBF1E268E0 /* PortalMembro */;
+			targetProxy = 4ABF95973411FAB0AF6F054E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		102BEB1F4E65A89F3D4CF6C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3CEFB0B5E19C15303CFDC943 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PortalMembro/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Portal;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.orchestra.portal.membro;
+				PRODUCT_NAME = PortalMembro;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A94D4B8A89A4E0997727CDFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.orchestra.portal.membro.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PortalMembro.app/PortalMembro";
+			};
+			name = Release;
+		};
+		D8C6FD8DA0A63916A8C74395 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.orchestra.portal.membro.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PortalMembro.app/PortalMembro";
+			};
+			name = Debug;
+		};
+		F03C5238647B06DE4D0106C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F07BC20C573D1E7DFD712DD0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PortalMembro/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Portal;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.orchestra.portal.membro;
+				PRODUCT_NAME = PortalMembro;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5175F43F48F64A98C6072AAB /* Build configuration list for PBXNativeTarget "PortalMembro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F07BC20C573D1E7DFD712DD0 /* Debug */,
+				3CEFB0B5E19C15303CFDC943 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6D650A4640DE5C6571586BC0 /* Build configuration list for PBXNativeTarget "PortalMembroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8C6FD8DA0A63916A8C74395 /* Debug */,
+				A94D4B8A89A4E0997727CDFF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		905B300F0075F4C1464BAC70 /* Build configuration list for PBXProject "PortalMembro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				102BEB1F4E65A89F3D4CF6C0 /* Debug */,
+				F03C5238647B06DE4D0106C4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		9C364F5F4F7FC04E23B4B35E /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		23A802CD2ED049F84B5530FE /* PortalMobile */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PortalMobile;
+		};
+		ADCC5BC4EDD21E6C2F1FD311 /* PortalMobile */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PortalMobile;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 1BF263CD8185F1BB3A09C064 /* Project object */;
+}

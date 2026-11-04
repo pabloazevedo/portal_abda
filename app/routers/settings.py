@@ -20,7 +20,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 from fastapi import APIRouter, Depends, Request, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy.orm import Session
 
 from fastapi import Form
@@ -35,7 +35,7 @@ from app.utils import detect_image_type  # D-02
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/settings")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 # ── Redis helpers para cache do rodapé ───────────────────────
 _FOOTER_CACHE_KEY = "footer_config"

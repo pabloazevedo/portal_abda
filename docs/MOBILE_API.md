@@ -31,7 +31,7 @@ Access ~30 min · Refresh ~30 dias (env: `API_ACCESS_TOKEN_MINUTES`, `API_REFRES
 
 ## Site mobile (PWA)
 
-Ver `PWA.md`. Admin: Configurações → Sistema → ligar/desligar. URL: `/m/`.
+Ver [PWA.md](PWA.md). Gaps: [gaps-e-oportunidades.md](gaps-e-oportunidades.md). Planos: [iOS](plano-trabalho-ios.md) · [Android](plano-trabalho-android.md). Código: [`mobile/`](../mobile/). Admin: Configurações → Sistema → ligar/desligar. URL: `/m/`.
 
 ## O que NÃO mudou
 

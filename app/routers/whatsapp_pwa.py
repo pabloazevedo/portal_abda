@@ -13,7 +13,7 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -22,7 +22,7 @@ from app.models import Configuracao, WhatsAppGrupo
 
 logger = logging.getLogger("uvicorn.error")
 router = APIRouter(prefix="/settings/whatsapp-pwa")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 # Grupos padrão (naipes orquestra + coral STAB)
 DEFAULT_GRUPOS: list[tuple[str, str, str, int]] = [

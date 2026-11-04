@@ -7,10 +7,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_api_manage_acervo, require_system_user
+from app.eventos_query import EVENTOS_SQL, eventos_params
 from app.database import get_db
 from app.distribuicao import criar_ou_atualizar_acessos, sugerir_distribuicao
 from app.models import Arranjo, Concerto, ConcertoArranjo, User
@@ -142,40 +142,8 @@ async def eventos_json(
     _: User = Depends(require_system_user),
 ):
     """FullCalendar-compatible events JSON (ported from Jinja eventos_json)."""
-    query_params: dict = {}
-    where_clauses = []
-
-    if start:
-        try:
-            dt_start = datetime.fromisoformat(start.replace("Z", "+00:00"))
-            where_clauses.append("c.data_inicio >= :start")
-            query_params["start"] = dt_start
-        except ValueError:
-            pass
-    if end:
-        try:
-            dt_end = datetime.fromisoformat(end.replace("Z", "+00:00"))
-            where_clauses.append("c.data_inicio <= :end")
-            query_params["end"] = dt_end
-        except ValueError:
-            pass
-
-    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-    rows = db.execute(
-        text(f"""
-        SELECT c.id, c.titulo, c.data_inicio, c.data_fim,
-               c.local, c.publico, c.maestro_id,
-               m.first_name || ' ' || m.last_name AS maestro_nome,
-               COUNT(ca.id) AS num_obras
-        FROM concertos c
-        LEFT JOIN musicians m ON m.id = c.maestro_id
-        LEFT JOIN concerto_arranjos ca ON ca.concerto_id = c.id
-        {where_sql}
-        GROUP BY c.id, m.first_name, m.last_name
-        ORDER BY c.data_inicio
-    """),
-        query_params,
-    ).fetchall()
+    query_params = eventos_params(start, end)
+    rows = db.execute(EVENTOS_SQL, query_params).fetchall()
 
     events = []
     for r in rows:

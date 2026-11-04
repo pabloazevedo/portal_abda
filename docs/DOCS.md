@@ -1,10 +1,11 @@
 # Orchestra Portal — Documentação do Projeto
 
 Documento vivo de status, backlog e notas operacionais.  
-Para setup local e visão geral do produto, use o [README.md](README.md).  
-Para primeiros deploys (Docker Compose / VPS), use o [DEPLOY.md](DEPLOY.md).
+Para setup local e visão geral do produto, use o [README.md](../README.md).  
+Para primeiros deploys (Docker Compose / VPS), use o [DEPLOY.md](DEPLOY.md).  
+Gaps e oportunidades: [gaps-e-oportunidades.md](gaps-e-oportunidades.md).
 
-**Atualizado:** 2026-07-30
+**Atualizado:** 2026-11-03
 
 ---
 
@@ -72,6 +73,16 @@ Reportar vulnerabilidades por canal privado (não abrir issue pública). Detalhe
 |---|---|---|
 | A11y / regressão | `tests/` | Playwright + axe; regressão Fase 1 |
 | Auditoria | `tests_audit/` | Unit, integração Redis, IDOR, QR |
+| Esteira de segurança | `scripts/security/pipeline.sh` | Gitleaks, Bandit, Semgrep, pip-audit, npm audit, Hadolint, Trivy, OWASP ZAP |
+
+A esteira roda em containers. No GitHub Actions (`.github/workflows/security.yml`) cada scanner é um job, em push, pull request e disparo manual. Localmente o hook `.githooks/pre-commit` chama a esteira inteira a cada commit. Ative uma vez, sem alterar `git config`:
+
+```bash
+cp .githooks/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit scripts/security/pipeline.sh
+```
+
+Uma etapa só: `bash scripts/security/pipeline.sh gitleaks` (ou `bandit`, `semgrep`, `pip-audit`, `npm-audit`, `hadolint`, `trivy-fs`, `image`, `dast`).
 
 ```bash
 docker compose exec app pytest tests/ -q
@@ -82,4 +93,4 @@ docker compose exec app pytest tests_audit/ -q   # deps extras podem ser necess�
 
 ## 5. Histórico de documentação
 
-Diversos relatórios pontuais foram consolidados neste arquivo e em `DEPLOY.md`. A fonte da verdade técnica é o código em `app/` e o `docker-compose.yml`.
+Diversos relatórios pontuais foram consolidados neste arquivo, em [DEPLOY.md](DEPLOY.md) e em [gaps-e-oportunidades.md](gaps-e-oportunidades.md). A fonte da verdade técnica é o código em `app/` e o `docker-compose.yml`.

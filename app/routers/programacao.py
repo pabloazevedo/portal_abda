@@ -9,12 +9,13 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse, FileResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from pathlib import Path
 
 from app.database import get_db
+from app.eventos_query import EVENTOS_SQL, eventos_params
 from app.dependencies import make_ctx, set_lang_cookie, require_manage_acervo
 from app.models import (
     Concerto, ConcertoArranjo, ConcertoAcessoPartitura,
@@ -25,7 +26,7 @@ from app.email_utils import send_partituras_evento
 
 logger = logging.getLogger("uvicorn.error")
 router = APIRouter(prefix="/acervo/programacao")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 
 def _parse_int(val) -> int | None:
@@ -65,37 +66,8 @@ def eventos_json(
     db: Session = Depends(get_db),
 ):
     """API FullCalendar — retorna eventos no intervalo solicitado."""
-    query_params: dict = {}
-    where_clauses = []
-
-    if start:
-        try:
-            dt_start = datetime.fromisoformat(start.replace("Z", "+00:00"))
-            where_clauses.append("c.data_inicio >= :start")
-            query_params["start"] = dt_start
-        except ValueError:
-            pass
-    if end:
-        try:
-            dt_end = datetime.fromisoformat(end.replace("Z", "+00:00"))
-            where_clauses.append("c.data_inicio <= :end")
-            query_params["end"] = dt_end
-        except ValueError:
-            pass
-
-    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-    rows = db.execute(text(f"""
-        SELECT c.id, c.titulo, c.data_inicio, c.data_fim,
-               c.local, c.publico, c.maestro_id,
-               m.first_name || ' ' || m.last_name AS maestro_nome,
-               COUNT(ca.id) AS num_obras
-        FROM concertos c
-        LEFT JOIN musicians m ON m.id = c.maestro_id
-        LEFT JOIN concerto_arranjos ca ON ca.concerto_id = c.id
-        {where_sql}
-        GROUP BY c.id, m.first_name, m.last_name
-        ORDER BY c.data_inicio
-    """), query_params).fetchall()
+    query_params = eventos_params(start, end)
+    rows = db.execute(EVENTOS_SQL, query_params).fetchall()
 
     events = []
     for r in rows:

@@ -1,17 +1,18 @@
-fastapi==0.115.5
+fastapi==0.162.0
+starlette==1.10.0
 uvicorn[standard]==0.32.1
 sqlalchemy==2.0.36
 psycopg2-binary==2.9.10
-python-multipart==0.0.18
-jinja2==3.1.4
+python-multipart==0.0.33
+jinja2==3.1.6
 aiofiles==24.1.0
-pillow==11.0.0
-python-dotenv==1.0.1
+pillow==13.0.0
+python-dotenv==1.2.2
 bcrypt==4.2.1
-PyJWT==2.9.0
+PyJWT==2.15.1
 itsdangerous==2.2.0
 openpyxl==3.1.5
-cryptography==43.0.3
+cryptography==50.0.2
 slowapi==0.1.9
 redis==5.2.1
 icalendar==5.0.13
@@ -21,7 +22,6 @@ icalendar==5.0.13
 # ──────────────────────────────────────────────────────────────────
 boto3>=1.26.0,<2.0              # AWS SDK for S3
 botocore>=1.29.0,<2.0           # AWS SDK core
-PyPDF2>=3.0.0                   # PDF metadata extraction
 lxml>=4.9.0                     # XML/MXL parsing
 fuzzywuzzy>=0.18.0              # Fuzzy string matching
 python-Levenshtein>=0.21.0      # Optimization for fuzzywuzzy

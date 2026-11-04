@@ -4,13 +4,13 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 
 from app.dependencies import get_lang, make_ctx
 from app.pdf_tickets import consume_pdf_ticket
 
 router = APIRouter(prefix="/m", tags=["PWA"])
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 STATIC_PWA = Path("static/pwa")
 SW_PATH = STATIC_PWA / "sw.js"

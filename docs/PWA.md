@@ -1,6 +1,7 @@
 # Site mobile / PWA (MVP)
 
-Base: `/m/` · Liga/desliga: **Configurações → Sistema**
+Base: `/m/` · Liga/desliga: **Configurações → Sistema**  
+API mobile: [MOBILE_API.md](MOBILE_API.md) · Gaps: [gaps-e-oportunidades.md](gaps-e-oportunidades.md)
 
 ## Uso
 1. Admin liga o PWA nas configurações

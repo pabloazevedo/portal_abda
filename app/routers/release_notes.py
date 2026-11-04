@@ -12,7 +12,7 @@ from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -21,7 +21,7 @@ from app.models import ReleaseNote
 from app.version import get_version
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 _VERSION_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){1,3}([a-zA-Z0-9\-.]{0,16})?$")
 

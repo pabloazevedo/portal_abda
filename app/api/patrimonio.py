@@ -50,13 +50,21 @@ _TIPO_SEQ = {
 }
 
 _SYSTEM_ETIQUETA_TIPOS = {EtiquetaTipo.qr, EtiquetaTipo.barcode_1d}
+_NEXTVAL = {
+    "seq_patrimonio_ins": text("SELECT nextval('seq_patrimonio_ins')"),
+    "seq_patrimonio_mov": text("SELECT nextval('seq_patrimonio_mov')"),
+    "seq_patrimonio_ele": text("SELECT nextval('seq_patrimonio_ele')"),
+    "seq_patrimonio_par": text("SELECT nextval('seq_patrimonio_par')"),
+    "seq_patrimonio_dec": text("SELECT nextval('seq_patrimonio_dec')"),
+    "seq_patrimonio_out": text("SELECT nextval('seq_patrimonio_out')"),
+}
 
 
 def _gerar_identificador(db: Session, tipo: TipoItem) -> str:
     prefix = _TIPO_PREFIX.get(tipo, "OUT")
     mes = datetime.now(timezone.utc).strftime("%Y%m")
     seq = _TIPO_SEQ.get(tipo, "seq_patrimonio_out")
-    num = db.execute(text(f"SELECT nextval('{seq}')")).scalar()
+    num = db.execute(_NEXTVAL[seq]).scalar()
     return f"{prefix}-{mes}-{num:04d}"
 
 

@@ -3,7 +3,7 @@
 Guia para os primeiros deploys com **Docker Compose** em um único servidor (VPS).  
 Você sobe Postgres, Redis e a app no mesmo host (ou DB gerenciado à parte, se preferir).
 
-Status do produto: [DOCS.md](DOCS.md) · visão geral: [README.md](README.md).
+Status do produto: [DOCS.md](DOCS.md) · visão geral: [../README.md](../README.md) · gaps: [gaps-e-oportunidades.md](gaps-e-oportunidades.md).
 
 ---
 

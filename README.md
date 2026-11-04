@@ -221,10 +221,12 @@ orchestra-portal/
 ├── 🐳 docker-compose.yml        # Stack local / primeiros deploys
 ├── 📄 requirements.txt          # Dependências de produção
 ├── 📄 requirements-dev.txt      # Dependências de teste/lint
-├── 📄 DOCS.md                   # Status, backlog e notas do projeto
-├── 📄 DEPLOY.md                 # Deploy simples (Docker Compose / VPS)
+├── 📁 docs/                     # Documentação do projeto (status, deploy, mobile, gaps)
+├── 📁 mobile/                   # Clientes nativos (iOS SPM + Android Kotlin)
 └── 📄 README.md                 # Este arquivo
 ```
+
+Documentação detalhada em [`docs/`](docs/README.md): status ([DOCS.md](docs/DOCS.md)), deploy ([DEPLOY.md](docs/DEPLOY.md)), API mobile ([MOBILE_API.md](docs/MOBILE_API.md)), PWA ([PWA.md](docs/PWA.md)), changelog ([CHANGELOG.md](docs/CHANGELOG.md)), [gaps](docs/gaps-e-oportunidades.md), planos [iOS](docs/plano-trabalho-ios.md) e [Android](docs/plano-trabalho-android.md).
 
 ---
 
@@ -255,7 +257,7 @@ Se você descobrir uma vulnerabilidade de segurança, **NÃO abra uma Issue púb
 
 Vulnerabilidades elegíveis incluem (mas não se limitam a): SQL injection, XSS, CSRF, escalação de privilégio, IDOR, falhas de autenticação, exposição de dados sensíveis.
 
-> 📄 Checklist de segurança e backlog: `DOCS.md`. Deploy: `DEPLOY.md`.
+> 📄 Checklist de segurança e backlog: [`docs/DOCS.md`](docs/DOCS.md). Deploy: [`docs/DEPLOY.md`](docs/DEPLOY.md). Gaps: [`docs/gaps-e-oportunidades.md`](docs/gaps-e-oportunidades.md).
 
 ---
 
@@ -293,11 +295,11 @@ git push origin feat/minha-feature
 
 ### Áreas que precisam de ajuda
 
-- 🎼 Ensaios / presença e afastamentos (ver `DOCS.md`).
+- 🎼 Ensaios / presença e afastamentos (ver [`docs/DOCS.md`](docs/DOCS.md) e [`docs/gaps-e-oportunidades.md`](docs/gaps-e-oportunidades.md)).
 - 🔧 Ordens de manutenção de instrumentos.
 - ☁️ Consolidar S3 em produção (sair do filesystem do container).
 - 📅 Integração com Google Calendar além do feed iCal.
-- 📱 Versão **mobile-first** dos formulários.
+- 📱 Versão **mobile-first** dos formulários e clientes nativos (iOS/Android).
 - 🌍 Revisão de traduções EN/ES por falantes nativos.
 
 ---

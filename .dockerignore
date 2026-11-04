@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+!.env.prod.example
+security-reports
+frontend/node_modules
+**/__pycache__
+**/*.pyc
+.venv
+venv
+.pytest_cache
+.mypy_cache
+*.md
+!README.md

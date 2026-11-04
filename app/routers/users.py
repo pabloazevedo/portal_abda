@@ -6,7 +6,7 @@ Contas de App/PWA para músicos e coralistas são gerenciadas no cadastro de Mem
 from typing import Optional
 from fastapi import APIRouter, Depends, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy.orm import Session
 import bcrypt
 
@@ -17,7 +17,7 @@ from app.dependencies import make_ctx, get_lang, set_lang_cookie, is_admin, get_
 from app.audit import audit_from_request
 
 router = APIRouter(prefix="/users")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 _SYSTEM_ROLE_VALUES = {r.value for r in SYSTEM_ROLES}
 

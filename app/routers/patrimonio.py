@@ -10,7 +10,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, Response
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -31,7 +31,7 @@ from app.patrimonio_codes import (
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/patrimonio")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 # Prefixos por tipo para o identificador_interno
 _TIPO_PREFIX = {
@@ -54,12 +54,22 @@ _TIPO_SEQ = {
 }
 
 
+_NEXTVAL = {
+    "seq_patrimonio_ins": text("SELECT nextval('seq_patrimonio_ins')"),
+    "seq_patrimonio_mov": text("SELECT nextval('seq_patrimonio_mov')"),
+    "seq_patrimonio_ele": text("SELECT nextval('seq_patrimonio_ele')"),
+    "seq_patrimonio_par": text("SELECT nextval('seq_patrimonio_par')"),
+    "seq_patrimonio_dec": text("SELECT nextval('seq_patrimonio_dec')"),
+    "seq_patrimonio_out": text("SELECT nextval('seq_patrimonio_out')"),
+}
+
+
 def _gerar_identificador(db: Session, tipo: TipoItem) -> str:
     """Gera identificador único: PREFIX-YYYYMM-NNNN usando sequence PostgreSQL (R-01)."""
     prefix = _TIPO_PREFIX.get(tipo, "OUT")
     mes = datetime.now(timezone.utc).strftime("%Y%m")
     seq = _TIPO_SEQ.get(tipo, "seq_patrimonio_out")
-    num = db.execute(text(f"SELECT nextval('{seq}')")).scalar()
+    num = db.execute(_NEXTVAL[seq]).scalar()
     return f"{prefix}-{mes}-{num:04d}"
 
 

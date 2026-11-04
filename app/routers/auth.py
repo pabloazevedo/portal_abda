@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy.orm import Session
 import bcrypt
 
@@ -18,7 +18,7 @@ from app.limiter import limiter
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 TOKEN_EXPIRY_HOURS = 1
 

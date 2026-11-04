@@ -79,6 +79,20 @@ __pypackages__/
 db.sqlite3
 db.sqlite3-journal
 
+# ── Mobile (Xcode / Android Studio) ──────────────────────────────────────────
+mobile/ios/.build/
+mobile/ios/App/.derivedData/
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/local.properties
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+.idea/
+*.iml
+.tools/
+
 # ── Frontend (Vite / React SPA) ──────────────────────────────────────────────
 /frontend/node_modules/
 /frontend/dist/
@@ -120,6 +134,9 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
+
+# ── Relatórios gerados pelos scanners (Gitleaks, ZAP, Trivy, etc.) ───────────
+/security-reports/
 
 # ── Observabilidade / misc ───────────────────────────────────────────────────
 *.rdb

@@ -13,7 +13,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -33,7 +33,7 @@ from app.acervo_storage import salvar_upload, validar_arquivo_partitura, url_dow
 
 logger = logging.getLogger("uvicorn.error")
 router = APIRouter(prefix="/acervo")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 PARTITURA_DIR = Path("uploads/partituras")
 ALLOWED_EXT   = {".pdf", ".xml", ".mxl", ".mus", ".sib", ".musicxml"}

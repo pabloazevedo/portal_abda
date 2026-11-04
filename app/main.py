@@ -13,7 +13,7 @@ import redis as redis_lib
 
 from fastapi import FastAPI, Request, Depends
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.exception_handlers import http_exception_handler as default_http_exception_handler
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -259,6 +259,22 @@ def ensure_patrimonio_sequences(db: Session):
         ("seq_patrimonio_dec", "Decoracao"),
         ("seq_patrimonio_out", "Outros"),
     ]
+    create_seq = {
+        "seq_patrimonio_ins": text("CREATE SEQUENCE seq_patrimonio_ins"),
+        "seq_patrimonio_mov": text("CREATE SEQUENCE seq_patrimonio_mov"),
+        "seq_patrimonio_ele": text("CREATE SEQUENCE seq_patrimonio_ele"),
+        "seq_patrimonio_par": text("CREATE SEQUENCE seq_patrimonio_par"),
+        "seq_patrimonio_dec": text("CREATE SEQUENCE seq_patrimonio_dec"),
+        "seq_patrimonio_out": text("CREATE SEQUENCE seq_patrimonio_out"),
+    }
+    set_seq = {
+        "seq_patrimonio_ins": text("SELECT setval('seq_patrimonio_ins', :n, false)"),
+        "seq_patrimonio_mov": text("SELECT setval('seq_patrimonio_mov', :n, false)"),
+        "seq_patrimonio_ele": text("SELECT setval('seq_patrimonio_ele', :n, false)"),
+        "seq_patrimonio_par": text("SELECT setval('seq_patrimonio_par', :n, false)"),
+        "seq_patrimonio_dec": text("SELECT setval('seq_patrimonio_dec', :n, false)"),
+        "seq_patrimonio_out": text("SELECT setval('seq_patrimonio_out', :n, false)"),
+    }
     for seq_name, tipo_value in sequences:
         exists = db.execute(
             text("SELECT 1 FROM pg_sequences WHERE sequencename = :s"),
@@ -269,8 +285,9 @@ def ensure_patrimonio_sequences(db: Session):
                 text("SELECT GREATEST(COUNT(*), 0) FROM patrimonio WHERE tipo_item = :t"),
                 {"t": tipo_value},
             ).scalar() or 0
-            db.execute(text(f"CREATE SEQUENCE {seq_name} START WITH {cnt + 1}"))
-            logger.info(f"[Portal] Sequence {seq_name} criada (start={cnt + 1}).")
+            db.execute(create_seq[seq_name])
+            db.execute(set_seq[seq_name], {"n": int(cnt) + 1})
+            logger.info("[Portal] Sequence %s criada (start=%s).", seq_name, int(cnt) + 1)
     db.commit()
 
 
@@ -522,7 +539,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     """HTML amigável no login/forgot; fallback SlowAPI para o restante."""
     path = request.url.path.rstrip("/") or "/"
     if request.method == "POST" and path in {"/login", "/forgot-password"}:
-        from fastapi.templating import Jinja2Templates
+        from app.templating import Templates
         from app.dependencies import make_ctx, get_lang, set_lang_cookie
 
         lang = get_lang(request)
@@ -538,7 +555,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
             except Exception:
                 username = ""
 
-        templates = Jinja2Templates(directory="templates")
+        templates = Templates(directory="templates")
         if path == "/login":
             ctx = make_ctx(request, {"error": error_msg, "username": username})
             template_name = "auth/login.html"
@@ -625,7 +642,7 @@ app.add_middleware(RequestContextMiddleware)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 # Hybrid: Jinja sempre montado; SPA_MODULES intercepta GET via SpaModulesMiddleware
 app.include_router(auth.router)

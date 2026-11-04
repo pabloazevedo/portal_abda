@@ -12,7 +12,7 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, Request, Form, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, extract
 
@@ -31,7 +31,7 @@ from app.app_access import (
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/musicians")
-templates = Jinja2Templates(directory="templates")
+templates = Templates(directory="templates")
 
 UPLOAD_DIR = Path(os.path.abspath("uploads"))
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}

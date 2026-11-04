@@ -27,6 +27,7 @@ services:
 
   app:
     build: .
+    image: portal_abda-app:local
     container_name: orchestra_app
     restart: unless-stopped
     ports:

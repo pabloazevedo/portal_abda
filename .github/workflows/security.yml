@@ -1,0 +1,180 @@
+name: Esteira de segurança
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  COMPOSE_PROJECT_NAME: portal_abda
+
+jobs:
+  gitleaks:
+    name: Segredos / Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        run: bash scripts/security/pipeline.sh gitleaks
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gitleaks
+          path: security-reports/
+          if-no-files-found: ignore
+
+  bandit:
+    name: SAST / Bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bandit
+        run: bash scripts/security/pipeline.sh bandit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit
+          path: security-reports/
+          if-no-files-found: ignore
+
+  semgrep:
+    name: SAST / Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep
+        run: bash scripts/security/pipeline.sh semgrep
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep
+          path: security-reports/
+          if-no-files-found: ignore
+
+  pip-audit:
+    name: Dependências Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: pip-audit
+        run: bash scripts/security/pipeline.sh pip-audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip-audit
+          path: security-reports/
+          if-no-files-found: ignore
+
+  npm-audit:
+    name: Dependências npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: npm audit
+        run: bash scripts/security/pipeline.sh npm-audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit
+          path: security-reports/
+          if-no-files-found: ignore
+
+  hadolint:
+    name: Dockerfile / Hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hadolint
+        run: bash scripts/security/pipeline.sh hadolint
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hadolint
+          path: security-reports/
+          if-no-files-found: ignore
+
+  trivy-fs:
+    name: Trivy filesystem
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy fs
+        run: bash scripts/security/pipeline.sh trivy-fs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-fs
+          path: security-reports/
+          if-no-files-found: ignore
+
+  image:
+    name: Imagem / Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build e Trivy
+        run: bash scripts/security/pipeline.sh image
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-image
+          path: security-reports/
+          if-no-files-found: ignore
+
+  dast:
+    name: DAST / OWASP ZAP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ambiente local
+        run: cp .env.example .env
+      - name: ZAP baseline
+        run: bash scripts/security/pipeline.sh dast
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap
+          path: security-reports/
+          if-no-files-found: ignore
+
+  resultado:
+    name: Resultado
+    needs:
+      - gitleaks
+      - bandit
+      - semgrep
+      - pip-audit
+      - npm-audit
+      - hadolint
+      - trivy-fs
+      - image
+      - dast
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consolida as etapas
+        run: |
+          set -euo pipefail
+          echo "gitleaks=${{ needs.gitleaks.result }}"
+          echo "bandit=${{ needs.bandit.result }}"
+          echo "semgrep=${{ needs.semgrep.result }}"
+          echo "pip-audit=${{ needs.pip-audit.result }}"
+          echo "npm-audit=${{ needs.npm-audit.result }}"
+          echo "hadolint=${{ needs.hadolint.result }}"
+          echo "trivy-fs=${{ needs.trivy-fs.result }}"
+          echo "image=${{ needs.image.result }}"
+          echo "dast=${{ needs.dast.result }}"
+          results="${{ needs.gitleaks.result }} ${{ needs.bandit.result }} ${{ needs.semgrep.result }} ${{ needs.pip-audit.result }} ${{ needs.npm-audit.result }} ${{ needs.hadolint.result }} ${{ needs.trivy-fs.result }} ${{ needs.image.result }} ${{ needs.dast.result }}"
+          if echo "$results" | grep -Eq 'failure|cancelled'; then
+            echo "A esteira falhou."
+            exit 1
+          fi
