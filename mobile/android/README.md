@@ -12,11 +12,13 @@ Projeto Gradle multi-módulo (Fase 0 do [plano Android](../../docs/plano-trabalh
 **Mac = só código.** Build, testes, Docker e esteira de segurança rodam no Ubuntu:
 
 ```bash
-bash scripts/ci/remote-verify.sh          # rsync + pipeline + gradle test/APK
-bash scripts/ci/mac-coding-only.sh        # prune Docker no Mac e encerra daemon
+bash scripts/ci/remote-verify.sh              # fast (default): scanners ∥ Android
+VERIFY_MODE=full bash scripts/ci/remote-verify.sh  # + image + ZAP
+bash scripts/ci/mac-coding-only.sh            # prune Docker no Mac
+bash scripts/ci/install-hooks.sh              # pre-commit=fast, pre-push=full
 ```
 
-O `pre-commit` chama `remote-verify.sh` (não usa Docker local).
+Paralelismo: `PARALLEL_JOBS` (default `nproc`); security ∥ Android; Gradle `--parallel`.
 
 **Não use o Mac para emular.** Use o Linux na LAN:
 
