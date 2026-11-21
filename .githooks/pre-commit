@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Esteira e testes rodam no Ubuntu de build (não no Mac).
+# Pre-commit rápido no Ubuntu: scanners paralelos + Android (~1 min).
+# Esteira completa (image+DAST): pre-push ou VERIFY_MODE=full bash scripts/ci/remote-verify.sh
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
+export VERIFY_MODE="${VERIFY_MODE:-fast}"
 exec bash scripts/ci/remote-verify.sh

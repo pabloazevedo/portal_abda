@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Pre-push: esteira completa no Ubuntu (image + ZAP DAST).
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+export VERIFY_MODE=full
+exec bash scripts/ci/remote-verify.sh
