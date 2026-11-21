@@ -81,10 +81,15 @@ db.sqlite3-journal
 
 # ── Mobile (Xcode / Android Studio) ──────────────────────────────────────────
 mobile/ios/.build/
+mobile/ios/.swiftpm/
 mobile/ios/App/.derivedData/
 mobile/android/.gradle/
-mobile/android/build/
+mobile/android/**/build/
 mobile/android/local.properties
+mobile/android/*.apk
+mobile/android/*.aab
+**/xcuserdata/
+**/.swiftpm/xcode/xcuserdata/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/

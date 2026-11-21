@@ -1,0 +1,7 @@
+## Copie para local.properties (não versionado).
+## No Ubuntu de build: caminho típico do SDK instalado pelo setup-ubuntu.sh
+sdk.dir=/home/pablo/Android/Sdk
+
+## Opcional: base URL da API para flavor `dev` (emulador → host = 10.0.2.2)
+## Se a API estiver no Mac da LAN: http://192.168.50.16:8000
+# portal.api.base.url=http://10.0.2.2:8000

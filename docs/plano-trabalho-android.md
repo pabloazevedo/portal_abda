@@ -24,10 +24,12 @@
 - [x] Plano documentado e pasta `mobile/android/`
 - [x] Cliente HTTP Kotlin alinhado à API (`PortalApiClient`)
 - [x] Persistência segura do refresh (`SecureTokenStore`)
-- [ ] Projeto Gradle (app + `:portal-api` library) importando o código em `mobile/android/`
-- [ ] Flavors: `dev` (cleartext LAN), `staging`, `prod` (HTTPS only)
+- [x] Projeto Gradle (app + `:portal-api` library) em `mobile/android/`
+- [x] Flavors: `dev` (cleartext LAN), `staging`, `prod` (HTTPS only)
+- [x] Scripts de setup no Ubuntu de build/emulador (`scripts/android/`) — host `192.168.50.32` (`ub2404202405`)
+- [x] Validar `assembleDevDebug` + emulador no Ubuntu (`Portal_API35`, APK instalado, `MainActivity` em foreground)
 
-**Critério de pronto:** `assembleDevDebug` abre tela de login.
+**Critério de pronto:** `assembleDevDebug` abre tela de login no emulador Ubuntu. ✅
 
 ### Fase 1 — Autenticação (semana 1–2)
 - [ ] `POST /api/v1/auth/login` com `client: "android"`
@@ -60,25 +62,27 @@
 
 ---
 
-## Arquitetura sugerida
+## Arquitetura
 
 ```
 mobile/android/
-├── build.gradle.kts.example      # referência para o módulo
-├── src/main/java/org/orchestra/portal/
-│   ├── api/PortalApiClient.kt
-│   ├── api/Models.kt
-│   ├── auth/SecureTokenStore.kt
-│   └── auth/SessionRepository.kt
+├── settings.gradle.kts
+├── app/                          # Compose (Login stub Fase 0)
+├── portal-api/                   # OkHttp + serialization + sessão
+│   └── src/main/java/org/orchestra/portal/
+│       ├── api/PortalApiClient.kt
+│       ├── api/Models.kt
+│       ├── auth/SecureTokenStore.kt
+│       └── auth/SessionRepository.kt
 └── README.md
 ```
 
-App Gradle (Fase 0): module `:app` (Compose) + `:portal-api` (código acima).
+Build/emulador: Ubuntu `192.168.50.32` (`scripts/android/setup-ubuntu.sh`).
 
 ```
-LoginScreen → SessionRepository
-PartiturasScreen → PortalApiClient.listPartituras()
-PdfScreen → PdfRenderer / Custom Tabs
+LoginScreen → SessionRepository          # Fase 1
+PartiturasScreen → PortalApiClient…      # Fase 2
+PdfScreen → PdfRenderer / Custom Tabs    # Fase 2
 ```
 
 ---

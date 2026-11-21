@@ -1,13 +1,11 @@
 # Clientes mobile — Orchestra Portal
 
-Implementação inicial (Fase 0/1) dos planos nativos.
-
 | Plataforma | Plano | Código |
 |---|---|---|
-| iOS | [docs/plano-trabalho-ios.md](../docs/plano-trabalho-ios.md) | [ios/](ios/) (Swift Package) |
-| Android | [docs/plano-trabalho-android.md](../docs/plano-trabalho-android.md) | [android/](android/) (Kotlin library) |
+| iOS | [docs/plano-trabalho-ios.md](../docs/plano-trabalho-ios.md) | [ios/](ios/) — SPM + app Xcode `PortalMembro` |
+| Android | [docs/plano-trabalho-android.md](../docs/plano-trabalho-android.md) | [android/](android/) — Gradle `:app` + `:portal-api` |
 
-Contrato da API: [docs/MOBILE_API.md](../docs/MOBILE_API.md).  
-Backend de desenvolvimento: `docker compose up -d` → `http://localhost:8000` (`/api/docs`).
+Contrato: [docs/MOBILE_API.md](../docs/MOBILE_API.md).  
+Backend local: `docker compose up -d` → `http://localhost:8000`.
 
-Próximo passo de cada plano: criar o app Xcode / projeto Gradle Compose e ligar a UI às libraries acima.
+**Android build/emulador:** Ubuntu `192.168.50.32` (usuário `pablo`) — ver [android/README.md](android/README.md) e `scripts/android/`.

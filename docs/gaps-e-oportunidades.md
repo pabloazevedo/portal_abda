@@ -30,7 +30,7 @@ Planos: [plano-trabalho-ios.md](plano-trabalho-ios.md) · [plano-trabalho-androi
 | Gap | Impacto | Oportunidade |
 |---|---|---|
 | App iOS (UI / Xcode / App Store) incompleto | Library SPM + Keychain prontos; falta app | Seguir plano iOS Fase 0–3 |
-| App Android (UI / Gradle / Play) incompleto | Library Kotlin pronta; falta AAB | Seguir plano Android Fase 0–3 |
+| App Android (UI / Gradle / Play) incompleto | Gradle `:app`+`:portal-api` + flavors; falta auth UI e AAB | Seguir plano Android Fase 1–3 no Ubuntu `192.168.50.32` |
 | Certificate pinning | Só recomendação na doc | Pinning no cliente nativo em produção (v1.1 dos planos) |
 | Keychain / Keystore na UI app | Library cobre; app ainda não amarra | Ligar SessionStore / SecureTokenStore nas telas |
 | ATS / Network Security | Só orientação | Perfis de produção só HTTPS |

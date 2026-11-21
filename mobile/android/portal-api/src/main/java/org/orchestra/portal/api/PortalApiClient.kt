@@ -81,22 +81,27 @@ class PortalApiClient(
     private object EmptyBody
 
     private inline fun <reified T> get(path: String): T =
-        execute(path, "GET", bodyJson = null, authorized = true, didRefresh = false)
+        execute(path, "GET", bodyJson = null, authorized = true, didRefresh = false) {
+            json.decodeFromString(it)
+        }
 
     private inline fun <reified B, reified T> post(path: String, body: B, authorized: Boolean): T {
         val payload = when (body) {
             is EmptyBody -> "{}"
             else -> json.encodeToString(body)
         }
-        return execute(path, "POST", bodyJson = payload, authorized = authorized, didRefresh = false)
+        return execute(path, "POST", bodyJson = payload, authorized = authorized, didRefresh = false) {
+            json.decodeFromString(it)
+        }
     }
 
-    private inline fun <reified T> execute(
+    private fun <T> execute(
         path: String,
         method: String,
         bodyJson: String?,
         authorized: Boolean,
         didRefresh: Boolean,
+        decode: (String) -> T,
     ): T {
         val url = absoluteUrl(path)
         val builder = Request.Builder().url(url).header("Accept", "application/json")
@@ -116,7 +121,7 @@ class PortalApiClient(
             val raw = response.body?.string().orEmpty()
             if (response.code == 401 && authorized && !didRefresh) {
                 refresh()
-                return execute(path, method, bodyJson, authorized = true, didRefresh = true)
+                return execute(path, method, bodyJson, authorized = true, didRefresh = true, decode = decode)
             }
             if (!response.isSuccessful) {
                 val detail = runCatching { json.decodeFromString<ApiErrorBody>(raw).detail }.getOrNull()
@@ -127,7 +132,7 @@ class PortalApiClient(
                 }
                 throw PortalApiException.Http(response.code, detail)
             }
-            return json.decodeFromString(raw)
+            return decode(raw)
         }
     }
 

@@ -1,6 +1,3 @@
-// Referência para o módulo `:portal-api` no projeto Android (Fase 0 do plano).
-// Copie para o app Gradle e ajuste group/namespace.
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -13,6 +10,8 @@ android {
 
     defaultConfig {
         minSdk = 26
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
