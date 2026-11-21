@@ -15,6 +15,11 @@ class SessionRepository(
     fun currentUser(): ApiUser? = user.get()
     fun refreshToken(): String? = tokenStore.readRefreshToken()
 
+    /** Só para testes: define access em memória sem tocar no refresh store. */
+    fun seedAccessToken(token: String?) {
+        accessToken.set(token)
+    }
+
     fun apply(tokens: TokenResponse) {
         accessToken.set(tokens.accessToken)
         user.set(tokens.user)

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,15 +25,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import org.orchestra.portal.membro.config.AppConfig
 
-/**
- * Stub da Fase 0: tela de login visível após `assembleDevDebug`.
- * Chamadas reais à API entram na Fase 1.
- */
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    loading: Boolean,
+    error: String?,
+    onLogin: (username: String, password: String) -> Unit,
+) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("Pronto para autenticação (Fase 1).") }
 
     Column(
         modifier = Modifier
@@ -50,6 +50,7 @@ fun LoginScreen() {
             onValueChange = { username = it },
             label = { Text("Usuário") },
             singleLine = true,
+            enabled = !loading,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -58,24 +59,26 @@ fun LoginScreen() {
             onValueChange = { password = it },
             label = { Text("Senha") },
             singleLine = true,
+            enabled = !loading,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(20.dp))
         Button(
-            onClick = {
-                status = if (username.isBlank() || password.isBlank()) {
-                    "Informe usuário e senha."
-                } else {
-                    "Login será ligado na Fase 1 (client=android)."
-                }
-            },
+            onClick = { onLogin(username, password) },
+            enabled = !loading && username.isNotBlank() && password.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Entrar")
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = status)
+        if (loading) {
+            Spacer(modifier = Modifier.height(16.dp))
+            CircularProgressIndicator()
+        }
+        if (!error.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = error, color = MaterialTheme.colorScheme.error)
+        }
     }
 }

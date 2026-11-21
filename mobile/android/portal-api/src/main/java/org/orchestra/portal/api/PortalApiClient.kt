@@ -73,6 +73,23 @@ class PortalApiClient(
         )
     }
 
+    /** Download autenticado do PDF (bytes; gravar só em cache privado do app). */
+    @Throws(PortalApiException::class, IOException::class)
+    fun downloadPDF(acessoId: Int, documentoId: Int): ByteArray =
+        executeBytes(
+            "/api/v1/me/partituras/$acessoId/documentos/$documentoId/pdf",
+            authorized = true,
+            didRefresh = false,
+        )
+
+    /** Se houver refresh no store, renova a sessão. */
+    @Throws(PortalApiException::class, IOException::class)
+    fun restoreSessionIfPossible(): Boolean {
+        if (session.refreshToken() == null) return false
+        refresh()
+        return true
+    }
+
     fun absoluteUrl(path: String): String {
         val base = baseUrl.trimEnd('/')
         return if (path.startsWith("http")) path else "$base$path"
@@ -133,6 +150,29 @@ class PortalApiClient(
                 throw PortalApiException.Http(response.code, detail)
             }
             return decode(raw)
+        }
+    }
+
+    private fun executeBytes(path: String, authorized: Boolean, didRefresh: Boolean): ByteArray {
+        val url = absoluteUrl(path)
+        val builder = Request.Builder().url(url).header("Accept", "application/pdf").get()
+        if (authorized) {
+            session.currentAccessToken()?.let {
+                builder.header("Authorization", "Bearer $it")
+            }
+        }
+        http.newCall(builder.build()).execute().use { response ->
+            if (response.code == 401 && authorized && !didRefresh) {
+                refresh()
+                return executeBytes(path, authorized = true, didRefresh = true)
+            }
+            if (!response.isSuccessful) {
+                val raw = response.body?.string().orEmpty()
+                val detail = runCatching { json.decodeFromString<ApiErrorBody>(raw).detail }.getOrNull()
+                if (response.code == 401) throw PortalApiException.Unauthorized()
+                throw PortalApiException.Http(response.code, detail)
+            }
+            return response.body?.bytes() ?: ByteArray(0)
         }
     }
 

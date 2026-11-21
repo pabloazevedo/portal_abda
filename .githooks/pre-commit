@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Roda a esteira de segurança a cada commit.
+# Esteira e testes rodam no Ubuntu de build (não no Mac).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-exec bash scripts/security/pipeline.sh all
+exec bash scripts/ci/remote-verify.sh

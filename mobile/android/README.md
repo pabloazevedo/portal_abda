@@ -7,7 +7,16 @@ Projeto Gradle multi-módulo (Fase 0 do [plano Android](../../docs/plano-trabalh
 | `:portal-api` | Cliente HTTP, modelos, `SessionRepository` / `SecureTokenStore` |
 | `:app` | Compose — tela de login (stub); flavors `dev` / `staging` / `prod` |
 
-## Host de build e emulador (Ubuntu)
+## Host de build / esteira / emulador (Ubuntu)
+
+**Mac = só código.** Build, testes, Docker e esteira de segurança rodam no Ubuntu:
+
+```bash
+bash scripts/ci/remote-verify.sh          # rsync + pipeline + gradle test/APK
+bash scripts/ci/mac-coding-only.sh        # prune Docker no Mac e encerra daemon
+```
+
+O `pre-commit` chama `remote-verify.sh` (não usa Docker local).
 
 **Não use o Mac para emular.** Use o Linux na LAN:
 

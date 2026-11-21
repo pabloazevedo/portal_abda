@@ -32,23 +32,23 @@
 **Critério de pronto:** `assembleDevDebug` abre tela de login no emulador Ubuntu. ✅
 
 ### Fase 1 — Autenticação (semana 1–2)
-- [ ] `POST /api/v1/auth/login` com `client: "android"`
-- [ ] Access token em memória (`StateFlow`); refresh em EncryptedSharedPreferences / Keystore
-- [ ] OkHttp Authenticator: em `401`, refresh + retry único
-- [ ] Logout: `POST /api/v1/auth/logout` + limpar store
-- [ ] Tela quando `has_musician_link == false`
-- [ ] Testes JUnit do fluxo de refresh (token antigo → 401)
+- [x] `POST /api/v1/auth/login` com `client: "android"`
+- [x] Access token em memória (`StateFlow` via `SessionViewModel`); refresh em EncryptedSharedPreferences / Keystore
+- [x] Retry em `401` + refresh único (`PortalApiClient`)
+- [x] Logout: `POST /api/v1/auth/logout` + limpar store
+- [x] Tela quando `has_musician_link == false`
+- [x] Testes JUnit do fluxo de refresh (`RefreshRotationTest` + MockWebServer)
 
-**Critério de pronto:** login → `/me` → logout no emulador contra Docker.
+**Critério de pronto:** login → partituras → logout no emulador Ubuntu contra Docker.
 
 ### Fase 2 — Partituras (semana 2–3)
-- [ ] `GET /api/v1/me/partituras` em Compose (LazyColumn por evento)
-- [ ] Chips de status: `available` | `not_yet_available` | `expired`
-- [ ] Download Bearer do PDF **ou** `view-ticket` + Custom Tabs em `/m/pdf/{ticket}`
-- [ ] Viewer com **PdfRenderer** (preferencial); cache em cache dir privado, apagar ao fechar
-- [ ] Pull-to-refresh + empty state
+- [x] `GET /api/v1/me/partituras` em Compose (LazyColumn por evento)
+- [x] Chips de status: `available` | `not_yet_available` | `expired`
+- [x] Download Bearer do PDF (`PortalApiClient.downloadPDF`)
+- [x] Viewer com **PdfRenderer**; cache em cache dir privado, apagar ao fechar
+- [x] Pull-to-refresh + empty state
 
-**Critério de pronto:** músico de teste abre PDF no emulador/device.
+**Critério de pronto:** músico de teste abre PDF no emulador Ubuntu.
 
 ### Fase 3 — Endurecimento e Play Store (semana 3–4)
 - [ ] `network_security_config.xml`: cleartext só em `dev`
