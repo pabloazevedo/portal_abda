@@ -15,6 +15,8 @@
 		3817700A1EA4C6530C8CEC34 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0CAD2BAACDC89AB2A57D155F /* Assets.xcassets */; };
 		5F41FF26E87F4F4AC8A8B8E7 /* PortalMembroTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DA52941CA00B9CA04B42DF5 /* PortalMembroTests.swift */; };
 		6036D2D853FDD36FE3ECBADF /* RefreshRotationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3773CD9A687D5353AA56BBB /* RefreshRotationIntegrationTests.swift */; };
+		653F0722A8D1C270BDD129DF /* ATSAndPrivacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649E0DFCD9309C0603587A3 /* ATSAndPrivacyTests.swift */; };
+		6B85703A364CE640CAAFEC5A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 02484960826C9EFF035E8E2C /* PrivacyInfo.xcprivacy */; };
 		B489F46BCA495CFED155926E /* PartituraStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9577AA1BAEB827B2D04CC671 /* PartituraStatusBadge.swift */; };
 		BAA8A7EA5A03D1ECCDCBB846 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717B209AE50B4A23000A1FA8 /* RootView.swift */; };
 		C2988F98533783FB2AD5DCB0 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F04C143544BF1AE7880074 /* AppConfig.swift */; };
@@ -33,11 +35,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		02484960826C9EFF035E8E2C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		0CAD2BAACDC89AB2A57D155F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0FF7638548370F3538F0E91C /* PortalMembroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PortalMembroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		36AEC618AAECB7C17CC46CD4 /* AppSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSession.swift; sourceTree = "<group>"; };
 		3DA52941CA00B9CA04B42DF5 /* PortalMembroTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMembroTests.swift; sourceTree = "<group>"; };
 		717B209AE50B4A23000A1FA8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		8649E0DFCD9309C0603587A3 /* ATSAndPrivacyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATSAndPrivacyTests.swift; sourceTree = "<group>"; };
 		8F9155B14736961A5D8F7ED3 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; path = ..; sourceTree = SOURCE_ROOT; };
 		9577AA1BAEB827B2D04CC671 /* PartituraStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartituraStatusBadge.swift; sourceTree = "<group>"; };
 		A2B8310C655664B1C697489C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -46,6 +50,7 @@
 		B4F0EC085A7E98C3C2AB9090 /* PartiturasListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartiturasListView.swift; sourceTree = "<group>"; };
 		B9613969FA38FA43D661D4E9 /* PDFViewerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFViewerScreen.swift; sourceTree = "<group>"; };
 		B9F830618C87CA507E571D2D /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		BCF156092BB032C22874059A /* Info-Debug.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-Debug.plist"; sourceTree = "<group>"; };
 		F1F80E825F94B16D7EA65E19 /* PortalMembro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PortalMembro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6F04C143544BF1AE7880074 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -95,8 +100,10 @@
 				141AA650AD30DBC96BB41AC0 /* Session */,
 				790143D7E66A07A58EA13612 /* Views */,
 				0CAD2BAACDC89AB2A57D155F /* Assets.xcassets */,
+				BCF156092BB032C22874059A /* Info-Debug.plist */,
 				A2B8310C655664B1C697489C /* Info.plist */,
 				AB7E3A00234CA93528C6D9C5 /* PortalMembroApp.swift */,
+				02484960826C9EFF035E8E2C /* PrivacyInfo.xcprivacy */,
 			);
 			path = PortalMembro;
 			sourceTree = "<group>";
@@ -133,6 +140,7 @@
 		DF571105E7703CE431B47159 /* PortalMembroTests */ = {
 			isa = PBXGroup;
 			children = (
+				8649E0DFCD9309C0603587A3 /* ATSAndPrivacyTests.swift */,
 				3DA52941CA00B9CA04B42DF5 /* PortalMembroTests.swift */,
 				A3773CD9A687D5353AA56BBB /* RefreshRotationIntegrationTests.swift */,
 			);
@@ -234,6 +242,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3817700A1EA4C6530C8CEC34 /* Assets.xcassets in Resources */,
+				6B85703A364CE640CAAFEC5A /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,6 +253,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				653F0722A8D1C270BDD129DF /* ATSAndPrivacyTests.swift in Sources */,
 				5F41FF26E87F4F4AC8A8B8E7 /* PortalMembroTests.swift in Sources */,
 				6036D2D853FDD36FE3ECBADF /* RefreshRotationIntegrationTests.swift in Sources */,
 			);
@@ -328,7 +338,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -345,6 +355,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
@@ -353,7 +364,9 @@
 				INFOPLIST_FILE = PortalMembro/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Portal;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_BackgroundColor = AccentColor;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -448,7 +461,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -464,15 +477,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = PortalMembro/Info.plist;
+				INFOPLIST_FILE = "PortalMembro/Info-Debug.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Portal;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_BackgroundColor = AccentColor;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (

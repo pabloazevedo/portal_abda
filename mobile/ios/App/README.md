@@ -1,59 +1,54 @@
-# PortalMembro — app iOS (Fase 0)
+# PortalMembro — app iOS
 
 Projeto Xcode gerado com [XcodeGen](https://github.com/yonaskolb/XcodeGen) a partir de `project.yml`.  
-Depende do pacote local **PortalMobile** em `../` (`Sources/PortalMobile`).
+Pacote local **PortalMobile** em `../Sources/PortalMobile`.
 
-## Abrir no Xcode
+**Testes e archive:** neste Mac. Build Android / esteira de segurança: Ubuntu `192.168.50.32`.
+
+## Abrir / regenerar
 
 ```bash
 open mobile/ios/App/PortalMembro.xcodeproj
+# se alterar project.yml:
+cd mobile/ios/App && xcodegen generate   # ou ../../.tools/xcodegen/bin/xcodegen
 ```
 
-Se alterar `project.yml`, regenere:
-
-```bash
-# com XcodeGen no PATH, ou:
-../../../../.tools/xcodegen/bin/xcodegen generate   # a partir de mobile/ios/App
-```
-
-## Build / testes (simulador)
+## Build / testes (simulador — Mac)
 
 ```bash
 cd mobile/ios/App
 xcodebuild -project PortalMembro.xcodeproj -scheme PortalMembro \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
   CODE_SIGNING_ALLOWED=NO build test
 ```
 
-## Ambientes
+## Ambientes e ATS (Fase 3)
 
-| Config | Base URL |
-|---|---|
-| Debug | `http://127.0.0.1:8000` (override: env `PORTAL_API_BASE_URL`) |
-| Release | `https://portal.example.org` (trocar no deploy) |
+| Config | Info.plist | Base URL |
+|---|---|---|
+| **Debug** | `Info-Debug.plist` — HTTP local (`NSAllowsLocalNetworking` + localhost) | `http://127.0.0.1:8000` (`PORTAL_API_BASE_URL`) |
+| **Release** | `Info.plist` — **só HTTPS**, sem exception domains | `https://portal.example.org` |
 
-Device físico em Debug: defina `PORTAL_API_BASE_URL=http://<IP-do-Mac>:8000`.
+Device físico em Debug: `PORTAL_API_BASE_URL=http://<IP-do-Mac>:8000`.
 
-## Estrutura
+**Privacidade:** `PrivacyInfo.xcprivacy` — dados de conta para funcionalidade; `NSPrivacyTracking=false`.  
+**Não logar** tokens, senhas ou PII (`AppConfig.logsTokensOrPII == false`).
 
-```
-App/
-├── project.yml                 # fonte do .xcodeproj
-├── PortalMembro.xcodeproj
-├── PortalMembro/
-│   ├── Session/AppSession.swift
-│   ├── Views/LoginView.swift
-│   ├── Views/PartiturasListView.swift
-│   ├── Views/PDFViewerScreen.swift   # PDFKit
-│   └── Info.plist                    # ATS local networking
-└── PortalMembroTests/
+## TestFlight
+
+1. Defina `DEVELOPMENT_TEAM` no Xcode (Signing) ou no ambiente.
+2. Troque `portal.example.org` pelo domínio real em `AppConfig` / env Release.
+3. Arquive e envie:
+
+```bash
+DEVELOPMENT_TEAM=XXXXXXXX bash scripts/ios/archive-testflight.sh
 ```
 
-## Fluxo (Fases 1–2)
+v1.1 (não incluso): certificate pinning, Face ID para reabrir sessão.
+
+## Fluxo
 
 1. Login → `POST /api/v1/auth/login` (`client: ios`)
-2. Lista → `GET /api/v1/me/partituras` (badges + pull-to-refresh)
-3. Abrir PDF → download Bearer + PDFKit em memória
-4. Sair → logout + limpa Keychain
-
-Backend local: `docker compose up -d` em `http://127.0.0.1:8000`.
+2. Lista → `GET /api/v1/me/partituras`
+3. PDF → Bearer + PDFKit (memória)
+4. Sair → logout + Keychain

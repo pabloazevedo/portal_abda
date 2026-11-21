@@ -51,14 +51,14 @@
 **Critério de pronto:** músico com distribuição `available` abre PDF no simulador/device.
 
 ### Fase 3 — Endurecimento e App Store (semana 3–4)
-- [ ] ATS: só HTTPS em Release; exceção Debug documentada
-- [ ] Não logar tokens / PII
-- [ ] Privacy Nutrition Labels (dados de conta, sem tracking)
-- [ ] Ícones, splash, suporte iPhone + iPad
-- [ ] TestFlight interno → App Store Connect
+- [x] ATS: só HTTPS em Release (`Info.plist`); exceção Debug documentada (`Info-Debug.plist` + README)
+- [x] Não logar tokens / PII (`AppConfig.logsTokensOrPII`; sem `print` de credenciais)
+- [x] Privacy Nutrition Labels (`PrivacyInfo.xcprivacy` — conta, sem tracking)
+- [x] Ícones (AppIcon 1024), splash/AccentColor, suporte iPhone + iPad (`TARGETED_DEVICE_FAMILY=1,2`)
+- [x] Script TestFlight (`scripts/ios/archive-testflight.sh` + `ExportOptions-TestFlight.plist`) — upload requer `DEVELOPMENT_TEAM` da orquestra
 - [ ] (v1.1) Certificate pinning; Face ID para reabrir a sessão
 
-**Critério de pronto:** build TestFlight instalável pela equipe da orquestra.
+**Critério de pronto:** build TestFlight instalável pela equipe da orquestra (archive local pronto; envio depende da conta Apple).
 
 ---
 
